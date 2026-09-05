@@ -39,8 +39,12 @@ data class ChartSeries(
     val points: List<Pair<Float, Float>>,
 )
 
+/** A vertical guide line at [x] (e.g. a spray date); the legend shows the first marker's [label]. */
+data class ChartMarker(val x: Float, val color: Color, val label: String = "")
+
 /**
  * Minimal line chart: axes, light grid, one line per series with dots, legend below.
+ * [bars] are drawn from the baseline on their own 0..max scale (rain), [markers] as dashed vertical lines.
  * Each series is drawn against its own y-range so Brix and temperature can share a plot.
  */
 @Composable
@@ -50,22 +54,27 @@ fun LineChart(
     height: Int = 200,
     xLabel: (Float) -> String = { it.toInt().toString() },
     sharedScale: Boolean = false,
+    bars: ChartSeries? = null,
+    markers: List<ChartMarker> = emptyList(),
+    dots: Boolean = true,
 ) {
     val measurer = rememberTextMeasurer()
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val textColor = MaterialTheme.colorScheme.onSurfaceVariant
     val visible = series.filter { it.points.isNotEmpty() }
-    if (visible.isEmpty()) {
+    val barPoints = bars?.points.orEmpty()
+    if (visible.isEmpty() && barPoints.isEmpty()) {
         Box(modifier.fillMaxWidth().height(height.dp), contentAlignment = Alignment.Center) {
             Text(stringResource(R.string.no_data_yet), color = textColor)
         }
         return
     }
-    val allX = visible.flatMap { s -> s.points.map { it.first } }
+    val allX = visible.flatMap { s -> s.points.map { it.first } } + barPoints.map { it.first } + markers.map { it.x }
     val xMin = allX.min()
     val xMax = allX.max().let { if (it == xMin) it + 1f else it }
-    val sharedMin = visible.flatMap { s -> s.points.map { it.second } }.min()
-    val sharedMax = visible.flatMap { s -> s.points.map { it.second } }.max()
+    val allY = visible.flatMap { s -> s.points.map { it.second } }.ifEmpty { listOf(0f, 1f) }
+    val sharedMin = allY.min()
+    val sharedMax = allY.max()
 
     Column(modifier.fillMaxWidth()) {
         Canvas(modifier = Modifier.fillMaxWidth().height(height.dp)) {
@@ -78,8 +87,8 @@ fun LineChart(
             val labelStyle = TextStyle(fontSize = 10.sp, color = textColor)
 
             // grid + y labels (based on first series, or shared range)
-            val first = visible.first()
-            val (yLo, yHi) = if (sharedScale) niceRange(sharedMin, sharedMax)
+            val first = visible.firstOrNull()
+            val (yLo, yHi) = if (sharedScale || first == null) niceRange(sharedMin, sharedMax)
             else niceRange(first.points.minOf { it.second }, first.points.maxOf { it.second })
             val steps = 4
             for (i in 0..steps) {
@@ -97,6 +106,24 @@ fun LineChart(
                 val txt = measurer.measure(xLabel(xv), labelStyle)
                 drawText(txt, topLeft = Offset((x - txt.size.width / 2).coerceIn(0f, size.width - txt.size.width), padT + h + 4.dp.toPx()))
             }
+            // bars from the baseline (own scale, at most 40 % of the plot height)
+            if (barPoints.isNotEmpty() && bars != null) {
+                val bMax = barPoints.maxOf { it.second }.let { if (it <= 0f) 1f else it }
+                val bw = 3.dp.toPx()
+                barPoints.forEach { (x, v) ->
+                    val bx = padL + (x - xMin) / (xMax - xMin) * w
+                    val bh = v / bMax * h * 0.4f
+                    drawRect(bars.color.copy(alpha = 0.55f), topLeft = Offset(bx - bw / 2, padT + h - bh), size = androidx.compose.ui.geometry.Size(bw, bh))
+                }
+            }
+            // markers (dashed vertical lines)
+            markers.forEach { m ->
+                val mx = padL + (m.x - xMin) / (xMax - xMin) * w
+                drawLine(
+                    m.color, Offset(mx, padT), Offset(mx, padT + h), strokeWidth = 1.5.dp.toPx(),
+                    pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6f, 6f)),
+                )
+            }
             // series
             visible.forEach { s ->
                 val (lo, hi) = if (sharedScale) yLo to yHi
@@ -112,15 +139,29 @@ fun LineChart(
                     }
                     drawPath(path, s.color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
                 }
-                pts.forEach { drawCircle(s.color, radius = 3.dp.toPx(), center = it) }
+                if (dots || pts.size == 1) pts.forEach { drawCircle(s.color, radius = 3.dp.toPx(), center = it) }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             visible.forEach { s ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(10.dp).background(s.color, CircleShape))
                     Spacer(Modifier.width(4.dp))
                     Text(s.name, style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            if (bars != null && barPoints.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(10.dp).background(bars.color.copy(alpha = 0.55f)))
+                    Spacer(Modifier.width(4.dp))
+                    Text(bars.name, style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            markers.firstOrNull { it.label.isNotBlank() }?.let { m ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(width = 2.dp, height = 10.dp).background(m.color))
+                    Spacer(Modifier.width(4.dp))
+                    Text(m.label, style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

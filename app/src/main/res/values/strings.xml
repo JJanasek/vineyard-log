@@ -466,4 +466,24 @@
     <string name="renewal_hint">Log replanting, regrafting or rejuvenation as entries of type Renewal with the number of vines; the block then shows how much has been renewed.</string>
     <string name="renewed_pct">renewed %1$d %%</string>
     <string name="renewal_year_line">%1$d · %2$s</string>
+    <string name="tab_overview">Overview</string>
+    <string name="open_weather">Weather data</string>
+    <string name="season_weather_n">Season weather %1$d</string>
+    <string name="gdd_by_vintage">Cumulative GDD by vintage</string>
+    <string name="vineyard_sugar_n">Ripening %1$d – vineyard readings (°NM)</string>
+    <string name="vineyard_acids_n">Acids %1$d – vineyard readings</string>
+    <string name="harvest_by_year">Harvest by year</string>
+    <string name="kg_per_vine">kg/vine</string>
+    <string name="cellar_sugar_n">Fermentation %1$d – cellar readings (°NM)</string>
+    <string name="cellar_temp_n">Fermentation temperature %1$d (°C)</string>
+    <string name="cellar_analyses">Latest cellar analyses</string>
+    <string name="alc_short">Alc. %</string>
+    <string name="fso2_short">free SO₂</string>
+    <string name="rs_short">RS g/l</string>
+    <string name="soil_title">Soil analyses (latest per block)</string>
+    <string name="om_short">OM %</string>
+    <string name="soil_units_hint">N, P, K, Mg in mg/kg; OM = organic matter.</string>
+    <string name="days_since_start">days since the start of the batch</string>
+    <string name="sprays_marker">sprays</string>
+    <string name="target_nm_line">Target: %1$s</string>
 </resources>

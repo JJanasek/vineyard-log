@@ -50,6 +50,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.IconButton
 import cz.janek.vineyardlog.util.formatDateTime
 import cz.janek.vineyardlog.data.model.Reminder
@@ -183,7 +184,7 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
+fun WeatherScreen(onOpenReminders: () -> Unit = {}, onBack: (() -> Unit)? = null) {
     val vm = appViewModel { WeatherViewModel(it) }
     val all by vm.all.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -214,6 +215,9 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_weather)) },
+                navigationIcon = {
+                    if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
+                },
                 actions = {
                     IconButton(onClick = onOpenReminders) { Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.reminders)) }
                 },
@@ -231,31 +235,6 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
             item {
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(years) { y -> FilterChip(selected = year == y, onClick = { vm.year.value = y }, label = { Text(y.toString()) }) }
-                }
-            }
-            if (year == LocalDate.now().year) {
-                item { RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
-                item {
-                    val upcoming = remember(reminders) {
-                        reminders.mapNotNull { r -> vm.nextFire(r)?.let { it to r } }.sortedBy { it.first }.take(3)
-                    }
-                    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable { onOpenReminders() }) {
-                        Column(Modifier.padding(12.dp)) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text(stringResource(R.string.upcoming_reminders), style = MaterialTheme.typography.titleMedium)
-                                TextButton(onClick = onOpenReminders) { Text(stringResource(R.string.manage)) }
-                            }
-                            if (upcoming.isEmpty()) {
-                                Text(stringResource(R.string.no_upcoming), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            upcoming.forEach { (at, r) ->
-                                Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(r.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                                    Text(formatDateTime(at), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                                }
-                            }
-                        }
-                    }
                 }
             }
             item {

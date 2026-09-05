@@ -45,6 +45,7 @@ import cz.janek.vineyardlog.ui.settings.SettingsScreen
 import cz.janek.vineyardlog.ui.timeline.TimelineScreen
 import cz.janek.vineyardlog.ui.tools.CalculatorsScreen
 import cz.janek.vineyardlog.ui.weather.WeatherScreen
+import cz.janek.vineyardlog.ui.overview.OverviewScreen
 import cz.janek.vineyardlog.ui.reminders.RemindersScreen
 import cz.janek.vineyardlog.ui.reminders.ReminderEditScreen
 
@@ -119,8 +120,15 @@ fun AppRoot(
                         onOpenCalculators = { navController.navigate(Routes.CALCULATORS) },
                     )
                 }
-                composable(Tab.WEATHER.route) {
-                    WeatherScreen(onOpenReminders = { navController.navigate(Routes.REMINDERS) })
+                composable(Tab.OVERVIEW.route) {
+                    OverviewScreen(
+                        onOpenWeather = { navController.navigate(Routes.WEATHER) },
+                        onOpenReminders = { navController.navigate(Routes.REMINDERS) },
+                        onOpenPlan = { navController.navigate(Routes.PLAN) },
+                    )
+                }
+                composable(Routes.WEATHER) {
+                    WeatherScreen(onOpenReminders = { navController.navigate(Routes.REMINDERS) }, onBack = { navController.popBackStack() })
                 }
                 composable(Routes.REMINDERS) {
                     RemindersScreen(

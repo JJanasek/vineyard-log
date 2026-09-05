@@ -466,4 +466,24 @@
     <string name="renewal_hint">Dosadbu, přeštěpování nebo zmlazení zapisuj jako záznam typu Obnova s počtem keřů; trať pak ukazuje, kolik je obnoveno.</string>
     <string name="renewed_pct">obnoveno %1$d %%</string>
     <string name="renewal_year_line">%1$d · %2$s</string>
+    <string name="tab_overview">Přehled</string>
+    <string name="open_weather">Data počasí</string>
+    <string name="season_weather_n">Počasí sezóny %1$d</string>
+    <string name="gdd_by_vintage">Kumulativní GDD po ročnících</string>
+    <string name="vineyard_sugar_n">Zrání %1$d – měření z vinice (°NM)</string>
+    <string name="vineyard_acids_n">Kyseliny %1$d – měření z vinice</string>
+    <string name="harvest_by_year">Sklizeň po letech</string>
+    <string name="kg_per_vine">kg/keř</string>
+    <string name="cellar_sugar_n">Kvašení %1$d – měření ze sklepa (°NM)</string>
+    <string name="cellar_temp_n">Teplota kvašení %1$d (°C)</string>
+    <string name="cellar_analyses">Poslední rozbory ve sklepě</string>
+    <string name="alc_short">Alk. %</string>
+    <string name="fso2_short">volný SO₂</string>
+    <string name="rs_short">ZC g/l</string>
+    <string name="soil_title">Rozbory půdy (poslední za trať)</string>
+    <string name="om_short">humus %</string>
+    <string name="soil_units_hint">N, P, K, Mg v mg/kg; humus = organická hmota.</string>
+    <string name="days_since_start">dnů od začátku šarže</string>
+    <string name="sprays_marker">postřiky</string>
+    <string name="target_nm_line">Cíl: %1$s</string>
 </resources>

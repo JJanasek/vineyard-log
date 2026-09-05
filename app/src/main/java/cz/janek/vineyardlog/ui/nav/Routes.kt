@@ -5,7 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.ui.graphics.vector.ImageVector
 import cz.janek.vineyardlog.R
@@ -17,12 +17,13 @@ enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageV
     LOG("log", R.string.tab_log, Icons.Default.History),
     VINEYARD("vineyard", R.string.tab_vineyard, Icons.Default.Grass),
     CELLAR("cellar", R.string.tab_cellar, Icons.Default.WineBar),
-    WEATHER("weather", R.string.tab_weather, Icons.Default.WbSunny),
+    OVERVIEW("overview", R.string.tab_overview, Icons.Default.Insights),
     PRODUCTS("products", R.string.tab_products, Icons.Default.Inventory2),
 }
 
 object Routes {
     const val SETTINGS = "settings"
+    const val WEATHER = "weather"
     const val PLAN = "plan"
     const val CALCULATORS = "calculators"
     const val MAP_PICKER = "mapPicker?lat={lat}&lon={lon}"

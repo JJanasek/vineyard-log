@@ -40,6 +40,7 @@ import cz.janek.vineyardlog.ui.components.RiskCard
 import cz.janek.vineyardlog.data.model.EntryType
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.util.DiseaseRisk
+import cz.janek.vineyardlog.util.openTasksThisMonth
 import cz.janek.vineyardlog.util.RiskLevel
 import cz.janek.vineyardlog.data.varieties.Varieties
 import cz.janek.vineyardlog.data.varieties.Level
@@ -75,12 +76,7 @@ class BlocksViewModel(c: AppContainer) : ViewModel() {
 
     /** Tasks whose month window covers today and are not ticked for this year. */
     val openThisMonth = combine(c.taskDao.observeTasks(), c.taskDao.observeDone(LocalDate.now().year)) { tasks, done ->
-        val m = LocalDate.now().monthValue
-        val doneIds = done.map { it.taskId }.toSet()
-        tasks.count { t ->
-            val inWindow = if (t.monthFrom <= t.monthTo) m in t.monthFrom..t.monthTo else (m >= t.monthFrom || m <= t.monthTo)
-            inWindow && t.id !in doneIds
-        }
+        openTasksThisMonth(tasks, done, LocalDate.now().monthValue)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 }
 
