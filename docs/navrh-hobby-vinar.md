@@ -44,7 +44,10 @@ s odstupem dní od zakvášení (v plánu sezóny nebo přímo jako „čekajíc
 ### 2c. Kostra postřikového programu
 Dvě kostry podle fenofáze (ekologická měď/síra; konvenční střídání účinných látek), jen jako
 předvyplněné úkoly „postřik proti X v období Y“ bez konkrétních přípravků – ty si dosadíš z katalogu.
-S výslovným upozorněním, že jde o kostru, ne o doporučení. Odhad: půl dne (rozšíření plánu sezóny).
+S výslovným upozorněním, že jde o kostru, ne o doporučení. Zdrojem pro dávky v hobby jednotkách mohou být
+rádcovské články Vinařského domu (např. „první jarní postřik“: Sulka 4–6 %, Kumulus 150–200 g/10 l, Rock Effect 3 %,
+stříkat po třech dnech s odpoledními 15 °C) a tabulky „Dávkování na 10 l / OL“ přímo u přípravků, které stahovač už čte.
+Odhad: půl dne (rozšíření plánu sezóny).
 
 ## 3. Odhad sklizně a další modely z měření
 
