@@ -76,9 +76,11 @@ app/src/main/java/cz/janek/vineyardlog/
   ui/<feature>    Screens with their ViewModels
 ```
 
-## Ideas for later
+## Roadmap / ideas
 
-- Import a weather CSV (or pull from a nearby station) instead of typing days by hand.
-- Per-block spray cost and Cu/S season totals.
-- Photos on entries.
-- Czech UI strings.
+- **Czech UI** – move strings to resources and add `values-cs`.
+- **Photos and a field guide** – attach photos to entries (disease pressure, deficiency symptoms), and a built-in reference of common vine diseases (peronospora, oidium, botrytis, black rot, esca, phomopsis) and nutrient deficiencies (N, K, Mg, Fe chlorosis, B, Zn) with symptom descriptions and example images.
+- **Weather without typing** – first pull daily min/max/rain for the vineyard's GPS position from a free API (Open-Meteo or ČHMÚ open data); later connect a station or fermentation probe (research which hardware has an open/local API: Ecowitt gateways, WeatherFlow Tempest, iSpindel / Tilt for must density, WeeWX-compatible stations).
+- **Season checklist** – a yearly to-do template (pruning, tying, shoot thinning, first spray at 10 cm shoots, leaf pulling, netting, harvest prep) with per-year tick-offs, optionally tied to phenology stages.
+- **Vendor catalog import** – one-off import of the enology / plant-protection ranges from Lipera and Vinařský dům (both Shoptet shops with public sitemaps) into the product table, refreshed manually a few times a year.
+- **Diagnostics** – cross-vintage views: GDD vs harvest sugar, spray count vs disease incidence, YAN vs fermentation length, per-block spray cost and seasonal Cu/S totals.
