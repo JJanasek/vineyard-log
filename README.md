@@ -84,3 +84,7 @@ app/src/main/java/cz/janek/vineyardlog/
 - **Season checklist** – a yearly to-do template (pruning, tying, shoot thinning, first spray at 10 cm shoots, leaf pulling, netting, harvest prep) with per-year tick-offs, optionally tied to phenology stages.
 - **Vendor catalog import** – one-off import of the enology / plant-protection ranges from Lipera and Vinařský dům (both Shoptet shops with public sitemaps) into the product table, refreshed manually a few times a year.
 - **Diagnostics** – cross-vintage views: GDD vs harvest sugar, spray count vs disease incidence, YAN vs fermentation length, per-block spray cost and seasonal Cu/S totals.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Personal, open-source project; no affiliation with the suppliers mentioned.
