@@ -350,4 +350,27 @@
     <string name="risk_bot_dry">Poslední dny sucho</string>
     <string name="risk_oid_hot">Horko nad 35 °C index sráží</string>
     <string name="risk_forecast_day">%1$s %2$s</string>
+    <string name="export_section">Export sezóny</string>
+    <string name="export_year">Sezóna</string>
+    <string name="export_pdf">Exportovat PDF sezóny</string>
+    <string name="export_entries_csv">Exportovat záznamy CSV</string>
+    <string name="export_weather_csv">Exportovat počasí CSV</string>
+    <string name="msg_exported">Zapsáno %1$s.</string>
+    <string name="export_text">Tisknutelná zpráva o sezóně (tratě, postřiky s dávkami a ochrannými lhůtami, sklizeň, práce ve sklepě, přehled počasí) pro družstvo, odběratele nebo kontrolu, a CSV pro tabulky.</string>
+    <string name="pdf_title">Vineyard Log – sezóna %1$d</string>
+    <string name="pdf_exported">Exportováno %1$s</string>
+    <string name="pdf_vineyard">Vinice</string>
+    <string name="pdf_cellar">Sklep</string>
+    <string name="pdf_weather">Počasí</string>
+    <string name="pdf_no_entries">(bez záznamů)</string>
+    <string name="pdf_weather_line">GDD %1$s (základ %2$s °C), srážky %3$s mm, %4$d mrazových dnů, %5$d dnů s kroupami, %6$d zapsaných dnů</string>
+    <string name="backup_folder">Složka pro zálohy</string>
+    <string name="backup_folder_text">Vyberte složku, kterou synchronizuje jiná aplikace (Syncthing, Nextcloud, složka Disku Google). Android nedovolí vybrat kořen složky Stažené soubory ani úložiště, proto v synchronizované složce vyberte nebo vytvořte podsložku, např. VineyardLog. Aplikace tam zapíše vineyard-log-latest.json a vineyard-log-photos.zip po klepnutí na Zálohovat nyní a automaticky při otevření, když je poslední záloha starší než den.</string>
+    <string name="choose_folder">Vybrat složku</string>
+    <string name="backup_now">Zálohovat nyní</string>
+    <string name="backup_last">Poslední záloha: %1$s</string>
+    <string name="backup_never">Zatím žádná záloha</string>
+    <string name="backup_folder_none">Složka není vybrána</string>
+    <string name="msg_backup_done">Záloha zapsána do složky (%1$d řádků, %2$d fotek).</string>
+    <string name="msg_backup_failed">Záloha do složky selhala: %1$s</string>
 </resources>

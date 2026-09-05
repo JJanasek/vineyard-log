@@ -350,4 +350,27 @@
     <string name="risk_bot_dry">Dry in the last days</string>
     <string name="risk_oid_hot">Heat above 35 °C is knocking the index down</string>
     <string name="risk_forecast_day">%1$s %2$s</string>
+    <string name="export_section">Season export</string>
+    <string name="export_year">Season</string>
+    <string name="export_pdf">Export season PDF</string>
+    <string name="export_entries_csv">Export entries CSV</string>
+    <string name="export_weather_csv">Export weather CSV</string>
+    <string name="msg_exported">Written %1$s.</string>
+    <string name="export_text">A printable season report (blocks, sprays with doses and PHI, harvest, cellar steps, weather summary) for a co-op, buyer or inspection, and CSV files for spreadsheets.</string>
+    <string name="pdf_title">Vineyard Log – season %1$d</string>
+    <string name="pdf_exported">Exported %1$s</string>
+    <string name="pdf_vineyard">Vineyard</string>
+    <string name="pdf_cellar">Cellar</string>
+    <string name="pdf_weather">Weather</string>
+    <string name="pdf_no_entries">(no entries)</string>
+    <string name="pdf_weather_line">GDD %1$s (base %2$s °C), rain %3$s mm, %4$d frost days, %5$d hail days, %6$d days recorded</string>
+    <string name="backup_folder">Backup folder</string>
+    <string name="backup_folder_text">Pick a folder that another app keeps in sync (Syncthing, Nextcloud, a Google Drive folder). Android does not allow the root of Downloads or of the storage, so choose or create a subfolder such as VineyardLog inside the synced folder. The app writes vineyard-log-latest.json there, plus vineyard-log-photos.zip, when you tap Back up now and automatically when it opens and the last backup is older than a day.</string>
+    <string name="choose_folder">Choose folder</string>
+    <string name="backup_now">Back up now</string>
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_never">No backup yet</string>
+    <string name="backup_folder_none">No folder chosen</string>
+    <string name="msg_backup_done">Backup written to the folder (%1$d rows, %2$d photos).</string>
+    <string name="msg_backup_failed">Backup to folder failed: %1$s</string>
 </resources>

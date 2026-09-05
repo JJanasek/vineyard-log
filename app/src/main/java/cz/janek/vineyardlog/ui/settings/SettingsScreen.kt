@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Upload
@@ -48,6 +49,7 @@ import cz.janek.vineyardlog.AppContainer
 import cz.janek.vineyardlog.data.backup.BackupCodec
 import cz.janek.vineyardlog.data.backup.BackupData
 import cz.janek.vineyardlog.data.backup.BackupMerger
+import cz.janek.vineyardlog.data.backup.SeasonExport
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
@@ -56,6 +58,7 @@ import cz.janek.vineyardlog.ui.components.ConfirmDialog
 import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.components.SectionTitle
+import cz.janek.vineyardlog.util.formatDateTime
 import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.ui.toIntLenient
@@ -111,6 +114,34 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
             fresh.size to (file.products.size - fresh.size)
         }.onSuccess { (added, skipped) -> message = c.appContext.getString(R.string.msg_products_added, added, skipped) }
             .onFailure { message = c.appContext.getString(R.string.msg_products_failed, it.message ?: "") }
+    }
+
+    var exportYear by mutableStateOf(LocalDate.now().year)
+
+    fun exportPdf(context: Context, uri: Uri) = writeTo(context, uri) { SeasonExport(context, c).writePdf(exportYear, it) }
+    fun exportEntriesCsv(context: Context, uri: Uri) = writeTo(context, uri) { SeasonExport(context, c).writeEntriesCsv(exportYear, it) }
+    fun exportWeatherCsv(context: Context, uri: Uri) = writeTo(context, uri) { SeasonExport(context, c).writeWeatherCsv(exportYear, it) }
+
+    private fun writeTo(context: Context, uri: Uri, block: suspend (java.io.OutputStream) -> Unit) = viewModelScope.launch {
+        runCatching {
+            val stream = withContext(Dispatchers.IO) { context.contentResolver.openOutputStream(uri, "wt") } ?: error(c.appContext.getString(R.string.err_open_file))
+            stream.use { block(it) }
+        }.onSuccess { message = c.appContext.getString(R.string.msg_exported, uri.lastPathSegment?.substringAfterLast('/') ?: "") }
+            .onFailure { message = c.appContext.getString(R.string.msg_export_failed, it.message ?: "") }
+    }
+
+    fun setBackupFolder(context: Context, uri: Uri) = viewModelScope.launch {
+        runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        c.settings.update { it.copy(backupFolder = uri.toString()) }
+        backupToFolder()
+    }
+
+    fun backupToFolder() = viewModelScope.launch {
+        runCatching { c.folderBackup.backupNow() }
+            .onSuccess { message = c.appContext.getString(R.string.msg_backup_done, it.rows, it.photos) }
+            .onFailure { message = c.appContext.getString(R.string.msg_backup_failed, it.message ?: "") }
     }
 
     /** Merge a backup into the current data (nothing deleted). */
@@ -188,6 +219,10 @@ fun SettingsScreen(
     val mergeLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { vm.importMerge(context, it) }
     }
+    val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri -> uri?.let { vm.exportPdf(context, it) } }
+    val entriesCsvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri -> uri?.let { vm.exportEntriesCsv(context, it) } }
+    val weatherCsvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri -> uri?.let { vm.exportWeatherCsv(context, it) } }
+    val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri -> uri?.let { vm.setBackupFolder(context, it) } }
     val productsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { vm.importProducts(context, it) }
     }
@@ -269,6 +304,35 @@ fun SettingsScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(R.string.save_settings)) }
+
+            SectionTitle(stringResource(R.string.export_section))
+            Text(stringResource(R.string.export_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val years = remember { (LocalDate.now().year downTo LocalDate.now().year - 10).toList() }
+            DropdownField(stringResource(R.string.export_year), years, vm.exportYear, { it.toString() }, { vm.exportYear = it })
+            OutlinedButton(onClick = { pdfLauncher.launch("vineyard-log-${vm.exportYear}.pdf") }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.Download, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.export_pdf))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { entriesCsvLauncher.launch("vineyard-log-entries-${vm.exportYear}.csv") }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.export_entries_csv)) }
+                OutlinedButton(onClick = { weatherCsvLauncher.launch("vineyard-log-weather-${vm.exportYear}.csv") }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.export_weather_csv)) }
+            }
+
+            SectionTitle(stringResource(R.string.backup_folder))
+            Text(stringResource(R.string.backup_folder_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                if (settings.backupFolder.isBlank()) stringResource(R.string.backup_folder_none)
+                else (Uri.decode(settings.backupFolder).substringAfterLast(':').ifBlank { settings.backupFolder }) + " · " +
+                    (if (settings.lastFolderBackupAt > 0) stringResource(R.string.backup_last, formatDateTime(settings.lastFolderBackupAt)) else stringResource(R.string.backup_never)),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { folderLauncher.launch(null) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Folder, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.choose_folder))
+                }
+                Button(onClick = { vm.backupToFolder() }, enabled = settings.backupFolder.isNotBlank(), modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.backup_now))
+                }
+            }
 
             SectionTitle(stringResource(R.string.backup))
             Text(

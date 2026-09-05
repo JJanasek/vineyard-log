@@ -3,6 +3,8 @@ package cz.janek.vineyardlog
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
@@ -19,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         sharedUrl = extractUrl(intent)
+        lifecycleScope.launch { appContainer.folderBackup.backupIfStale() }
         setContent {
             VineyardTheme {
                 AppRoot(sharedUrl = sharedUrl, onSharedUrlConsumed = { sharedUrl = null })

@@ -16,6 +16,7 @@ class AppContainer(context: Context) {
     val db: AppDatabase = AppDatabase.build(context, appScope)
     val settings = SettingsStore(context)
     val photos = PhotoStore(appContext)
+    val folderBackup by lazy { cz.janek.vineyardlog.data.backup.FolderBackup(appContext, this) }
 
     val blockDao get() = db.blockDao()
     val productDao get() = db.productDao()

@@ -15,6 +15,10 @@ fun formatDateShort(epochDay: Long): String = epochDay.toLocalDate().format(shor
 
 fun yearOf(epochDay: Long): Int = epochDay.toLocalDate().year
 
+fun formatDateTime(epochMillis: Long): String =
+    java.time.Instant.ofEpochMilli(epochMillis).atZone(java.time.ZoneId.systemDefault())
+        .format(DateTimeFormatter.ofPattern("d. M. yyyy HH:mm"))
+
 /** Epoch day range covering the whole calendar year. */
 fun yearRange(year: Int): LongRange =
     LocalDate.of(year, 1, 1).toEpochDay()..LocalDate.of(year, 12, 31).toEpochDay()

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +29,9 @@ data class Settings(
     val longitude: Double? = null,
     /** Harvest target used for the ripeness forecast, in °NM. */
     val targetSugarNm: Double = 21.0,
+    /** SAF tree URI of the synced backup folder, empty if none. */
+    val backupFolder: String = "",
+    val lastFolderBackupAt: Long = 0L,
 )
 
 class SettingsStore(private val context: Context) {
@@ -42,6 +46,8 @@ class SettingsStore(private val context: Context) {
         val LAT = doublePreferencesKey("latitude")
         val LON = doublePreferencesKey("longitude")
         val TARGET_NM = doublePreferencesKey("target_sugar_nm")
+        val BACKUP_FOLDER = stringPreferencesKey("backup_folder")
+        val LAST_FOLDER_BACKUP = longPreferencesKey("last_folder_backup")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -57,6 +63,8 @@ class SettingsStore(private val context: Context) {
             latitude = p[Keys.LAT],
             longitude = p[Keys.LON],
             targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
+            backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
+            lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
         )
     }
 
@@ -74,6 +82,8 @@ class SettingsStore(private val context: Context) {
                 latitude = p[Keys.LAT],
                 longitude = p[Keys.LON],
                 targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
+                backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
+                lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -86,6 +96,8 @@ class SettingsStore(private val context: Context) {
             next.latitude?.let { p[Keys.LAT] = it } ?: p.remove(Keys.LAT)
             next.longitude?.let { p[Keys.LON] = it } ?: p.remove(Keys.LON)
             p[Keys.TARGET_NM] = next.targetSugarNm
+            p[Keys.BACKUP_FOLDER] = next.backupFolder
+            p[Keys.LAST_FOLDER_BACKUP] = next.lastFolderBackupAt
         }
     }
 }
