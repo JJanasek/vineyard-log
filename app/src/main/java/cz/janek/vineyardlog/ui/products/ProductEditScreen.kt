@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -36,6 +39,7 @@ import cz.janek.vineyardlog.AppContainer
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductCategory
 import cz.janek.vineyardlog.data.model.Supplier
+import cz.janek.vineyardlog.data.web.ProductPageFetcher
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.BackTopBar
@@ -47,7 +51,7 @@ import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.ui.toIntLenient
 import kotlinx.coroutines.launch
 
-class ProductEditViewModel(private val c: AppContainer, private val id: Long?) : ViewModel() {
+class ProductEditViewModel(private val c: AppContainer, private val id: Long?, initialUrl: String? = null) : ViewModel() {
     var name by mutableStateOf("")
     var supplier by mutableStateOf(Supplier.LIPERA)
     var category by mutableStateOf(ProductCategory.FUNGICIDE)
@@ -66,8 +70,14 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?) :
     var error by mutableStateOf<String?>(null)
     var usageCount by mutableStateOf(0)
         private set
+    var fetching by mutableStateOf(false)
+        private set
 
     init {
+        if (id == null && !initialUrl.isNullOrBlank()) {
+            url = initialUrl
+            fetchFromUrl()
+        }
         if (id != null) viewModelScope.launch {
             c.productDao.get(id)?.let { p ->
                 name = p.name; supplier = p.supplier; category = p.category; activeIngredient = p.activeIngredient
@@ -76,6 +86,35 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?) :
                 favorite = p.favorite; archived = p.archived
             }
             usageCount = c.productDao.usageCount(id)
+        }
+    }
+
+    /** Read the product page at [url] and fill in whatever is still empty. */
+    fun fetchFromUrl() {
+        val target = url.trim()
+        if (target.isBlank()) { error = "Paste the product page URL first."; return }
+        viewModelScope.launch {
+            fetching = true
+            runCatching { ProductPageFetcher.fetch(target) }
+                .onSuccess { f ->
+                    url = f.url
+                    if (name.isBlank()) name = f.name
+                    if (f.supplier != Supplier.OTHER && (supplier == Supplier.OTHER || id == null)) supplier = f.supplier
+                    if (id == null) f.category?.let { category = it }
+                    f.price?.let { price = it.input() }
+                    if (packageSize.isBlank()) packageSize = f.packageSize
+                    f.dose?.let { d -> doseMin = d.min.input(); doseMax = (d.max ?: d.min).input(); doseUnit = d.unit }
+                    f.phiDays?.let { phiDays = it.toString() }
+                    if (activeIngredient.isBlank()) activeIngredient = f.activeIngredient
+                    if (purpose.isBlank()) purpose = f.description.take(400)
+                    if (f.documents.isNotEmpty() && "Technical sheets" !in notes) {
+                        notes = (notes.trim() + "\n\nTechnical sheets:\n" + f.documents.joinToString("\n")).trim()
+                    }
+                    error = if (f.dose == null) "Filled from the page. No dose found – enter it from the label."
+                    else "Filled from the page – check dose, unit and category."
+                }
+                .onFailure { error = "Could not read the page: ${it.message ?: it.javaClass.simpleName}" }
+            fetching = false
         }
     }
 
@@ -115,8 +154,10 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?) :
 }
 
 @Composable
-fun ProductEditScreen(productId: Long?, onDone: () -> Unit) {
-    val vm = appViewModel(key = "productEdit${productId ?: "new"}") { ProductEditViewModel(it, productId) }
+fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? = null) {
+    val vm = appViewModel(key = "productEdit${productId ?: "new"}-${initialUrl?.hashCode() ?: 0}") {
+        ProductEditViewModel(it, productId, initialUrl)
+    }
     val snackbar = remember { SnackbarHostState() }
     var confirmDelete by remember { mutableStateOf(false) }
     LaunchedEffect(vm.error) { vm.error?.let { snackbar.showSnackbar(it); vm.error = null } }
@@ -152,7 +193,20 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit) {
                 supportingText = "Ochranná lhůta – used to compute the earliest harvest date after a spray.",
             )
             AppTextField(vm.purpose, { vm.purpose = it }, "Purpose / target", placeholder = "e.g. downy mildew, rehydration nutrient", singleLine = false)
-            AppTextField(vm.url, { vm.url = it }, "Product page URL", placeholder = "https://www.lipera.cz/…")
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                AppTextField(
+                    vm.url, { vm.url = it }, "Product page URL", Modifier.weight(1f),
+                    placeholder = "https://www.lipera.cz/…",
+                    supportingText = "Paste a link from lipera.cz or vinarskydum.cz and tap the arrow to fill the form from that page.",
+                )
+                if (vm.fetching) {
+                    CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp))
+                } else {
+                    IconButton(onClick = { vm.fetchFromUrl() }, enabled = vm.url.isNotBlank()) {
+                        Icon(Icons.Default.CloudDownload, contentDescription = "Fill from page")
+                    }
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppTextField(vm.packageSize, { vm.packageSize = it }, "Package", Modifier.weight(1f), placeholder = "1 kg, 500 g")
                 NumberField(vm.price, { vm.price = it }, "Price", Modifier.weight(1f))

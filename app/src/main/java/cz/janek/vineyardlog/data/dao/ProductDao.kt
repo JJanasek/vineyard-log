@@ -32,4 +32,7 @@ interface ProductDao {
 
     @Query("SELECT COUNT(*) FROM products")
     suspend fun count(): Int
+
+    @Query("SELECT * FROM products")
+    suspend fun all(): List<Product>
 }

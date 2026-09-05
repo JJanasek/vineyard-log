@@ -34,8 +34,11 @@ object Routes {
     const val BATCH_EDIT = "batchEdit?id={id}"
     fun batchEdit(id: Long? = null) = "batchEdit?id=${id ?: -1}"
 
-    const val PRODUCT_EDIT = "productEdit?id={id}"
-    fun productEdit(id: Long? = null) = "productEdit?id=${id ?: -1}"
+    const val PRODUCT_EDIT = "productEdit?id={id}&url={url}"
+    fun productEdit(id: Long? = null, url: String? = null): String {
+        val base = "productEdit?id=${id ?: -1}"
+        return if (url.isNullOrBlank()) base else "$base&url=${android.net.Uri.encode(url)}"
+    }
 
     const val ENTRY = "entry/{id}"
     fun entry(id: Long) = "entry/$id"

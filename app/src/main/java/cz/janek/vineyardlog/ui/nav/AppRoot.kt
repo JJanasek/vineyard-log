@@ -7,6 +7,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -36,8 +37,14 @@ import cz.janek.vineyardlog.ui.weather.WeatherScreen
 private fun Long.orNull(): Long? = if (this < 0) null else this
 
 @Composable
-fun AppRoot() {
+fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
     val navController = rememberNavController()
+    LaunchedEffect(sharedUrl) {
+        if (!sharedUrl.isNullOrBlank()) {
+            navController.navigate(Routes.productEdit(url = sharedUrl))
+            onSharedUrlConsumed()
+        }
+    }
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val showBar = Tab.entries.any { it.route == currentRoute }
@@ -139,10 +146,14 @@ fun AppRoot() {
 
             composable(
                 Routes.PRODUCT_EDIT,
-                arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
+                arguments = listOf(
+                    navArgument("id") { type = NavType.LongType; defaultValue = -1L },
+                    navArgument("url") { type = NavType.StringType; defaultValue = "" },
+                ),
             ) { entry ->
                 val id = (entry.arguments?.getLong("id") ?: -1L).orNull()
-                ProductEditScreen(productId = id, onDone = { navController.popBackStack() })
+                val url = entry.arguments?.getString("url")?.takeIf { it.isNotBlank() }
+                ProductEditScreen(productId = id, initialUrl = url, onDone = { navController.popBackStack() })
             }
 
             composable(Routes.ENTRY, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->

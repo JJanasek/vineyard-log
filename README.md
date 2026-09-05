@@ -60,6 +60,26 @@ unset DISPLAY WAYLAND_DISPLAY
 
 Drop `-no-window` to get a visible window.
 
+## Product catalog from the suppliers
+
+Both suppliers' terms ask you not to bulk-copy their product databases, so the app does not
+scrape them. Two lighter ways are built in:
+
+- **Fill from a product page**: in *Products → +*, paste (or share from the browser) the URL of a
+  product on lipera.cz or vinarskydum.cz and tap the download arrow. The app reads that one page
+  and pre-fills name, supplier, category, package, price, dose range, PHI and links to technical
+  sheets. Check the dose against the label before trusting it.
+- **Lipera catalog PDF**: Lipera publishes an official product catalog on
+  [lipera.cz/dokumenty-ke-stazeni](https://www.lipera.cz/dokumenty-ke-stazeni/). Download it and run
+
+  ```bash
+  python3 tools/lipera_catalog_to_json.py katalog.pdf -o lipera-products.json
+  ```
+
+  (needs `pdftotext` from poppler), copy the JSON to the phone and use *Settings → Import products
+  (merge)*. Existing names are left untouched. The parser is heuristic; expect to fix a few
+  categories and doses by hand. Keep the JSON to yourself, it is the vendor's content.
+
 ## Project layout
 
 ```
@@ -74,6 +94,8 @@ app/src/main/java/cz/janek/vineyardlog/
   ui/nav          Bottom tabs and NavHost routes
   ui/components   Shared fields, dialogs, line chart
   ui/<feature>    Screens with their ViewModels
+  data/web        ProductPageFetcher – reads one product page on request (jsoup)
+tools/            lipera_catalog_to_json.py – desktop helper for the official catalog PDF
 ```
 
 ## Roadmap / ideas

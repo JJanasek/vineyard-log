@@ -14,10 +14,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
@@ -81,7 +87,29 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
     val uriHandler = LocalUriHandler.current
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Products") }) },
+        topBar = {
+            var menu by remember { mutableStateOf(false) }
+            TopAppBar(
+                title = { Text("Products") },
+                actions = {
+                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = "More") }
+                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Lipera product catalog (PDF)") },
+                            onClick = { menu = false; runCatching { uriHandler.openUri("https://www.lipera.cz/dokumenty-ke-stazeni/") } },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Open lipera.cz") },
+                            onClick = { menu = false; runCatching { uriHandler.openUri(Supplier.LIPERA.url) } },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Open vinarskydum.cz") },
+                            onClick = { menu = false; runCatching { uriHandler.openUri(Supplier.VINARSKY_DUM.url) } },
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onNewProduct) { Icon(Icons.Default.Add, contentDescription = "New product") }
         },

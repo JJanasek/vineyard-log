@@ -88,6 +88,22 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
             .onFailure { message = "Cannot read backup: ${it.message}" }
     }
 
+    /** Merge a products JSON (e.g. from tools/lipera_catalog_to_json.py): add unknown names, skip existing. */
+    fun importProducts(context: Context, uri: Uri) = viewModelScope.launch {
+        runCatching {
+            val text = withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: error("Could not open file")
+            }
+            val file = BackupCodec.decodeProducts(text)
+            val existing = c.productDao.all().map { it.name.trim().lowercase() }.toHashSet()
+            val fresh = file.products.filter { it.name.trim().lowercase() !in existing }.map { it.copy(id = 0) }
+            c.productDao.insertAll(fresh)
+            fresh.size to (file.products.size - fresh.size)
+        }.onSuccess { (added, skipped) -> message = "Added $added products, skipped $skipped already in the catalog." }
+            .onFailure { message = "Cannot import products: ${it.message}" }
+    }
+
     fun confirmImport() = viewModelScope.launch {
         val data = pendingImport ?: return@launch
         pendingImport = null
@@ -119,6 +135,9 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { vm.readImport(context, it) }
+    }
+    val productsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { vm.importProducts(context, it) }
     }
 
     Scaffold(
@@ -175,6 +194,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                 onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
                 modifier = Modifier.fillMaxWidth(),
             ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text("Import backup (replace all)") }
+
+            SectionTitle("Product catalog")
+            Text(
+                "Merge a products JSON into the catalog (new names are added, existing ones left untouched). " +
+                    "The repo's tools/lipera_catalog_to_json.py makes one from the official Lipera catalog PDF.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedButton(
+                onClick = { productsLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text("Import products (merge)") }
 
             SectionTitle("About")
             Text("Vineyard Log 0.1.0 – offline log for vineyard and cellar work.", style = MaterialTheme.typography.bodySmall)

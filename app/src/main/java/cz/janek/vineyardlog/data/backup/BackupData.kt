@@ -29,6 +29,13 @@ data class BackupData(
             entries.size + usages.size + measurements.size + weather.size
 }
 
+/** A plain list of products, e.g. produced by tools/lipera_catalog_to_json.py, merged into the catalog. */
+@Serializable
+data class ProductsFile(
+    val source: String = "",
+    val products: List<Product> = emptyList(),
+)
+
 object BackupCodec {
     private val json = Json {
         prettyPrint = true
@@ -38,4 +45,5 @@ object BackupCodec {
 
     fun encode(data: BackupData): String = json.encodeToString(BackupData.serializer(), data)
     fun decode(text: String): BackupData = json.decodeFromString(BackupData.serializer(), text)
+    fun decodeProducts(text: String): ProductsFile = json.decodeFromString(ProductsFile.serializer(), text)
 }
