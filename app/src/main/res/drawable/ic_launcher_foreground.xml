@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- leaf -->
+    <path
+        android:fillColor="#9CCC65"
+        android:pathData="M54,20 C64,20 74,27 74,37 C67,35 60,37 55,44 C50,37 43,35 36,37 C36,27 44,20 54,20 Z" />
+    <!-- stem -->
+    <path
+        android:strokeColor="#6D4C41"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M55,44 L55,52" />
+    <!-- berries row 1 -->
+    <path android:fillColor="#7E57C2" android:pathData="M35,56 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <path android:fillColor="#7E57C2" android:pathData="M47,56 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <path android:fillColor="#7E57C2" android:pathData="M59,56 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <!-- berries row 2 -->
+    <path android:fillColor="#673AB7" android:pathData="M41,66 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <path android:fillColor="#673AB7" android:pathData="M53,66 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <!-- berries row 3 -->
+    <path android:fillColor="#5E35B1" android:pathData="M47,76 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 Z" />
+    <!-- highlights -->
+    <path android:fillColor="#B39DDB" android:pathData="M40,53 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z" />
+    <path android:fillColor="#B39DDB" android:pathData="M46,63 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z" />
+    <path android:fillColor="#B39DDB" android:pathData="M52,73 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z" />
+</vector>

@@ -1,0 +1,64 @@
+package cz.janek.vineyardlog.data.db
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
+import cz.janek.vineyardlog.data.dao.BackupDao
+import cz.janek.vineyardlog.data.dao.BatchDao
+import cz.janek.vineyardlog.data.dao.BlockDao
+import cz.janek.vineyardlog.data.dao.EntryDao
+import cz.janek.vineyardlog.data.dao.MeasurementDao
+import cz.janek.vineyardlog.data.dao.ProductDao
+import cz.janek.vineyardlog.data.dao.WeatherDao
+import cz.janek.vineyardlog.data.model.Batch
+import cz.janek.vineyardlog.data.model.BatchSource
+import cz.janek.vineyardlog.data.model.Block
+import cz.janek.vineyardlog.data.model.LogEntry
+import cz.janek.vineyardlog.data.model.Measurement
+import cz.janek.vineyardlog.data.model.Product
+import cz.janek.vineyardlog.data.model.ProductUsage
+import cz.janek.vineyardlog.data.model.WeatherDay
+import cz.janek.vineyardlog.data.seed.SeedData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+@Database(
+    entities = [
+        Block::class, Product::class, Batch::class, BatchSource::class,
+        LogEntry::class, ProductUsage::class, Measurement::class, WeatherDay::class,
+    ],
+    version = 1,
+    exportSchema = true,
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun blockDao(): BlockDao
+    abstract fun productDao(): ProductDao
+    abstract fun batchDao(): BatchDao
+    abstract fun entryDao(): EntryDao
+    abstract fun measurementDao(): MeasurementDao
+    abstract fun weatherDao(): WeatherDao
+    abstract fun backupDao(): BackupDao
+
+    companion object {
+        const val NAME = "vineyard_log.db"
+
+        fun build(context: Context, scope: CoroutineScope): AppDatabase {
+            lateinit var instance: AppDatabase
+            instance = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, NAME)
+                .addCallback(object : Callback() {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        // Seed the starter product catalog the first time the DB is created.
+                        scope.launch {
+                            if (instance.productDao().count() == 0) {
+                                instance.productDao().insertAll(SeedData.products())
+                            }
+                        }
+                    }
+                })
+                .build()
+            return instance
+        }
+    }
+}
