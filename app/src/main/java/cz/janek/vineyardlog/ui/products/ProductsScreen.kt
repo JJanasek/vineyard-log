@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.products
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,7 +72,7 @@ class ProductsViewModel(private val c: AppContainer) : ViewModel() {
                 (d == null || p.category.domain == d) &&
                 (s == null || p.supplier == s) &&
                 (needle.isBlank() || p.name.lowercase().contains(needle) || p.activeIngredient.lowercase().contains(needle) ||
-                    p.purpose.lowercase().contains(needle) || p.category.label.lowercase().contains(needle))
+                    p.purpose.lowercase().contains(needle) || c.appContext.getString(p.category.labelRes).lowercase().contains(needle))
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -90,20 +93,20 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
         topBar = {
             var menu by remember { mutableStateOf(false) }
             TopAppBar(
-                title = { Text("Products") },
+                title = { Text(stringResource(R.string.tab_products)) },
                 actions = {
-                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = "More") }
+                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more)) }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Lipera product catalog (PDF)") },
+                            text = { Text(stringResource(R.string.lipera_catalog_pdf)) },
                             onClick = { menu = false; runCatching { uriHandler.openUri("https://www.lipera.cz/dokumenty-ke-stazeni/") } },
                         )
                         DropdownMenuItem(
-                            text = { Text("Open lipera.cz") },
+                            text = { Text(stringResource(R.string.open_lipera)) },
                             onClick = { menu = false; runCatching { uriHandler.openUri(Supplier.LIPERA.url) } },
                         )
                         DropdownMenuItem(
-                            text = { Text("Open vinarskydum.cz") },
+                            text = { Text(stringResource(R.string.open_vd)) },
                             onClick = { menu = false; runCatching { uriHandler.openUri(Supplier.VINARSKY_DUM.url) } },
                         )
                     }
@@ -111,17 +114,17 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNewProduct) { Icon(Icons.Default.Add, contentDescription = "New product") }
+            FloatingActionButton(onClick = onNewProduct) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_product)) }
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             OutlinedTextField(
                 value = query,
                 onValueChange = { vm.query.value = it },
-                placeholder = { Text("Search name, ingredient, purpose") },
+                placeholder = { Text(stringResource(R.string.search_products)) },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 trailingIcon = {
-                    if (query.isNotBlank()) IconButton(onClick = { vm.query.value = "" }) { Icon(Icons.Default.Clear, "Clear") }
+                    if (query.isNotBlank()) IconButton(onClick = { vm.query.value = "" }) { Icon(Icons.Default.Clear, stringResource(R.string.clear)) }
                 },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -134,11 +137,11 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
                     FilterChip(selected = supplier == s, onClick = { vm.supplierFilter.value = if (supplier == s) null else s }, label = { Text(s.label) })
                 }
                 item {
-                    FilterChip(selected = showArchived, onClick = { vm.showArchived.value = !showArchived }, label = { Text("Archived") })
+                    FilterChip(selected = showArchived, onClick = { vm.showArchived.value = !showArchived }, label = { Text(stringResource(R.string.archived_filter)) })
                 }
             }
             if (products.isEmpty()) {
-                EmptyState("No products match.\nAdd the products you buy from Lipera or Vinařský dům with their label dose and PHI.")
+                EmptyState(stringResource(R.string.products_empty))
             } else {
                 LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
                     items(products, key = { it.id }) { p ->
@@ -149,7 +152,7 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
                                     p.supplier.label.takeIf { p.supplier != Supplier.OTHER },
                                     p.category.label,
                                     p.doseRangeText.takeIf { it.isNotBlank() },
-                                    p.phiDays?.let { "PHI $it d" },
+                                    p.phiDays?.let { stringResource(R.string.phi_days_short, it) },
                                     p.activeIngredient.takeIf { it.isNotBlank() },
                                 ).joinToString(" · ")
                                 Column {
@@ -163,13 +166,13 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
                                 Row {
                                     if (p.url.isNotBlank()) {
                                         IconButton(onClick = { runCatching { uriHandler.openUri(p.url) } }) {
-                                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Open supplier page")
+                                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.open_supplier_page))
                                         }
                                     }
                                     IconButton(onClick = { vm.toggleFavorite(p) }) {
                                         Icon(
                                             if (p.favorite) Icons.Default.Star else Icons.Default.StarBorder,
-                                            contentDescription = "Favourite",
+                                            contentDescription = stringResource(R.string.favourite),
                                             tint = if (p.favorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }

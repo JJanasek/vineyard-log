@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.weather
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
@@ -95,12 +97,12 @@ fun WeatherScreen() {
     val cumulative = remember(all, year, settings) { Gdd.cumulative(all, year, settings) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Weather") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_weather)) }) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 val next = (all.maxOfOrNull { it.date }?.plus(1) ?: todayEpochDay()).coerceAtMost(todayEpochDay())
                 editing = WeatherDay(date = next); showDialog = true
-            }) { Icon(Icons.Default.Add, contentDescription = "Add day") }
+            }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_day)) }
         },
     ) { padding ->
         LazyColumn(Modifier.padding(padding).fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
@@ -112,28 +114,28 @@ fun WeatherScreen() {
             item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Column(Modifier.padding(12.dp)) {
-                        Text("Season $year", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.season_n, year), style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "GDD base ${settings.gddBase.fmt()} °C, ${settings.seasonStartDay}.${settings.seasonStartMonth}. – ${settings.seasonEndDay}.${settings.seasonEndMonth}.",
+                            stringResource(R.string.season_gdd_line, settings.gddBase.fmt(), settings.seasonStartDay, settings.seasonStartMonth, settings.seasonEndDay, settings.seasonEndMonth),
                             style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Stat("GDD", summary.gdd.fmt(0))
-                            Stat("Rain", "${summary.rainMm.fmt(0)} mm")
-                            Stat("Frost days", summary.frostDays.toString())
-                            Stat("Hail", summary.hailDays.toString())
-                            Stat("Days", summary.daysWithTemp.toString())
+                            Stat(stringResource(R.string.gdd), summary.gdd.fmt(0))
+                            Stat(stringResource(R.string.rain), "${summary.rainMm.fmt(0)} mm")
+                            Stat(stringResource(R.string.frost_days), summary.frostDays.toString())
+                            Stat(stringResource(R.string.hail), summary.hailDays.toString())
+                            Stat(stringResource(R.string.days), summary.daysWithTemp.toString())
                         }
                         if (summary.tMinAbs != null || summary.tMaxAbs != null) {
                             Text(
-                                "Extremes: ${summary.tMinAbs?.fmt() ?: "–"} °C … ${summary.tMaxAbs?.fmt() ?: "–"} °C",
+                                stringResource(R.string.extremes, summary.tMinAbs?.fmt() ?: "–", summary.tMaxAbs?.fmt() ?: "–"),
                                 style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp),
                             )
                         }
-                        SectionTitle("Cumulative GDD")
+                        SectionTitle(stringResource(R.string.cumulative_gdd))
                         LineChart(
                             series = listOf(
-                                ChartSeries("GDD", Color(0xFFB26A00), cumulative.map { (d, g) -> dayOfYear(d).toFloat() to g.toFloat() })
+                                ChartSeries(stringResource(R.string.gdd), Color(0xFFB26A00), cumulative.map { (d, g) -> dayOfYear(d).toFloat() to g.toFloat() })
                             ),
                             xLabel = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) },
                             height = 160,
@@ -145,9 +147,9 @@ fun WeatherScreen() {
                 item {
                     Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
                         Column(Modifier.padding(12.dp)) {
-                            Text("Seasons compared", style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.seasons_compared), style = MaterialTheme.typography.titleMedium)
                             Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                                Cell("Year", 1f, true); Cell("GDD", 1f, true); Cell("Rain mm", 1f, true); Cell("Frost", 1f, true); Cell("Days", 1f, true)
+                                Cell(stringResource(R.string.year), 1f, true); Cell(stringResource(R.string.gdd), 1f, true); Cell(stringResource(R.string.rain_mm), 1f, true); Cell(stringResource(R.string.frost), 1f, true); Cell(stringResource(R.string.days), 1f, true)
                             }
                             years.sorted().forEach { y ->
                                 val s = Gdd.summary(all, y, settings)
@@ -160,11 +162,11 @@ fun WeatherScreen() {
                     }
                 }
             }
-            item { SectionTitle("Days", Modifier.padding(horizontal = 16.dp)) }
+            item { SectionTitle(stringResource(R.string.days), Modifier.padding(horizontal = 16.dp)) }
             if (yearDays.isEmpty()) {
                 item {
                     Text(
-                        "No weather recorded for $year. Add daily min/max and rain – GDD is computed from it.",
+                        stringResource(R.string.weather_empty_n, year),
                         Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -176,7 +178,7 @@ fun WeatherScreen() {
                         val parts = listOfNotNull(
                             if (d.tMin != null || d.tMax != null) "${d.tMin?.fmt() ?: "–"} / ${d.tMax?.fmt() ?: "–"} °C" else null,
                             d.rainMm?.let { "${it.fmt()} mm" },
-                            d.humidityPct?.let { "RH ${it.fmt()} %" },
+                            d.humidityPct?.let { stringResource(R.string.rh) + " ${it.fmt()} %" },
                             Gdd.daily(d, settings.gddBase)?.let { "GDD ${it.fmt(1)}" },
                             d.note.takeIf { it.isNotBlank() },
                         )
@@ -184,8 +186,8 @@ fun WeatherScreen() {
                     },
                     trailingContent = {
                         Row {
-                            if (d.frost) Icon(Icons.Default.AcUnit, contentDescription = "Frost", tint = MaterialTheme.colorScheme.primary)
-                            if (d.hail) Icon(Icons.Default.Warning, contentDescription = "Hail", tint = MaterialTheme.colorScheme.error)
+                            if (d.frost) Icon(Icons.Default.AcUnit, contentDescription = stringResource(R.string.frost), tint = MaterialTheme.colorScheme.primary)
+                            if (d.hail) Icon(Icons.Default.Warning, contentDescription = stringResource(R.string.hail), tint = MaterialTheme.colorScheme.error)
                         }
                     },
                     modifier = Modifier.clickable { editing = d; showDialog = true }.padding(horizontal = 4.dp),
@@ -246,29 +248,29 @@ private fun WeatherDayDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isNew) "Add day" else "Edit day") },
+        title = { Text(if (isNew) stringResource(R.string.add_day) else stringResource(R.string.edit_day)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateField(date, { date = it })
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NumberField(tMin, { tMin = it }, "T min", Modifier.weight(1f), suffix = "°C")
-                    NumberField(tMax, { tMax = it }, "T max", Modifier.weight(1f), suffix = "°C")
+                    NumberField(tMin, { tMin = it }, stringResource(R.string.t_min), Modifier.weight(1f), suffix = "°C")
+                    NumberField(tMax, { tMax = it }, stringResource(R.string.t_max), Modifier.weight(1f), suffix = "°C")
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NumberField(rain, { rain = it }, "Rain", Modifier.weight(1f), suffix = "mm")
-                    NumberField(rh, { rh = it }, "Humidity", Modifier.weight(1f), suffix = "%")
+                    NumberField(rain, { rain = it }, stringResource(R.string.rain), Modifier.weight(1f), suffix = "mm")
+                    NumberField(rh, { rh = it }, stringResource(R.string.humidity), Modifier.weight(1f), suffix = "%")
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         Modifier.weight(1f).toggleable(value = frost, role = Role.Checkbox, onValueChange = { frost = it }),
                         verticalAlignment = Alignment.CenterVertically,
-                    ) { Checkbox(checked = frost, onCheckedChange = null); Text("Frost") }
+                    ) { Checkbox(checked = frost, onCheckedChange = null); Text(stringResource(R.string.frost)) }
                     Row(
                         Modifier.weight(1f).toggleable(value = hail, role = Role.Checkbox, onValueChange = { hail = it }),
                         verticalAlignment = Alignment.CenterVertically,
-                    ) { Checkbox(checked = hail, onCheckedChange = null); Text("Hail") }
+                    ) { Checkbox(checked = hail, onCheckedChange = null); Text(stringResource(R.string.hail)) }
                 }
-                AppTextField(note, { note = it }, "Note")
+                AppTextField(note, { note = it }, stringResource(R.string.note))
             }
         },
         confirmButton = {
@@ -281,12 +283,12 @@ private fun WeatherDayDialog(
                         frost = frost, hail = hail, note = note.trim(),
                     )
                 )
-            }) { Text("Save") }
+            }) { Text(stringResource(R.string.save)) }
         },
         dismissButton = {
             Row {
-                if (!isNew) TextButton(onClick = { onDelete(initial.date) }) { Text("Delete") }
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                if (!isNew) TextButton(onClick = { onDelete(initial.date) }) { Text(stringResource(R.string.delete)) }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
             }
         },
     )

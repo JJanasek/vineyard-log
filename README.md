@@ -6,7 +6,7 @@ SO₂, plus daily weather with growing-degree-days. Everything is stored locally
 (Room/SQLite); a JSON backup can be exported and re-imported from Settings.
 
 Built with Kotlin, Jetpack Compose (Material 3), Room, Navigation Compose and DataStore.
-Minimum Android 8.0 (API 26).
+Minimum Android 8.0 (API 26). UI in English and Czech (follows the phone language, or pick one in Settings).
 
 ## What it tracks
 
@@ -100,7 +100,7 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 
 ## Roadmap / ideas
 
-- **Czech UI** – move strings to resources and add `values-cs`.
+- ~~**Czech UI**~~ – done: all UI strings are resources (`values` / `values-cs`); Settings → Language switches between system default, English and Czech.
 - **Photos and a field guide** – attach photos to entries (disease pressure, deficiency symptoms), and a built-in reference of common vine diseases (peronospora, oidium, botrytis, black rot, esca, phomopsis) and nutrient deficiencies (N, K, Mg, Fe chlorosis, B, Zn) with symptom descriptions and example images.
 - **Weather without typing** – first pull daily min/max/rain for the vineyard's GPS position from a free API (Open-Meteo or ČHMÚ open data); later connect a station or fermentation probe (research which hardware has an open/local API: Ecowitt gateways, WeatherFlow Tempest, iSpindel / Tilt for must density, WeeWX-compatible stations).
 - **Season checklist** – a yearly to-do template (pruning, tying, shoot thinning, first spray at 10 cm shoots, leaf pulling, netting, harvest prep) with per-year tick-offs, optionally tied to phenology stages.

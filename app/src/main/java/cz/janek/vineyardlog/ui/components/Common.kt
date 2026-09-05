@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.components
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,7 +69,7 @@ fun BackTopBar(
         title = { Text(title, maxLines = 1) },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         },
         actions = { actions() },
@@ -78,7 +80,7 @@ fun BackTopBar(
 fun ConfirmDialog(
     title: String,
     text: String,
-    confirmLabel: String = "Delete",
+    confirmLabel: String = stringResource(R.string.delete),
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -87,7 +89,7 @@ fun ConfirmDialog(
         title = { Text(title) },
         text = { Text(text) },
         confirmButton = { TextButton(onClick = onConfirm) { Text(confirmLabel) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 

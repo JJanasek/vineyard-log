@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.entry
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -60,15 +63,15 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
 
     Scaffold(
         topBar = {
-            BackTopBar(title = item?.entry?.type?.label ?: "Entry", onBack = onBack) {
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "Edit") }
-                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = "Delete") }
+            BackTopBar(title = item?.entry?.type?.label ?: stringResource(R.string.entry), onBack = onBack) {
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit)) }
+                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
             }
         },
     ) { padding ->
         val d = item
         if (d == null) {
-            EmptyState("Entry not found", Modifier.padding(padding))
+            EmptyState(stringResource(R.string.not_found_entry), Modifier.padding(padding))
             return@Scaffold
         }
         val e = d.entry
@@ -77,29 +80,29 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
         ) {
             DomainBadge(e.domain)
             if (e.title.isNotBlank()) Text(e.title, style = MaterialTheme.typography.headlineSmall)
-            KeyValueRow("Date", formatDate(e.date))
-            KeyValueRow("Type", e.type.label)
-            e.blockId?.let { KeyValueRow("Block", blockNames[it] ?: "#$it") }
-            e.batchId?.let { KeyValueRow("Batch", batchNames[it] ?: "#$it") }
-            e.phenologyStage?.let { KeyValueRow("Stage", it.label) }
-            e.waterLPerHa?.let { KeyValueRow("Water volume", "${it.fmt()} l/ha") }
-            e.quantity?.let { KeyValueRow("Quantity", "${it.fmt()} ${e.quantityUnit}".trim()) }
+            KeyValueRow(stringResource(R.string.date), formatDate(e.date))
+            KeyValueRow(stringResource(R.string.type), e.type.label)
+            e.blockId?.let { KeyValueRow(stringResource(R.string.block), blockNames[it] ?: "#$it") }
+            e.batchId?.let { KeyValueRow(stringResource(R.string.batch), batchNames[it] ?: "#$it") }
+            e.phenologyStage?.let { KeyValueRow(stringResource(R.string.stage), it.label) }
+            e.waterLPerHa?.let { KeyValueRow(stringResource(R.string.water_volume), "${it.fmt()} l/ha") }
+            e.quantity?.let { KeyValueRow(stringResource(R.string.quantity), "${it.fmt()} ${e.quantityUnit}".trim()) }
             if (e.tempC != null || e.windKmh != null || e.humidityPct != null || e.weatherNote.isNotBlank()) {
-                SectionTitle("Conditions")
-                e.tempC?.let { KeyValueRow("Temperature", "${it.fmt()} °C") }
-                e.windKmh?.let { KeyValueRow("Wind", "${it.fmt()} km/h") }
-                e.humidityPct?.let { KeyValueRow("Humidity", "${it.fmt()} %") }
+                SectionTitle(stringResource(R.string.conditions))
+                e.tempC?.let { KeyValueRow(stringResource(R.string.mk_temperature), "${it.fmt()} °C") }
+                e.windKmh?.let { KeyValueRow(stringResource(R.string.wind), "${it.fmt()} km/h") }
+                e.humidityPct?.let { KeyValueRow(stringResource(R.string.humidity), "${it.fmt()} %") }
                 if (e.weatherNote.isNotBlank()) Text(e.weatherNote, style = MaterialTheme.typography.bodyMedium)
             }
             if (d.usages.isNotEmpty()) {
-                SectionTitle("Products")
+                SectionTitle(stringResource(R.string.tab_products))
                 d.usages.forEach { u ->
                     val p = u.product
                     val dose = u.usage.dose?.let { "${it.fmt()} ${u.usage.doseUnit}".trim() } ?: ""
-                    KeyValueRow(p?.name ?: "(deleted product)", dose)
+                    KeyValueRow(p?.name ?: stringResource(R.string.deleted_product), dose)
                     val extra = buildString {
-                        u.usage.totalAmount?.let { append("total ${it.fmt()} ${u.usage.totalUnit}".trim()) }
-                        p?.phiDays?.let { if (isNotEmpty()) append(" · "); append("PHI $it d → ${formatDate(e.date + it)}") }
+                        u.usage.totalAmount?.let { append(stringResource(R.string.total_prefix, "${it.fmt()} ${u.usage.totalUnit}".trim())) }
+                        p?.phiDays?.let { if (isNotEmpty()) append(" · "); append(stringResource(R.string.phi_harvest_from, it, formatDate(e.date + it))) }
                         if (u.usage.note.isNotBlank()) { if (isNotEmpty()) append(" · "); append(u.usage.note) }
                     }
                     if (extra.isNotBlank()) {
@@ -108,19 +111,19 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
                 }
             }
             if (d.measurements.isNotEmpty()) {
-                SectionTitle("Measurements")
+                SectionTitle(stringResource(R.string.measurements))
                 d.measurements.forEach { m ->
                     KeyValueRow(m.kind.label, measurementText(m).removePrefix(m.kind.label).trim())
                     if (m.note.isNotBlank()) Text(m.note, style = MaterialTheme.typography.bodySmall)
                 }
             }
             if (e.laborHours != null || e.cost != null) {
-                SectionTitle("Effort")
-                e.laborHours?.let { KeyValueRow("Labour", "${it.fmt()} h") }
-                e.cost?.let { KeyValueRow("Cost", "${it.fmt()} ${settings.currency}") }
+                SectionTitle(stringResource(R.string.effort))
+                e.laborHours?.let { KeyValueRow(stringResource(R.string.labour), "${it.fmt()} h") }
+                e.cost?.let { KeyValueRow(stringResource(R.string.cost), "${it.fmt()} ${settings.currency}") }
             }
             if (e.notes.isNotBlank()) {
-                SectionTitle("Notes")
+                SectionTitle(stringResource(R.string.notes))
                 Text(e.notes, style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -128,8 +131,8 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete entry?",
-            text = "This removes the entry with its products and measurements.",
+            title = stringResource(R.string.delete_entry_q),
+            text = stringResource(R.string.delete_entry_text),
             onConfirm = { confirmDelete = false; vm.delete(onDeleted) },
             onDismiss = { confirmDelete = false },
         )

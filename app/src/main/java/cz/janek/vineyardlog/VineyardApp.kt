@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 
 /** Poor man's dependency container: one database, one settings store, one IO scope. */
 class AppContainer(context: Context) {
+    val appContext: Context = context.applicationContext
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val db: AppDatabase = AppDatabase.build(context, appScope)
     val settings = SettingsStore(context)

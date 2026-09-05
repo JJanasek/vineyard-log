@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.components
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -82,7 +84,7 @@ fun NumberField(
 fun DateField(
     epochDay: Long,
     onChange: (Long) -> Unit,
-    label: String = "Date",
+    label: String = stringResource(R.string.date),
     modifier: Modifier = Modifier,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -106,9 +108,9 @@ fun DateField(
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { onChange(millisToEpochDay(it)) }
                     open = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { open = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.cancel)) } },
         ) {
             DatePicker(state = state)
         }
@@ -121,7 +123,7 @@ fun <T> DropdownField(
     label: String,
     options: List<T>,
     selected: T?,
-    labelOf: (T) -> String,
+    labelOf: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     noneLabel: String? = null,
@@ -130,7 +132,7 @@ fun <T> DropdownField(
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
-            value = selected?.let(labelOf) ?: noneLabel ?: "",
+            value = selected?.let { labelOf(it) } ?: noneLabel ?: "",
             onValueChange = {},
             readOnly = true,
             singleLine = true,

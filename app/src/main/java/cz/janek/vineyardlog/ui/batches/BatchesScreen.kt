@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.batches
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,13 +48,13 @@ fun BatchesScreen(onOpenBatch: (Long) -> Unit, onNewBatch: () -> Unit) {
     val batches by vm.batches.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Cellar") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_cellar)) }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNewBatch) { Icon(Icons.Default.Add, contentDescription = "New batch") }
+            FloatingActionButton(onClick = onNewBatch) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_batch)) }
         },
     ) { padding ->
         if (batches.isEmpty()) {
-            EmptyState("No batches yet.\nCreate a batch per wine lot to log must prep, fermentation and additions.", Modifier.padding(padding))
+            EmptyState(stringResource(R.string.batches_empty), Modifier.padding(padding))
         } else {
             LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp), modifier = Modifier.padding(padding)) {
                 items(batches, key = { it.id }) { b -> BatchCard(b) { onOpenBatch(b.id) } }

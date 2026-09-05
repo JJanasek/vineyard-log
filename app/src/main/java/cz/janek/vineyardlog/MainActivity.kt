@@ -2,7 +2,7 @@ package cz.janek.vineyardlog
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 import cz.janek.vineyardlog.ui.nav.AppRoot
 import cz.janek.vineyardlog.ui.theme.VineyardTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     /** A product page URL shared from the browser; consumed by AppRoot. */
     private var sharedUrl by mutableStateOf<String?>(null)
 

@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.batches
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -95,8 +98,8 @@ class BatchEditViewModel(private val c: AppContainer, private val id: Long?) : V
     }
 
     fun save(onDone: () -> Unit) {
-        if (name.isBlank()) { error = "Name is required."; return }
-        val v = vintage.toIntLenient() ?: run { error = "Vintage must be a year."; return }
+        if (name.isBlank()) { error = c.appContext.getString(R.string.name_is_required); return }
+        val v = vintage.toIntLenient() ?: run { error = c.appContext.getString(R.string.err_vintage_year); return }
         val batch = Batch(
             id = id ?: 0,
             name = name.trim(),
@@ -129,8 +132,8 @@ fun BatchEditScreen(batchId: Long?, onDone: () -> Unit) {
 
     Scaffold(
         topBar = {
-            BackTopBar(title = if (batchId == null) "New batch" else "Edit batch", onBack = onDone) {
-                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = "Save") }
+            BackTopBar(title = if (batchId == null) stringResource(R.string.new_batch) else stringResource(R.string.edit_batch), onBack = onDone) {
+                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save)) }
             }
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -139,37 +142,37 @@ fun BatchEditScreen(batchId: Long?, onDone: () -> Unit) {
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            AppTextField(vm.name, { vm.name = it }, "Name *", placeholder = "e.g. Pálava tank 2")
+            AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required), placeholder = stringResource(R.string.batch_name_hint))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.vintage, { vm.vintage = it }, "Vintage", Modifier.weight(1f), integer = true)
-                AppTextField(vm.variety, { vm.variety = it }, "Variety", Modifier.weight(2f))
+                NumberField(vm.vintage, { vm.vintage = it }, stringResource(R.string.vintage), Modifier.weight(1f), integer = true)
+                AppTextField(vm.variety, { vm.variety = it }, stringResource(R.string.variety), Modifier.weight(2f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DropdownField("Style", WineStyle.entries, vm.style, { it.label }, { vm.style = it }, Modifier.weight(1f))
-                DropdownField("Status", BatchStatus.entries, vm.status, { it.label }, { vm.status = it }, Modifier.weight(1f))
+                DropdownField(stringResource(R.string.style), WineStyle.entries, vm.style, { it.label }, { vm.style = it }, Modifier.weight(1f))
+                DropdownField(stringResource(R.string.status), BatchStatus.entries, vm.status, { it.label }, { vm.status = it }, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.volumeL, { vm.volumeL = it }, "Volume", Modifier.weight(1f), suffix = "L")
-                NumberField(vm.grapesKg, { vm.grapesKg = it }, "Grapes", Modifier.weight(1f), suffix = "kg")
+                NumberField(vm.volumeL, { vm.volumeL = it }, stringResource(R.string.volume), Modifier.weight(1f), suffix = "L")
+                NumberField(vm.grapesKg, { vm.grapesKg = it }, stringResource(R.string.grapes), Modifier.weight(1f), suffix = "kg")
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTextField(vm.vessel, { vm.vessel = it }, "Vessel", Modifier.weight(1f), placeholder = "tank 2, barrel…")
-                AppTextField(vm.yeast, { vm.yeast = it }, "Yeast strain", Modifier.weight(1f))
+                AppTextField(vm.vessel, { vm.vessel = it }, stringResource(R.string.vessel), Modifier.weight(1f), placeholder = stringResource(R.string.vessel_hint))
+                AppTextField(vm.yeast, { vm.yeast = it }, stringResource(R.string.yeast_strain), Modifier.weight(1f))
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Switch(checked = vm.hasStartDate, onCheckedChange = { vm.hasStartDate = it })
                 if (vm.hasStartDate) {
-                    DateField(vm.startDate, { vm.startDate = it }, label = "Start / harvest date", modifier = Modifier.weight(1f))
+                    DateField(vm.startDate, { vm.startDate = it }, label = stringResource(R.string.start_harvest_date), modifier = Modifier.weight(1f))
                 } else {
-                    Text("No start date", modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.no_start_date), modifier = Modifier.weight(1f))
                 }
             }
-            AppTextField(vm.targetStyle, { vm.targetStyle = it }, "Target style", placeholder = "dry, aromatic, apricot/pear, no MLF")
-            AppTextField(vm.notes, { vm.notes = it }, "Notes", singleLine = false, minLines = 3)
+            AppTextField(vm.targetStyle, { vm.targetStyle = it }, stringResource(R.string.target_style), placeholder = stringResource(R.string.target_style_hint))
+            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
 
-            SectionTitle("Source blocks")
+            SectionTitle(stringResource(R.string.source_blocks))
             if (blocks.isEmpty()) {
-                Text("No blocks defined yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.no_blocks_defined), color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     blocks.filter { !it.archived || it.id in vm.sourceBlockIds }.forEach { b ->
@@ -183,11 +186,11 @@ fun BatchEditScreen(batchId: Long?, onDone: () -> Unit) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Archived (hide from pickers)")
+                Text(stringResource(R.string.archived_switch))
                 Switch(checked = vm.archived, onCheckedChange = { vm.archived = it })
             }
             Spacer(Modifier.height(8.dp))
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text("Save") }
+            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save)) }
         }
     }
 }

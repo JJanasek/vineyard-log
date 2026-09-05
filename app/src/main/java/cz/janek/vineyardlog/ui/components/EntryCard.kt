@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui.components
 
+import cz.janek.vineyardlog.ui.label
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,8 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cz.janek.vineyardlog.R
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryWithDetails
 import cz.janek.vineyardlog.data.model.fmt
@@ -63,13 +66,13 @@ fun EntryCard(
             }
             Text(headline, style = MaterialTheme.typography.titleMedium)
             if (e.title.isNotBlank()) Text(e.type.label, style = MaterialTheme.typography.labelMedium)
-            e.phenologyStage?.let { Text("Stage: ${it.label}", style = MaterialTheme.typography.bodyMedium) }
+            e.phenologyStage?.let { Text(stringResource(R.string.stage_prefix, it.label), style = MaterialTheme.typography.bodyMedium) }
             e.quantity?.let { q -> Text("${q.fmt()} ${e.quantityUnit}".trim(), style = MaterialTheme.typography.bodyMedium) }
             if (item.usages.isNotEmpty()) {
-                Text(item.usages.joinToString(" · ") { usageText(it) }, style = MaterialTheme.typography.bodySmall)
+                Text(item.usages.map { usageText(it) }.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
             }
             if (item.measurements.isNotEmpty()) {
-                Text(item.measurements.joinToString(" · ") { measurementText(it) }, style = MaterialTheme.typography.bodySmall)
+                Text(item.measurements.map { measurementText(it) }.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
             }
             if (e.notes.isNotBlank()) {
                 Text(

@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.timeline
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -88,23 +91,23 @@ fun TimelineScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Vineyard Log") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") }
+                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
                 },
             )
         },
         floatingActionButton = {
             Box {
-                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = "New entry") }
+                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_entry)) }
                 DropdownMenu(expanded = fabMenu, onDismissRequest = { fabMenu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Vineyard entry") },
+                        text = { Text(stringResource(R.string.vineyard_entry)) },
                         leadingIcon = { Icon(Icons.Default.Grass, null) },
                         onClick = { fabMenu = false; onNewEntry(Domain.VINEYARD) },
                     )
                     DropdownMenuItem(
-                        text = { Text("Cellar entry") },
+                        text = { Text(stringResource(R.string.cellar_entry)) },
                         leadingIcon = { Icon(Icons.Default.WineBar, null) },
                         onClick = { fabMenu = false; onNewEntry(Domain.CELLAR) },
                     )
@@ -118,7 +121,7 @@ fun TimelineScreen(
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
             ) {
                 item {
-                    FilterChip(selected = domain == null, onClick = { vm.domainFilter.value = null }, label = { Text("All") })
+                    FilterChip(selected = domain == null, onClick = { vm.domainFilter.value = null }, label = { Text(stringResource(R.string.all)) })
                 }
                 items(Domain.entries) { d ->
                     FilterChip(
@@ -136,7 +139,7 @@ fun TimelineScreen(
                 }
             }
             if (entries.isEmpty()) {
-                EmptyState("Nothing logged yet.\nTap + to record a spray, a reading, a harvest or a cellar step.")
+                EmptyState(stringResource(R.string.timeline_empty))
             } else {
                 LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp)) {
                     items(entries, key = { it.entry.id }) { item ->

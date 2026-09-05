@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="domain_vineyard">Vinice</string>
+    <string name="domain_cellar">Sklep</string>
+
+    <string name="supplier_lipera">Lipera</string>
+    <string name="supplier_vinarsky_dum">Vinařský dům</string>
+    <string name="supplier_other">Jiný</string>
+
+    <string name="cat_fungicide">Fungicid</string>
+    <string name="cat_insecticide">Insekticid / akaricid</string>
+    <string name="cat_herbicide">Herbicid</string>
+    <string name="cat_foliar_fertilizer">Listové hnojivo</string>
+    <string name="cat_soil_fertilizer">Půdní hnojivo</string>
+    <string name="cat_biostimulant">Biostimulant</string>
+    <string name="cat_adjuvant">Smáčedlo / adjuvant</string>
+    <string name="cat_other_vineyard">Jiné (vinice)</string>
+    <string name="cat_yeast">Kvasinky</string>
+    <string name="cat_yeast_nutrient">Výživa kvasinek</string>
+    <string name="cat_enzyme">Enzym</string>
+    <string name="cat_tannin">Tanin</string>
+    <string name="cat_sulfite">SO₂ / siřičitan</string>
+    <string name="cat_fining">Čiření</string>
+    <string name="cat_mlf_bacteria">Bakterie (JMF)</string>
+    <string name="cat_acid">Kyselina / odkyselení</string>
+    <string name="cat_stabilization">Stabilizace</string>
+    <string name="cat_other_cellar">Jiné (sklep)</string>
+
+    <string name="et_spray">Postřik</string>
+    <string name="et_fertilization">Hnojení</string>
+    <string name="et_canopy">Zelené práce</string>
+    <string name="et_soil_work">Půda / ozelenění</string>
+    <string name="et_phenology">Fenofáze</string>
+    <string name="et_scouting">Kontrola / pozorování</string>
+    <string name="et_ripeness">Kontrola zralosti</string>
+    <string name="et_harvest">Sklizeň</string>
+    <string name="et_weather_event">Událost počasí</string>
+    <string name="et_vineyard_other">Jiné</string>
+    <string name="et_must_prep">Příprava moštu</string>
+    <string name="et_yeast_pitch">Zakvášení</string>
+    <string name="et_nutrient">Přídavek výživy</string>
+    <string name="et_addition">Jiný přídavek</string>
+    <string name="et_fermentation_check">Kontrola kvašení</string>
+    <string name="et_analysis">Rozbor</string>
+    <string name="et_racking">Stáčení</string>
+    <string name="et_sulfiting">Síření</string>
+    <string name="et_fining">Čiření / filtrace</string>
+    <string name="et_mlf">Jablečno-mléčná fermentace</string>
+    <string name="et_tasting">Degustační poznámka</string>
+    <string name="et_bottling">Lahvování</string>
+    <string name="et_cellar_other">Jiné</string>
+
+    <string name="ph_bud_break">Rašení</string>
+    <string name="ph_flowering_start">Začátek kvetení</string>
+    <string name="ph_flowering_end">Konec kvetení</string>
+    <string name="ph_fruit_set">Nasazení bobulí</string>
+    <string name="ph_bunch_closure">Uzavírání hroznů</string>
+    <string name="ph_veraison">Zaměkání</string>
+    <string name="ph_harvest">Sklizeň</string>
+    <string name="ph_leaf_fall">Opad listů</string>
+
+    <string name="mk_brix">Cukernatost (°Bx)</string>
+    <string name="mk_nm">Cukernatost (°NM)</string>
+    <string name="mk_oechsle">Cukernatost (°Oe)</string>
+    <string name="mk_ta">Titrovatelné kyseliny</string>
+    <string name="mk_ph">pH</string>
+    <string name="mk_yan">Asimilovatelný dusík (YAN)</string>
+    <string name="mk_temperature">Teplota</string>
+    <string name="mk_sg">Hustota (SG)</string>
+    <string name="mk_free_so2">Volný SO₂</string>
+    <string name="mk_total_so2">Celkový SO₂</string>
+    <string name="mk_alcohol">Alkohol</string>
+    <string name="mk_residual_sugar">Zbytkový cukr</string>
+    <string name="mk_malic_acid">Kyselina jablečná</string>
+    <string name="mk_volatile_acidity">Těkavé kyseliny</string>
+    <string name="mk_turbidity">Zákal</string>
+    <string name="mk_volume">Objem</string>
+    <string name="mk_yield">Výnos</string>
+    <string name="mk_berry_weight">Hmotnost 100 bobulí</string>
+    <string name="mk_clusters_per_vine">Hroznů na keř</string>
+    <string name="mk_disease_incidence">Výskyt choroby</string>
+    <string name="mk_soil_ph">pH půdy</string>
+    <string name="mk_soil_n">N v půdě (Nmin)</string>
+    <string name="mk_soil_p">P v půdě</string>
+    <string name="mk_soil_k">K v půdě</string>
+    <string name="mk_soil_mg">Mg v půdě</string>
+    <string name="mk_soil_organic_matter">Organická hmota v půdě</string>
+    <string name="mk_leaf_n">N v listech / řapících</string>
+
+    <string name="ws_white">Bílé</string>
+    <string name="ws_red">Červené</string>
+    <string name="ws_rose">Rosé</string>
+    <string name="ws_sparkling">Šumivé</string>
+    <string name="ws_other">Jiné</string>
+
+    <string name="bs_planned">Plánováno</string>
+    <string name="bs_must">Mošt</string>
+    <string name="bs_fermenting">Kvasí</string>
+    <string name="bs_mlf">Jablečno-mléčná</string>
+    <string name="bs_aging">Zrání / na kalech</string>
+    <string name="bs_stabilizing">Stabilizace</string>
+    <string name="bs_bottled">Lahvováno</string>
+    <string name="bs_finished">Hotovo</string>
+</resources>

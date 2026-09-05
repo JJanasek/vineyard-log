@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="domain_vineyard">Vineyard</string>
+    <string name="domain_cellar">Cellar</string>
+
+    <string name="supplier_lipera">Lipera</string>
+    <string name="supplier_vinarsky_dum">Vinařský dům</string>
+    <string name="supplier_other">Other</string>
+
+    <string name="cat_fungicide">Fungicide</string>
+    <string name="cat_insecticide">Insecticide / acaricide</string>
+    <string name="cat_herbicide">Herbicide</string>
+    <string name="cat_foliar_fertilizer">Foliar fertilizer</string>
+    <string name="cat_soil_fertilizer">Soil fertilizer</string>
+    <string name="cat_biostimulant">Biostimulant</string>
+    <string name="cat_adjuvant">Adjuvant / wetter</string>
+    <string name="cat_other_vineyard">Other (vineyard)</string>
+    <string name="cat_yeast">Yeast</string>
+    <string name="cat_yeast_nutrient">Yeast nutrient</string>
+    <string name="cat_enzyme">Enzyme</string>
+    <string name="cat_tannin">Tannin</string>
+    <string name="cat_sulfite">SO₂ / sulfite</string>
+    <string name="cat_fining">Fining / clarification</string>
+    <string name="cat_mlf_bacteria">MLF bacteria</string>
+    <string name="cat_acid">Acid / deacidification</string>
+    <string name="cat_stabilization">Stabilization</string>
+    <string name="cat_other_cellar">Other (cellar)</string>
+
+    <string name="et_spray">Spray</string>
+    <string name="et_fertilization">Fertilization</string>
+    <string name="et_canopy">Canopy work</string>
+    <string name="et_soil_work">Soil / cover crop</string>
+    <string name="et_phenology">Phenology stage</string>
+    <string name="et_scouting">Scouting / observation</string>
+    <string name="et_ripeness">Ripeness check</string>
+    <string name="et_harvest">Harvest</string>
+    <string name="et_weather_event">Weather event</string>
+    <string name="et_vineyard_other">Other</string>
+    <string name="et_must_prep">Must preparation</string>
+    <string name="et_yeast_pitch">Yeast pitch</string>
+    <string name="et_nutrient">Nutrient addition</string>
+    <string name="et_addition">Other addition</string>
+    <string name="et_fermentation_check">Fermentation check</string>
+    <string name="et_analysis">Analysis</string>
+    <string name="et_racking">Racking</string>
+    <string name="et_sulfiting">SO₂ addition</string>
+    <string name="et_fining">Fining / filtration</string>
+    <string name="et_mlf">Malolactic</string>
+    <string name="et_tasting">Tasting note</string>
+    <string name="et_bottling">Bottling</string>
+    <string name="et_cellar_other">Other</string>
+
+    <string name="ph_bud_break">Bud break</string>
+    <string name="ph_flowering_start">Flowering start</string>
+    <string name="ph_flowering_end">Flowering end</string>
+    <string name="ph_fruit_set">Fruit set</string>
+    <string name="ph_bunch_closure">Bunch closure</string>
+    <string name="ph_veraison">Veraison</string>
+    <string name="ph_harvest">Harvest</string>
+    <string name="ph_leaf_fall">Leaf fall</string>
+
+    <string name="mk_brix">Sugar (°Bx)</string>
+    <string name="mk_nm">Sugar (°NM)</string>
+    <string name="mk_oechsle">Sugar (°Oe)</string>
+    <string name="mk_ta">Titratable acidity</string>
+    <string name="mk_ph">pH</string>
+    <string name="mk_yan">YAN</string>
+    <string name="mk_temperature">Temperature</string>
+    <string name="mk_sg">Density (SG)</string>
+    <string name="mk_free_so2">Free SO₂</string>
+    <string name="mk_total_so2">Total SO₂</string>
+    <string name="mk_alcohol">Alcohol</string>
+    <string name="mk_residual_sugar">Residual sugar</string>
+    <string name="mk_malic_acid">Malic acid</string>
+    <string name="mk_volatile_acidity">Volatile acidity</string>
+    <string name="mk_turbidity">Turbidity</string>
+    <string name="mk_volume">Volume</string>
+    <string name="mk_yield">Yield</string>
+    <string name="mk_berry_weight">100-berry weight</string>
+    <string name="mk_clusters_per_vine">Clusters per vine</string>
+    <string name="mk_disease_incidence">Disease incidence</string>
+    <string name="mk_soil_ph">Soil pH</string>
+    <string name="mk_soil_n">Soil N (Nmin)</string>
+    <string name="mk_soil_p">Soil P</string>
+    <string name="mk_soil_k">Soil K</string>
+    <string name="mk_soil_mg">Soil Mg</string>
+    <string name="mk_soil_organic_matter">Soil organic matter</string>
+    <string name="mk_leaf_n">Leaf / petiole N</string>
+
+    <string name="ws_white">White</string>
+    <string name="ws_red">Red</string>
+    <string name="ws_rose">Rosé</string>
+    <string name="ws_sparkling">Sparkling</string>
+    <string name="ws_other">Other</string>
+
+    <string name="bs_planned">Planned</string>
+    <string name="bs_must">Must</string>
+    <string name="bs_fermenting">Fermenting</string>
+    <string name="bs_mlf">Malolactic</string>
+    <string name="bs_aging">Aging / sur lie</string>
+    <string name="bs_stabilizing">Stabilizing</string>
+    <string name="bs_bottled">Bottled</string>
+    <string name="bs_finished">Finished</string>
+</resources>

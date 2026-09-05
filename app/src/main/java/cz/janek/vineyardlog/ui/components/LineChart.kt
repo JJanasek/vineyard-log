@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.components
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,7 +57,7 @@ fun LineChart(
     val visible = series.filter { it.points.isNotEmpty() }
     if (visible.isEmpty()) {
         Box(modifier.fillMaxWidth().height(height.dp), contentAlignment = Alignment.Center) {
-            Text("No data yet", color = textColor)
+            Text(stringResource(R.string.no_data_yet), color = textColor)
         }
         return
     }

@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui.nav
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.History
@@ -7,16 +8,17 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.ui.graphics.vector.ImageVector
+import cz.janek.vineyardlog.R
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryType
 
 /** Top-level tabs shown in the bottom bar. */
-enum class Tab(val route: String, val label: String, val icon: ImageVector) {
-    LOG("log", "Log", Icons.Default.History),
-    VINEYARD("vineyard", "Vineyard", Icons.Default.Grass),
-    CELLAR("cellar", "Cellar", Icons.Default.WineBar),
-    WEATHER("weather", "Weather", Icons.Default.WbSunny),
-    PRODUCTS("products", "Products", Icons.Default.Inventory2),
+enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageVector) {
+    LOG("log", R.string.tab_log, Icons.Default.History),
+    VINEYARD("vineyard", R.string.tab_vineyard, Icons.Default.Grass),
+    CELLAR("cellar", R.string.tab_cellar, Icons.Default.WineBar),
+    WEATHER("weather", R.string.tab_weather, Icons.Default.WbSunny),
+    PRODUCTS("products", R.string.tab_products, Icons.Default.Inventory2),
 }
 
 object Routes {

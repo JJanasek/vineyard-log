@@ -1,5 +1,9 @@
 package cz.janek.vineyardlog.ui.batches
 
+import cz.janek.vineyardlog.ui.labelWithUnit
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -97,26 +101,26 @@ fun BatchDetailScreen(
 
     Scaffold(
         topBar = {
-            BackTopBar(title = data?.batch?.name ?: "Batch", onBack = onBack) {
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "Edit") }
-                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = "Delete") }
+            BackTopBar(title = data?.batch?.name ?: stringResource(R.string.batch), onBack = onBack) {
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit)) }
+                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
             }
         },
         floatingActionButton = {
             Box {
-                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = "Log for this batch") }
+                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.log_for_batch)) }
                 DropdownMenu(expanded = fabMenu, onDismissRequest = { fabMenu = false }) {
                     quickTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.label) }, onClick = { fabMenu = false; onNewEntry(t) })
                     }
-                    DropdownMenuItem(text = { Text("Other…") }, onClick = { fabMenu = false; onNewEntry(null) })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.other_ellipsis)) }, onClick = { fabMenu = false; onNewEntry(null) })
                 }
             }
         },
     ) { padding ->
         val d = data
         if (d == null) {
-            EmptyState("Batch not found", Modifier.padding(padding))
+            EmptyState(stringResource(R.string.not_found_batch), Modifier.padding(padding))
             return@Scaffold
         }
         val b = d.batch
@@ -135,13 +139,13 @@ fun BatchDetailScreen(
                             }
                         }
                     }
-                    b.volumeL?.let { KeyValueRow("Volume", "${it.fmt()} L") }
-                    b.grapesKg?.let { KeyValueRow("Grapes", "${it.fmt()} kg") }
-                    if (b.vessel.isNotBlank()) KeyValueRow("Vessel", b.vessel)
-                    if (b.yeast.isNotBlank()) KeyValueRow("Yeast", b.yeast)
-                    b.startDate?.let { KeyValueRow("Start", formatDate(it)) }
-                    if (d.sources.isNotEmpty()) KeyValueRow("From blocks", d.sources.joinToString { blockNames[it.blockId] ?: "#${it.blockId}" })
-                    if (b.targetStyle.isNotBlank()) KeyValueRow("Target", b.targetStyle)
+                    b.volumeL?.let { KeyValueRow(stringResource(R.string.volume), "${it.fmt()} L") }
+                    b.grapesKg?.let { KeyValueRow(stringResource(R.string.grapes), "${it.fmt()} kg") }
+                    if (b.vessel.isNotBlank()) KeyValueRow(stringResource(R.string.vessel), b.vessel)
+                    if (b.yeast.isNotBlank()) KeyValueRow(stringResource(R.string.yeast), b.yeast)
+                    b.startDate?.let { KeyValueRow(stringResource(R.string.start), formatDate(it)) }
+                    if (d.sources.isNotEmpty()) KeyValueRow(stringResource(R.string.from_blocks), d.sources.joinToString { blockNames[it.blockId] ?: "#${it.blockId}" })
+                    if (b.targetStyle.isNotBlank()) KeyValueRow(stringResource(R.string.target), b.targetStyle)
                     if (b.notes.isNotBlank()) Text(b.notes, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                 }
             }
@@ -149,7 +153,7 @@ fun BatchDetailScreen(
             item {
                 Card(Modifier.fillMaxWidth().padding(16.dp)) {
                     Column(Modifier.padding(12.dp)) {
-                        Text("Fermentation curve", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.fermentation_curve), style = MaterialTheme.typography.titleMedium)
                         val chartKinds = sugarKinds + MeasurementKind.TEMPERATURE
                         val palette = mapOf(
                             MeasurementKind.BRIX to Color(0xFF6A3E8C), MeasurementKind.NM to Color(0xFF6A3E8C),
@@ -165,18 +169,19 @@ fun BatchDetailScreen(
                                     points = list.map { (it.date - origin!!).toFloat() to it.value.toFloat() },
                                 )
                             }
-                        LineChart(series = series, xLabel = { "day ${it.toInt()}" })
+                        val dayFmt = stringResource(R.string.day_n)
+                        LineChart(series = series, xLabel = { dayFmt.format(it.toInt()) })
 
                         val latest = measurements.groupBy { it.kind }.mapValues { (_, l) -> l.maxBy { it.date } }
                         if (latest.isNotEmpty()) {
-                            SectionTitle("Latest readings")
+                            SectionTitle(stringResource(R.string.latest_readings))
                             latest.values.sortedBy { it.kind.ordinal }.forEach { m ->
                                 KeyValueRow(m.kind.label, "${m.value.fmt()} ${m.kind.unit}".trim() + "  (${formatDate(m.date)})")
                             }
                         }
                         val so2 = entries.flatMap { e -> e.usages.filter { it.product?.category == ProductCategory.SULFITE }.map { e.entry.date to it } }
                         if (so2.isNotEmpty()) {
-                            SectionTitle("SO₂ additions")
+                            SectionTitle(stringResource(R.string.so2_additions))
                             so2.sortedByDescending { it.first }.forEach { (date, u) ->
                                 KeyValueRow(formatDate(date), "${u.product?.name ?: ""} ${u.usage.dose?.fmt() ?: ""} ${u.usage.doseUnit}".trim())
                             }
@@ -185,9 +190,9 @@ fun BatchDetailScreen(
                 }
             }
 
-            item { SectionTitle("Cellar log", Modifier.padding(horizontal = 16.dp)) }
+            item { SectionTitle(stringResource(R.string.cellar_log), Modifier.padding(horizontal = 16.dp)) }
             if (entries.isEmpty()) {
-                item { Text("No entries for this batch yet.", Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                item { Text(stringResource(R.string.no_entries_batch), Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
             items(entries, key = { it.entry.id }) { e ->
                 EntryCard(item = e, targetName = null, onClick = { onOpenEntry(e.entry.id) }, showDomain = false)
@@ -197,8 +202,8 @@ fun BatchDetailScreen(
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete batch?",
-            text = "Entries stay in the log but lose their batch link. Consider archiving instead.",
+            title = stringResource(R.string.delete_batch_q),
+            text = stringResource(R.string.delete_batch_text),
             onConfirm = { confirmDelete = false; vm.delete(onDeleted) },
             onDismiss = { confirmDelete = false },
         )

@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.products
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -92,7 +95,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
     /** Read the product page at [url] and fill in whatever is still empty. */
     fun fetchFromUrl() {
         val target = url.trim()
-        if (target.isBlank()) { error = "Paste the product page URL first."; return }
+        if (target.isBlank()) { error = c.appContext.getString(R.string.msg_paste_url); return }
         viewModelScope.launch {
             fetching = true
             runCatching { ProductPageFetcher.fetch(target) }
@@ -107,19 +110,19 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
                     f.phiDays?.let { phiDays = it.toString() }
                     if (activeIngredient.isBlank()) activeIngredient = f.activeIngredient
                     if (purpose.isBlank()) purpose = f.description.take(400)
-                    if (f.documents.isNotEmpty() && "Technical sheets" !in notes) {
-                        notes = (notes.trim() + "\n\nTechnical sheets:\n" + f.documents.joinToString("\n")).trim()
+                    val sheets = c.appContext.getString(R.string.technical_sheets)
+                    if (f.documents.isNotEmpty() && sheets !in notes) {
+                        notes = (notes.trim() + "\n\n" + sheets + "\n" + f.documents.joinToString("\n")).trim()
                     }
-                    error = if (f.dose == null) "Filled from the page. No dose found – enter it from the label."
-                    else "Filled from the page – check dose, unit and category."
+                    error = c.appContext.getString(if (f.dose == null) R.string.msg_filled_no_dose else R.string.msg_filled_check)
                 }
-                .onFailure { error = "Could not read the page: ${it.message ?: it.javaClass.simpleName}" }
+                .onFailure { error = c.appContext.getString(R.string.msg_page_failed, it.message ?: it.javaClass.simpleName) }
             fetching = false
         }
     }
 
     fun save(onDone: () -> Unit) {
-        if (name.isBlank()) { error = "Name is required."; return }
+        if (name.isBlank()) { error = c.appContext.getString(R.string.name_is_required); return }
         val product = Product(
             id = id ?: 0,
             name = name.trim(),
@@ -145,7 +148,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
         val pid = id ?: return
         viewModelScope.launch {
             if (c.productDao.usageCount(pid) > 0) {
-                error = "This product is used in log entries. Archive it instead."
+                error = c.appContext.getString(R.string.msg_product_used)
             } else {
                 c.productDao.delete(pid); onDone()
             }
@@ -164,11 +167,11 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? 
 
     Scaffold(
         topBar = {
-            BackTopBar(title = if (productId == null) "New product" else "Edit product", onBack = onDone) {
+            BackTopBar(title = if (productId == null) stringResource(R.string.new_product) else stringResource(R.string.edit_product), onBack = onDone) {
                 if (productId != null) {
-                    IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = "Delete") }
+                    IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
                 }
-                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = "Save") }
+                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save)) }
             }
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -177,61 +180,61 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? 
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            AppTextField(vm.name, { vm.name = it }, "Name *")
+            AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DropdownField("Supplier", Supplier.entries, vm.supplier, { it.label }, { vm.supplier = it }, Modifier.weight(1f))
-                DropdownField("Category", ProductCategory.entries, vm.category, { it.label }, { vm.category = it }, Modifier.weight(1f))
+                DropdownField(stringResource(R.string.supplier), Supplier.entries, vm.supplier, { it.label }, { vm.supplier = it }, Modifier.weight(1f))
+                DropdownField(stringResource(R.string.category), ProductCategory.entries, vm.category, { it.label }, { vm.category = it }, Modifier.weight(1f))
             }
-            AppTextField(vm.activeIngredient, { vm.activeIngredient = it }, "Active ingredient / composition")
+            AppTextField(vm.activeIngredient, { vm.activeIngredient = it }, stringResource(R.string.active_ingredient))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.doseMin, { vm.doseMin = it }, "Dose min", Modifier.weight(1f))
-                NumberField(vm.doseMax, { vm.doseMax = it }, "Dose max", Modifier.weight(1f))
-                AppTextField(vm.doseUnit, { vm.doseUnit = it }, "Unit", Modifier.weight(1f), placeholder = "g/hl")
+                NumberField(vm.doseMin, { vm.doseMin = it }, stringResource(R.string.dose_min), Modifier.weight(1f))
+                NumberField(vm.doseMax, { vm.doseMax = it }, stringResource(R.string.dose_max), Modifier.weight(1f))
+                AppTextField(vm.doseUnit, { vm.doseUnit = it }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = "g/hl")
             }
             NumberField(
-                vm.phiDays, { vm.phiDays = it }, "Pre-harvest interval (PHI)", suffix = "days", integer = true,
-                supportingText = "Ochranná lhůta – used to compute the earliest harvest date after a spray.",
+                vm.phiDays, { vm.phiDays = it }, stringResource(R.string.phi_label), suffix = stringResource(R.string.days_unit), integer = true,
+                supportingText = stringResource(R.string.phi_support),
             )
-            AppTextField(vm.purpose, { vm.purpose = it }, "Purpose / target", placeholder = "e.g. downy mildew, rehydration nutrient", singleLine = false)
+            AppTextField(vm.purpose, { vm.purpose = it }, stringResource(R.string.purpose_target), placeholder = stringResource(R.string.purpose_hint), singleLine = false)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 AppTextField(
-                    vm.url, { vm.url = it }, "Product page URL", Modifier.weight(1f),
+                    vm.url, { vm.url = it }, stringResource(R.string.product_url), Modifier.weight(1f),
                     placeholder = "https://www.lipera.cz/…",
-                    supportingText = "Paste a link from lipera.cz or vinarskydum.cz and tap the arrow to fill the form from that page.",
+                    supportingText = stringResource(R.string.product_url_support),
                 )
                 if (vm.fetching) {
                     CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp))
                 } else {
                     IconButton(onClick = { vm.fetchFromUrl() }, enabled = vm.url.isNotBlank()) {
-                        Icon(Icons.Default.CloudDownload, contentDescription = "Fill from page")
+                        Icon(Icons.Default.CloudDownload, contentDescription = stringResource(R.string.fill_from_page))
                     }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppTextField(vm.packageSize, { vm.packageSize = it }, "Package", Modifier.weight(1f), placeholder = "1 kg, 500 g")
-                NumberField(vm.price, { vm.price = it }, "Price", Modifier.weight(1f))
+                AppTextField(vm.packageSize, { vm.packageSize = it }, stringResource(R.string.package_size), Modifier.weight(1f), placeholder = stringResource(R.string.package_hint))
+                NumberField(vm.price, { vm.price = it }, stringResource(R.string.price), Modifier.weight(1f))
             }
-            AppTextField(vm.notes, { vm.notes = it }, "Notes", singleLine = false, minLines = 3)
+            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Favourite (sorted first)")
+                Text(stringResource(R.string.favourite_sorted))
                 Switch(checked = vm.favorite, onCheckedChange = { vm.favorite = it })
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Archived (hide from pickers)")
+                Text(stringResource(R.string.archived_switch))
                 Switch(checked = vm.archived, onCheckedChange = { vm.archived = it })
             }
             if (productId != null) {
-                Text("Used in ${vm.usageCount} log entries.", style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.used_in_entries, vm.usageCount), style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.height(8.dp))
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text("Save") }
+            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save)) }
         }
     }
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete product?",
-            text = "Only possible if the product is not used in any entry.",
+            title = stringResource(R.string.delete_product_q),
+            text = stringResource(R.string.delete_product_text),
             onConfirm = { confirmDelete = false; vm.delete(onDone) },
             onDismiss = { confirmDelete = false },
         )

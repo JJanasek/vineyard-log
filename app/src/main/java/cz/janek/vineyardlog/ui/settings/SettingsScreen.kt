@@ -1,9 +1,13 @@
 package cz.janek.vineyardlog.ui.settings
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +49,7 @@ import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.ConfirmDialog
+import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.input
@@ -70,22 +75,22 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
             val text = BackupCodec.encode(data)
             withContext(Dispatchers.IO) {
                 context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) }
-                    ?: error("Could not open file")
+                    ?: error(c.appContext.getString(R.string.err_open_file))
             }
             data.totalRows
-        }.onSuccess { message = "Backup written ($it rows)." }
-            .onFailure { message = "Export failed: ${it.message}" }
+        }.onSuccess { message = c.appContext.getString(R.string.msg_backup_written, it) }
+            .onFailure { message = c.appContext.getString(R.string.msg_export_failed, it.message ?: "") }
     }
 
     fun readImport(context: Context, uri: Uri) = viewModelScope.launch {
         runCatching {
             val text = withContext(Dispatchers.IO) {
                 context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                    ?: error("Could not open file")
+                    ?: error(c.appContext.getString(R.string.err_open_file))
             }
             BackupCodec.decode(text)
         }.onSuccess { pendingImport = it }
-            .onFailure { message = "Cannot read backup: ${it.message}" }
+            .onFailure { message = c.appContext.getString(R.string.msg_backup_unreadable, it.message ?: "") }
     }
 
     /** Merge a products JSON (e.g. from tools/lipera_catalog_to_json.py): add unknown names, skip existing. */
@@ -93,23 +98,23 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
         runCatching {
             val text = withContext(Dispatchers.IO) {
                 context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                    ?: error("Could not open file")
+                    ?: error(c.appContext.getString(R.string.err_open_file))
             }
             val file = BackupCodec.decodeProducts(text)
             val existing = c.productDao.all().map { it.name.trim().lowercase() }.toHashSet()
             val fresh = file.products.filter { it.name.trim().lowercase() !in existing }.map { it.copy(id = 0) }
             c.productDao.insertAll(fresh)
             fresh.size to (file.products.size - fresh.size)
-        }.onSuccess { (added, skipped) -> message = "Added $added products, skipped $skipped already in the catalog." }
-            .onFailure { message = "Cannot import products: ${it.message}" }
+        }.onSuccess { (added, skipped) -> message = c.appContext.getString(R.string.msg_products_added, added, skipped) }
+            .onFailure { message = c.appContext.getString(R.string.msg_products_failed, it.message ?: "") }
     }
 
     fun confirmImport() = viewModelScope.launch {
         val data = pendingImport ?: return@launch
         pendingImport = null
         runCatching { c.backupDao.replaceAll(data) }
-            .onSuccess { message = "Restored ${data.totalRows} rows." }
-            .onFailure { message = "Import failed: ${it.message}" }
+            .onSuccess { message = c.appContext.getString(R.string.msg_restored, data.totalRows) }
+            .onFailure { message = c.appContext.getString(R.string.msg_import_failed, it.message ?: "") }
     }
 }
 
@@ -141,33 +146,51 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 
     Scaffold(
-        topBar = { BackTopBar(title = "Settings", onBack = onBack) },
+        topBar = { BackTopBar(title = stringResource(R.string.settings), onBack = onBack) },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         Column(
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            SectionTitle("Growing degree days")
-            NumberField(gddBase, { gddBase = it }, "Base temperature", suffix = "°C", supportingText = "10 °C is the usual base for vines.")
+            SectionTitle(stringResource(R.string.language))
+            val currentTag = AppCompatDelegate.getApplicationLocales().toLanguageTags().substringBefore(',')
+            val langOptions = listOf("" to R.string.lang_system, "en" to R.string.lang_en, "cs" to R.string.lang_cs)
+            DropdownField(
+                label = stringResource(R.string.language),
+                options = langOptions,
+                selected = langOptions.firstOrNull { it.first == currentTag.take(2) } ?: langOptions.first(),
+                labelOf = { stringResource(it.second) },
+                onSelect = { (tag, _) ->
+                    AppCompatDelegate.setApplicationLocales(
+                        if (tag.isBlank()) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)
+                    )
+                },
+            )
+            Text(stringResource(R.string.lang_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            SectionTitle(stringResource(R.string.growing_degree_days))
+            NumberField(gddBase, { gddBase = it }, stringResource(R.string.base_temperature), suffix = "°C", supportingText = stringResource(R.string.base_temp_support))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(startDay, { startDay = it }, "Season start day", Modifier.weight(1f), integer = true)
-                NumberField(startMonth, { startMonth = it }, "month", Modifier.weight(1f), integer = true)
+                NumberField(startDay, { startDay = it }, stringResource(R.string.season_start_day), Modifier.weight(1f), integer = true)
+                NumberField(startMonth, { startMonth = it }, stringResource(R.string.month), Modifier.weight(1f), integer = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(endDay, { endDay = it }, "Season end day", Modifier.weight(1f), integer = true)
-                NumberField(endMonth, { endMonth = it }, "month", Modifier.weight(1f), integer = true)
+                NumberField(endDay, { endDay = it }, stringResource(R.string.season_end_day), Modifier.weight(1f), integer = true)
+                NumberField(endMonth, { endMonth = it }, stringResource(R.string.month), Modifier.weight(1f), integer = true)
             }
-            SectionTitle("Defaults")
-            NumberField(water, { water = it }, "Spray water volume", suffix = "l/ha")
-            AppTextField(currency, { currency = it }, "Currency")
+            SectionTitle(stringResource(R.string.defaults))
+            NumberField(water, { water = it }, stringResource(R.string.spray_water_volume), suffix = "l/ha")
+            AppTextField(currency, { currency = it }, stringResource(R.string.currency))
+            val errSeasonDates = stringResource(R.string.err_season_dates)
+            val savedMessage = stringResource(R.string.msg_settings_saved)
             Button(
                 onClick = {
                     val sd = startDay.toIntLenient(); val sm = startMonth.toIntLenient()
                     val ed = endDay.toIntLenient(); val em = endMonth.toIntLenient()
                     val valid = sd != null && sm != null && ed != null && em != null &&
                         runCatching { LocalDate.of(2024, sm, sd); LocalDate.of(2024, em, ed) }.isSuccess
-                    if (!valid) { vm.message = "Season dates are not valid."; return@Button }
+                    if (!valid) { vm.message = errSeasonDates; return@Button }
                     vm.update {
                         it.copy(
                             gddBase = gddBase.toDoubleLenient() ?: it.gddBase,
@@ -176,49 +199,46 @@ fun SettingsScreen(onBack: () -> Unit) {
                             currency = currency.trim().ifBlank { it.currency },
                         )
                     }
-                    vm.message = "Settings saved."
+                    vm.message = savedMessage
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Save settings") }
+            ) { Text(stringResource(R.string.save_settings)) }
 
-            SectionTitle("Backup")
+            SectionTitle(stringResource(R.string.backup))
             Text(
-                "Everything lives only on this phone. Export a JSON backup regularly (e.g. to Drive) – importing replaces all current data.",
+                stringResource(R.string.backup_text),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             OutlinedButton(
                 onClick = { exportLauncher.launch("vineyard-log-${LocalDate.now()}.json") },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Icon(Icons.Default.Download, null); Spacer(Modifier.padding(4.dp)); Text("Export backup (JSON)") }
+            ) { Icon(Icons.Default.Download, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.export_backup)) }
             OutlinedButton(
                 onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text("Import backup (replace all)") }
+            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.import_backup)) }
 
-            SectionTitle("Product catalog")
+            SectionTitle(stringResource(R.string.product_catalog))
             Text(
-                "Merge a products JSON into the catalog (new names are added, existing ones left untouched). " +
-                    "The repo's tools/lipera_catalog_to_json.py makes one from the official Lipera catalog PDF.",
+                stringResource(R.string.product_catalog_text),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             OutlinedButton(
                 onClick = { productsLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text("Import products (merge)") }
+            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.import_products)) }
 
-            SectionTitle("About")
-            Text("Vineyard Log 0.1.0 – offline log for vineyard and cellar work.", style = MaterialTheme.typography.bodySmall)
+            SectionTitle(stringResource(R.string.about))
+            Text(stringResource(R.string.about_text), style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(24.dp))
         }
     }
 
     vm.pendingImport?.let { data ->
         ConfirmDialog(
-            title = "Replace all data?",
-            text = "The backup contains ${data.totalRows} rows (${data.entries.size} entries, ${data.products.size} products, " +
-                "${data.blocks.size} blocks, ${data.batches.size} batches, ${data.weather.size} weather days). " +
-                "Everything currently in the app will be deleted first.",
-            confirmLabel = "Replace",
+            title = stringResource(R.string.replace_all_q),
+            text = stringResource(R.string.replace_all_text, data.totalRows, data.entries.size, data.products.size, data.blocks.size, data.batches.size, data.weather.size),
+            confirmLabel = stringResource(R.string.replace),
             onConfirm = { vm.confirmImport() },
             onDismiss = { vm.pendingImport = null },
         )

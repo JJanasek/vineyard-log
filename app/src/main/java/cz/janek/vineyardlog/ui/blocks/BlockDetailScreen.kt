@@ -1,5 +1,9 @@
 package cz.janek.vineyardlog.ui.blocks
 
+import cz.janek.vineyardlog.ui.labelWithUnit
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,26 +117,26 @@ fun BlockDetailScreen(
 
     Scaffold(
         topBar = {
-            BackTopBar(title = block?.name ?: "Block", onBack = onBack) {
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "Edit") }
-                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = "Delete") }
+            BackTopBar(title = block?.name ?: stringResource(R.string.block), onBack = onBack) {
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit)) }
+                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
             }
         },
         floatingActionButton = {
             Box {
-                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = "Log for this block") }
+                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.log_for_block)) }
                 DropdownMenu(expanded = fabMenu, onDismissRequest = { fabMenu = false }) {
                     quickTypes.forEach { t ->
                         DropdownMenuItem(text = { Text(t.label) }, onClick = { fabMenu = false; onNewEntry(t) })
                     }
-                    DropdownMenuItem(text = { Text("Other…") }, onClick = { fabMenu = false; onNewEntry(null) })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.other_ellipsis)) }, onClick = { fabMenu = false; onNewEntry(null) })
                 }
             }
         },
     ) { padding ->
         val b = block
         if (b == null) {
-            EmptyState("Block not found", Modifier.padding(padding))
+            EmptyState(stringResource(R.string.not_found_block), Modifier.padding(padding))
             return@Scaffold
         }
         LazyColumn(Modifier.padding(padding).fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
@@ -141,9 +145,9 @@ fun BlockDetailScreen(
                     val info = listOfNotNull(
                         b.variety.takeIf { it.isNotBlank() },
                         b.areaHa?.let { "${it.fmt(3)} ha" },
-                        b.vineCount?.let { "$it vines" },
-                        b.plantedYear?.let { "planted $it" },
-                        b.rootstock.takeIf { it.isNotBlank() }?.let { "on $it" },
+                        b.vineCount?.let { stringResource(R.string.n_vines, it) },
+                        b.plantedYear?.let { stringResource(R.string.planted_year, it) },
+                        b.rootstock.takeIf { it.isNotBlank() }?.let { stringResource(R.string.on_rootstock, it) },
                         b.trainingSystem.takeIf { it.isNotBlank() },
                     ).joinToString(" · ")
                     if (info.isNotBlank()) Text(info, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -161,7 +165,7 @@ fun BlockDetailScreen(
             if (yearMeasurements.isNotEmpty()) {
                 item {
                     Column(Modifier.padding(horizontal = 16.dp)) {
-                        SectionTitle("Ripening curve $year")
+                        SectionTitle(stringResource(R.string.ripening_curve_n, year))
                         val palette = listOf(Color(0xFF3E5A2B), Color(0xFF6A3E8C), Color(0xFFB26A00), Color(0xFF1565C0), Color(0xFF8E24AA), Color(0xFF00897B))
                         val series = yearMeasurements.groupBy { it.kind }.entries.mapIndexed { i, (kind, list) ->
                             ChartSeries(
@@ -171,7 +175,7 @@ fun BlockDetailScreen(
                             )
                         }
                         LineChart(series = series, xLabel = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) })
-                        SectionTitle("Readings")
+                        SectionTitle(stringResource(R.string.readings))
                         yearMeasurements.sortedByDescending { it.date }.forEach { m ->
                             KeyValueRow("${formatDate(m.date)}  ${m.kind.label}", "${m.value.fmt()} ${m.kind.unit}".trim())
                         }
@@ -179,11 +183,11 @@ fun BlockDetailScreen(
                 }
             }
 
-            item { SectionTitle("Log $year", Modifier.padding(horizontal = 16.dp)) }
+            item { SectionTitle(stringResource(R.string.log_n, year), Modifier.padding(horizontal = 16.dp)) }
             if (yearEntries.isEmpty()) {
                 item {
                     Text(
-                        "No entries for this block in $year.",
+                        stringResource(R.string.no_entries_block_n, year),
                         Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -197,8 +201,8 @@ fun BlockDetailScreen(
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete block?",
-            text = "Entries stay in the log but lose their block link. Consider archiving instead.",
+            title = stringResource(R.string.delete_block_q),
+            text = stringResource(R.string.delete_block_text),
             onConfirm = { confirmDelete = false; vm.delete(onDeleted) },
             onDismiss = { confirmDelete = false },
         )
@@ -230,16 +234,16 @@ private fun SeasonCard(
 
     Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         Column(Modifier.padding(12.dp)) {
-            Text("Season $year", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.season_n, year), style = MaterialTheme.typography.titleMedium)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Stat("Sprays", sprays.toString())
-                Stat("Fertilis.", ferts.toString())
-                Stat("Canopy", canopy.toString())
-                Stat("GDD", gddNow?.fmt(0) ?: "–")
-                Stat("Harvest", if (harvestKg > 0) "${harvestKg.fmt()} kg" else "–")
+                Stat(stringResource(R.string.sprays), sprays.toString())
+                Stat(stringResource(R.string.fertilis), ferts.toString())
+                Stat(stringResource(R.string.canopy), canopy.toString())
+                Stat(stringResource(R.string.gdd), gddNow?.fmt(0) ?: "–")
+                Stat(stringResource(R.string.harvest), if (harvestKg > 0) "${harvestKg.fmt()} kg" else "–")
             }
             if (phenology.isNotEmpty()) {
-                SectionTitle("Phenology")
+                SectionTitle(stringResource(R.string.phenology))
                 PhenologyStage.entries.forEach { stage ->
                     phenology[stage]?.let { date ->
                         val gdd = Gdd.accumulatedAt(weather, date, settings)
@@ -249,10 +253,10 @@ private fun SeasonCard(
             }
             if (phiHarvest != null) {
                 val ok = harvestDates.all { it >= phiHarvest }
-                KeyValueRow("Earliest harvest (PHI)", formatDate(phiHarvest))
+                KeyValueRow(stringResource(R.string.earliest_harvest_phi), formatDate(phiHarvest))
                 if (!ok) {
                     Text(
-                        "Warning: a harvest was logged before the pre-harvest interval expired.",
+                        stringResource(R.string.phi_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -260,7 +264,7 @@ private fun SeasonCard(
             }
             val latestSugar = yearMeasurements.filter { it.kind in setOf(MeasurementKind.BRIX, MeasurementKind.NM, MeasurementKind.OECHSLE) }.maxByOrNull { it.date }
             if (latestSugar != null) {
-                KeyValueRow("Latest ${latestSugar.kind.label}", "${latestSugar.value.fmt()} ${latestSugar.kind.unit} (${formatDate(latestSugar.date)})")
+                KeyValueRow(stringResource(R.string.latest_kind, latestSugar.kind.label), "${latestSugar.value.fmt()} ${latestSugar.kind.unit} (${formatDate(latestSugar.date)})")
             }
         }
     }

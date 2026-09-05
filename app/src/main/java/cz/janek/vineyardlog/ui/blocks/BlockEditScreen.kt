@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.blocks
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,7 +69,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
     }
 
     fun save(onDone: () -> Unit) {
-        if (name.isBlank()) { error = "Name is required."; return }
+        if (name.isBlank()) { error = c.appContext.getString(R.string.name_is_required); return }
         val block = Block(
             id = id ?: 0,
             name = name.trim(),
@@ -94,8 +96,8 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
 
     Scaffold(
         topBar = {
-            BackTopBar(title = if (blockId == null) "New block" else "Edit block", onBack = onDone) {
-                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = "Save") }
+            BackTopBar(title = if (blockId == null) stringResource(R.string.new_block) else stringResource(R.string.edit_block), onBack = onDone) {
+                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save)) }
             }
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -104,28 +106,28 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            AppTextField(vm.name, { vm.name = it }, "Name *", placeholder = "e.g. Horní trať")
-            AppTextField(vm.variety, { vm.variety = it }, "Variety", placeholder = "e.g. Pálava, Ryzlink rýnský")
+            AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required), placeholder = stringResource(R.string.block_name_hint))
+            AppTextField(vm.variety, { vm.variety = it }, stringResource(R.string.variety), placeholder = stringResource(R.string.variety_hint))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.areaHa, { vm.areaHa = it }, "Area", Modifier.weight(1f), suffix = "ha")
-                NumberField(vm.vineCount, { vm.vineCount = it }, "Vines", Modifier.weight(1f), integer = true)
+                NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = "ha")
+                NumberField(vm.vineCount, { vm.vineCount = it }, stringResource(R.string.vines), Modifier.weight(1f), integer = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.rowSpacing, { vm.rowSpacing = it }, "Row spacing", Modifier.weight(1f), suffix = "m")
-                NumberField(vm.vineSpacing, { vm.vineSpacing = it }, "Vine spacing", Modifier.weight(1f), suffix = "m")
+                NumberField(vm.rowSpacing, { vm.rowSpacing = it }, stringResource(R.string.row_spacing), Modifier.weight(1f), suffix = "m")
+                NumberField(vm.vineSpacing, { vm.vineSpacing = it }, stringResource(R.string.vine_spacing), Modifier.weight(1f), suffix = "m")
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.plantedYear, { vm.plantedYear = it }, "Planted", Modifier.weight(1f), integer = true)
-                AppTextField(vm.rootstock, { vm.rootstock = it }, "Rootstock", Modifier.weight(1f), placeholder = "SO4, K5BB…")
+                NumberField(vm.plantedYear, { vm.plantedYear = it }, stringResource(R.string.planted), Modifier.weight(1f), integer = true)
+                AppTextField(vm.rootstock, { vm.rootstock = it }, stringResource(R.string.rootstock), Modifier.weight(1f), placeholder = stringResource(R.string.rootstock_hint))
             }
-            AppTextField(vm.training, { vm.training = it }, "Training system", placeholder = "e.g. Guyot, cordon")
-            AppTextField(vm.notes, { vm.notes = it }, "Notes", singleLine = false, minLines = 3)
+            AppTextField(vm.training, { vm.training = it }, stringResource(R.string.training_system), placeholder = stringResource(R.string.training_hint))
+            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Archived (hide from pickers)")
+                Text(stringResource(R.string.archived_switch))
                 Switch(checked = vm.archived, onCheckedChange = { vm.archived = it })
             }
             Spacer(Modifier.height(8.dp))
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text("Save") }
+            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save)) }
         }
     }
 }

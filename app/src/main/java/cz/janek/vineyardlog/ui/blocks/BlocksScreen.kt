@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.blocks
 
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,13 +43,13 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit) {
     val blocks by vm.blocks.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Vineyard") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_vineyard)) }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNewBlock) { Icon(Icons.Default.Add, contentDescription = "New block") }
+            FloatingActionButton(onClick = onNewBlock) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_block)) }
         },
     ) { padding ->
         if (blocks.isEmpty()) {
-            EmptyState("No blocks yet.\nAdd your parcels (variety, area, vines) to log work per block.", Modifier.padding(padding))
+            EmptyState(stringResource(R.string.blocks_empty), Modifier.padding(padding))
         } else {
             LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp), modifier = Modifier.padding(padding)) {
                 items(blocks, key = { it.id }) { b -> BlockCard(b) { onOpenBlock(b.id) } }
@@ -67,9 +69,9 @@ private fun BlockCard(b: Block, onClick: () -> Unit) {
             val line = listOfNotNull(
                 b.variety.takeIf { it.isNotBlank() },
                 b.areaHa?.let { "${it.fmt(3)} ha" },
-                b.vineCount?.let { "$it vines" },
-                b.plantedYear?.let { "planted $it" },
-                if (b.archived) "archived" else null,
+                b.vineCount?.let { stringResource(R.string.n_vines, it) },
+                b.plantedYear?.let { stringResource(R.string.planted_year, it) },
+                if (b.archived) stringResource(R.string.archived) else null,
             ).joinToString(" · ")
             if (line.isNotBlank()) {
                 Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

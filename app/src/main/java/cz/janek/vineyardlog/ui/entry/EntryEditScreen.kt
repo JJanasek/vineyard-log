@@ -1,5 +1,8 @@
 package cz.janek.vineyardlog.ui.entry
 
+import cz.janek.vineyardlog.ui.label
+import cz.janek.vineyardlog.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -163,7 +166,7 @@ class EntryEditViewModel(
     private fun applyTypeDefaults(t: EntryType) {
         if (t == EntryType.HARVEST && quantityUnit.isBlank()) quantityUnit = "kg"
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
-        if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = "bottles"
+        if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
         if (measurements.isEmpty()) measurements.addAll(suggestedKinds(t).map { MeasRow(it) })
     }
 
@@ -180,10 +183,10 @@ class EntryEditViewModel(
     fun removeMeasurement(i: Int) { measurements.removeAt(i) }
 
     fun save(onDone: () -> Unit) {
-        if (type == EntryType.PHENOLOGY && stage == null) { error = "Pick the phenology stage."; return }
-        if (usages.any { it.productId == null }) { error = "Pick a product for every product row (or remove the row)."; return }
+        if (type == EntryType.PHENOLOGY && stage == null) { error = c.appContext.getString(R.string.err_pick_stage); return }
+        if (usages.any { it.productId == null }) { error = c.appContext.getString(R.string.err_pick_product); return }
         val filledMeasurements = measurements.filter { it.value.isNotBlank() }
-        if (filledMeasurements.any { it.value.toDoubleLenient() == null }) { error = "Measurement values must be numbers."; return }
+        if (filledMeasurements.any { it.value.toDoubleLenient() == null }) { error = c.appContext.getString(R.string.err_measurement_numbers); return }
         val entry = LogEntry(
             id = entryId ?: 0,
             date = date,
@@ -249,8 +252,8 @@ fun EntryEditScreen(
 
     Scaffold(
         topBar = {
-            BackTopBar(title = if (entryId == null) "New entry" else "Edit entry", onBack = onDone) {
-                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = "Save") }
+            BackTopBar(title = if (entryId == null) stringResource(R.string.new_entry) else stringResource(R.string.edit_entry), onBack = onDone) {
+                IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save)) }
             }
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -279,7 +282,7 @@ fun EntryEditScreen(
                 }
             }
             DropdownField(
-                label = "Type",
+                label = stringResource(R.string.type),
                 options = EntryType.forDomain(vm.domain),
                 selected = vm.type,
                 labelOf = { it.label },
@@ -290,30 +293,30 @@ fun EntryEditScreen(
             if (vm.domain == Domain.VINEYARD) {
                 val active = blocks.filter { !it.archived || it.id == vm.blockId }
                 DropdownField<Block>(
-                    label = "Block",
+                    label = stringResource(R.string.block),
                     options = active,
                     selected = active.firstOrNull { it.id == vm.blockId },
                     labelOf = { it.name },
                     onSelect = { vm.blockId = it.id },
-                    noneLabel = "Whole vineyard",
+                    noneLabel = stringResource(R.string.whole_vineyard),
                     onSelectNone = { vm.blockId = null },
                 )
             } else {
                 val active = batches.filter { !it.archived || it.id == vm.batchId }
                 DropdownField<Batch>(
-                    label = "Batch",
+                    label = stringResource(R.string.batch),
                     options = active,
                     selected = active.firstOrNull { it.id == vm.batchId },
                     labelOf = { "${it.name} (${it.vintage})" },
                     onSelect = { vm.batchId = it.id },
-                    noneLabel = "No batch",
+                    noneLabel = stringResource(R.string.no_batch),
                     onSelectNone = { vm.batchId = null },
                 )
             }
 
             if (vm.type == EntryType.PHENOLOGY) {
                 DropdownField(
-                    label = "Stage",
+                    label = stringResource(R.string.stage),
                     options = PhenologyStage.entries,
                     selected = vm.stage,
                     labelOf = { it.label },
@@ -323,32 +326,32 @@ fun EntryEditScreen(
 
             if (vm.type == EntryType.SPRAY) {
                 NumberField(
-                    vm.waterLha, { vm.waterLha = it }, "Water volume", suffix = "l/ha",
-                    supportingText = "Default in settings: ${settings.defaultWaterLha.input()} l/ha",
+                    vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), suffix = "l/ha",
+                    supportingText = stringResource(R.string.default_water_hint, settings.defaultWaterLha.input()),
                 )
             }
             if (vm.type == EntryType.SPRAY || vm.type == EntryType.FERTILIZATION || vm.type == EntryType.WEATHER_EVENT) {
-                SectionTitle("Conditions")
+                SectionTitle(stringResource(R.string.conditions))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NumberField(vm.tempC, { vm.tempC = it }, "Temp", Modifier.weight(1f), suffix = "°C")
-                    NumberField(vm.windKmh, { vm.windKmh = it }, "Wind", Modifier.weight(1f), suffix = "km/h")
-                    NumberField(vm.humidityPct, { vm.humidityPct = it }, "RH", Modifier.weight(1f), suffix = "%")
+                    NumberField(vm.tempC, { vm.tempC = it }, stringResource(R.string.temp), Modifier.weight(1f), suffix = "°C")
+                    NumberField(vm.windKmh, { vm.windKmh = it }, stringResource(R.string.wind), Modifier.weight(1f), suffix = "km/h")
+                    NumberField(vm.humidityPct, { vm.humidityPct = it }, stringResource(R.string.rh), Modifier.weight(1f), suffix = "%")
                 }
-                AppTextField(vm.weatherNote, { vm.weatherNote = it }, "Weather note", placeholder = "e.g. dry, overcast, leaves wet")
+                AppTextField(vm.weatherNote, { vm.weatherNote = it }, stringResource(R.string.weather_note), placeholder = stringResource(R.string.weather_note_hint))
             }
 
             if (vm.type in setOf(EntryType.HARVEST, EntryType.RACKING, EntryType.BOTTLING, EntryType.MUST_PREP, EntryType.VINEYARD_OTHER, EntryType.CELLAR_OTHER)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NumberField(vm.quantity, { vm.quantity = it }, "Quantity", Modifier.weight(2f))
-                    AppTextField(vm.quantityUnit, { vm.quantityUnit = it }, "Unit", Modifier.weight(1f))
+                    NumberField(vm.quantity, { vm.quantity = it }, stringResource(R.string.quantity), Modifier.weight(2f))
+                    AppTextField(vm.quantityUnit, { vm.quantityUnit = it }, stringResource(R.string.unit), Modifier.weight(1f))
                 }
             }
 
-            AppTextField(vm.title, { vm.title = it }, "Title (optional)", placeholder = "Short label shown in the log")
-            AppTextField(vm.notes, { vm.notes = it }, "Notes", singleLine = false, minLines = 3)
+            AppTextField(vm.title, { vm.title = it }, stringResource(R.string.title_optional), placeholder = stringResource(R.string.title_hint))
+            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
 
             // ---- products ----
-            SectionTitle("Products")
+            SectionTitle(stringResource(R.string.tab_products))
             val domainProducts = remember(products, vm.domain) {
                 products.filter { !it.archived && it.category.domain == vm.domain }
             }
@@ -365,39 +368,39 @@ fun EntryEditScreen(
                 )
             }
             OutlinedButton(onClick = { vm.addUsage() }) {
-                Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text("Add product")
+                Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_product))
             }
 
             // ---- measurements ----
-            SectionTitle("Measurements")
+            SectionTitle(stringResource(R.string.measurements))
             val kinds = MeasurementKind.forDomain(vm.domain)
             vm.measurements.forEachIndexed { i, row ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DropdownField(
-                        label = "Reading",
+                        label = stringResource(R.string.reading),
                         options = kinds,
                         selected = row.kind,
                         labelOf = { it.label },
                         onSelect = { vm.updateMeasurement(i, row.copy(kind = it)) },
                         modifier = Modifier.weight(1.5f),
                     )
-                    NumberField(row.value, { vm.updateMeasurement(i, row.copy(value = it)) }, "Value", Modifier.weight(1f), suffix = row.kind.unit)
-                    IconButton(onClick = { vm.removeMeasurement(i) }) { Icon(Icons.Default.Close, contentDescription = "Remove") }
+                    NumberField(row.value, { vm.updateMeasurement(i, row.copy(value = it)) }, stringResource(R.string.value), Modifier.weight(1f), suffix = row.kind.unit)
+                    IconButton(onClick = { vm.removeMeasurement(i) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove)) }
                 }
             }
             OutlinedButton(onClick = { vm.addMeasurement() }) {
-                Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text("Add measurement")
+                Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_measurement))
             }
 
             // ---- effort / cost ----
-            SectionTitle("Effort")
+            SectionTitle(stringResource(R.string.effort))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.laborHours, { vm.laborHours = it }, "Labour", Modifier.weight(1f), suffix = "h")
-                NumberField(vm.cost, { vm.cost = it }, "Cost", Modifier.weight(1f), suffix = settings.currency)
+                NumberField(vm.laborHours, { vm.laborHours = it }, stringResource(R.string.labour), Modifier.weight(1f), suffix = "h")
+                NumberField(vm.cost, { vm.cost = it }, stringResource(R.string.cost), Modifier.weight(1f), suffix = settings.currency)
             }
 
             Spacer(Modifier.height(8.dp))
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text("Save") }
+            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save)) }
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -416,7 +419,7 @@ private fun UsageRowEditor(
         Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 DropdownField(
-                    label = "Product",
+                    label = stringResource(R.string.product),
                     options = products,
                     selected = product,
                     labelOf = { it.name },
@@ -431,14 +434,14 @@ private fun UsageRowEditor(
                     },
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = onRemove) { Icon(Icons.Default.Close, contentDescription = "Remove product") }
+                IconButton(onClick = onRemove) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_product)) }
             }
             if (product != null) {
                 val hint = buildString {
-                    if (product.doseRangeText.isNotBlank()) append("Label dose: ${product.doseRangeText}")
+                    if (product.doseRangeText.isNotBlank()) append(stringResource(R.string.label_dose, product.doseRangeText))
                     product.phiDays?.let {
                         if (isNotEmpty()) append("   ")
-                        append("PHI $it d → harvest from ${formatDate(entryDate + it)}")
+                        append(stringResource(R.string.phi_harvest_from, it, formatDate(entryDate + it)))
                     }
                     if (product.purpose.isNotBlank()) { if (isNotEmpty()) append("\n"); append(product.purpose) }
                 }
@@ -447,14 +450,14 @@ private fun UsageRowEditor(
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(row.dose, { onChange(row.copy(dose = it)) }, "Dose", Modifier.weight(1f))
-                AppTextField(row.doseUnit, { onChange(row.copy(doseUnit = it)) }, "Unit", Modifier.weight(1f), placeholder = "g/hl, kg/ha")
+                NumberField(row.dose, { onChange(row.copy(dose = it)) }, stringResource(R.string.dose), Modifier.weight(1f))
+                AppTextField(row.doseUnit, { onChange(row.copy(doseUnit = it)) }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = stringResource(R.string.dose_unit_hint))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(row.totalAmount, { onChange(row.copy(totalAmount = it)) }, "Total used", Modifier.weight(1f))
-                AppTextField(row.totalUnit, { onChange(row.copy(totalUnit = it)) }, "Unit", Modifier.weight(1f), placeholder = "g, kg, l")
+                NumberField(row.totalAmount, { onChange(row.copy(totalAmount = it)) }, stringResource(R.string.total_used), Modifier.weight(1f))
+                AppTextField(row.totalUnit, { onChange(row.copy(totalUnit = it)) }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = stringResource(R.string.total_unit_hint))
             }
-            AppTextField(row.note, { onChange(row.copy(note = it)) }, "Note")
+            AppTextField(row.note, { onChange(row.copy(note = it)) }, stringResource(R.string.note))
         }
     }
 }
