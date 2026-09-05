@@ -36,6 +36,12 @@ import cz.janek.vineyardlog.data.model.Block
 import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.EmptyState
+import cz.janek.vineyardlog.ui.components.RiskCard
+import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.PhenologyStage
+import cz.janek.vineyardlog.util.DiseaseRisk
+import cz.janek.vineyardlog.util.todayEpochDay
+import cz.janek.vineyardlog.util.yearOf
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
@@ -43,6 +49,16 @@ import kotlinx.coroutines.flow.stateIn
 
 class BlocksViewModel(c: AppContainer) : ViewModel() {
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Weather-only disease risk from stored days (no forecast here; the Weather tab has it). */
+    val risk = combine(c.weatherDao.observeAll(), c.entryDao.observeAll(), c.settings.settings) { weather, entries, _ ->
+        val thisYear = LocalDate.now().year
+        val budBreak = entries.filter { it.entry.type == EntryType.PHENOLOGY && it.entry.phenologyStage == PhenologyStage.BUD_BREAK && yearOf(it.entry.date) == thisYear }
+            .minOfOrNull { it.entry.date }
+        val shootsOut = budBreak?.plus(15) ?: LocalDate.of(thisYear, 5, 1).toEpochDay()
+        val recent = weather.filter { it.date >= todayEpochDay() - 40 && it.wetHours != null }
+        if (recent.isEmpty()) null else DiseaseRisk.summarize(recent, emptyList(), shootsOut)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** Tasks whose month window covers today and are not ticked for this year. */
     val openThisMonth = combine(c.taskDao.observeTasks(), c.taskDao.observeDone(LocalDate.now().year)) { tasks, done ->
@@ -60,6 +76,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
     val vm = appViewModel { BlocksViewModel(it) }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val openNow by vm.openThisMonth.collectAsStateWithLifecycle()
+    val risk by vm.risk.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -76,6 +93,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
+            if (risk != null) RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 6.dp), compact = true)
             Card(onClick = onOpenPlan, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
                 Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Icon(Icons.Default.Checklist, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

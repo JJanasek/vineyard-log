@@ -332,4 +332,22 @@
     <string name="forecast_harvest_at">At the current pace %1$s %2$s around %3$s (+%4$s per day)</string>
     <string name="forecast_target">Target sugar for the harvest forecast</string>
     <string name="cellar_tools">Cellar calculators</string>
+    <string name="risk_title">Disease risk</string>
+    <string name="risk_low">low</string>
+    <string name="risk_moderate">moderate</string>
+    <string name="risk_high">high</string>
+    <string name="risk_peronospora">Peronospora</string>
+    <string name="risk_oidium">Oidium</string>
+    <string name="risk_botrytis">Botrytis</string>
+    <string name="risk_no_data">Fetch weather from Open-Meteo (with the vineyard coordinates set) to see disease risk – the models need hourly humidity and temperature.</string>
+    <string name="risk_forecast">Next days: %1$s</string>
+    <string name="risk_disclaimer">Simplified indicators from weather only (no canopy, variety or spray cover). Use them to decide when to look, not instead of looking.</string>
+    <string name="risk_per_primary">Primary infection conditions on %1$s (≥10 °C, ≥10 mm rain, shoots out) – symptoms possible from %2$s</string>
+    <string name="risk_per_secondary">Wet night(s) with ≥12 °C in the last 2 days – secondary infection window</string>
+    <string name="risk_per_dry">No infection conditions in the last days</string>
+    <string name="risk_oid_index">Index %1$d/100 – %2$d days with ≥6 warm hours (21–30 °C) in the last week</string>
+    <string name="risk_bot_wet">%1$d wet days in the last 3 (rain or long leaf wetness at 15–25 °C)</string>
+    <string name="risk_bot_dry">Dry in the last days</string>
+    <string name="risk_oid_hot">Heat above 35 °C is knocking the index down</string>
+    <string name="risk_forecast_day">%1$s %2$s</string>
 </resources>

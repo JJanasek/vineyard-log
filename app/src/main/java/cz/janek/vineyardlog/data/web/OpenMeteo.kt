@@ -15,6 +15,8 @@ import java.time.LocalDate
 object OpenMeteo {
     const val SOURCE = "open-meteo"
     private const val DAILY = "temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_mean"
+    private const val HOURLY = "temperature_2m,relative_humidity_2m,precipitation"
+    const val SOURCE_FORECAST = "forecast"
 
     suspend fun fetchDaily(lat: Double, lon: Double, from: LocalDate, to: LocalDate): List<WeatherDay> =
         withContext(Dispatchers.IO) {
@@ -35,8 +37,15 @@ object OpenMeteo {
             result.values.toList()
         }
 
+    /** Daily rows for the next [days] days (today included), not meant to be stored. */
+    suspend fun fetchForecast(lat: Double, lon: Double, days: Int = 4): List<WeatherDay> = withContext(Dispatchers.IO) {
+        val today = LocalDate.now()
+        request("https://api.open-meteo.com/v1/forecast", lat, lon, today, today.plusDays((days - 1).toLong()))
+            .map { it.copy(source = SOURCE_FORECAST) }
+    }
+
     private fun request(base: String, lat: Double, lon: Double, from: LocalDate, to: LocalDate): List<WeatherDay> {
-        val url = "$base?latitude=$lat&longitude=$lon&start_date=$from&end_date=$to&daily=$DAILY&timezone=auto"
+        val url = "$base?latitude=$lat&longitude=$lon&start_date=$from&end_date=$to&daily=$DAILY&hourly=$HOURLY&timezone=auto"
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = 15_000; readTimeout = 30_000
             setRequestProperty("User-Agent", "VineyardLog/0.1 (personal use)")
@@ -48,7 +57,9 @@ object OpenMeteo {
                 val reason = runCatching { JSONObject(body).optString("reason") }.getOrNull().orEmpty()
                 error("HTTP $code ${reason.ifBlank { body.take(120) }}")
             }
-            val daily = JSONObject(body).getJSONObject("daily")
+            val root = JSONObject(body)
+            val hourlyAgg = aggregateHourly(root.optJSONObject("hourly"))
+            val daily = root.getJSONObject("daily")
             val time = daily.getJSONArray("time")
             val tmax = daily.optJSONArray("temperature_2m_max")
             val tmin = daily.optJSONArray("temperature_2m_min")
@@ -58,15 +69,38 @@ object OpenMeteo {
                 val date = runCatching { LocalDate.parse(time.getString(i)) }.getOrNull() ?: return@mapNotNull null
                 val hi = tmax?.optDoubleOrNull(i); val lo = tmin?.optDoubleOrNull(i)
                 if (hi == null && lo == null) return@mapNotNull null  // no data yet for that day
+                val agg = hourlyAgg[time.getString(i)]
                 WeatherDay(
                     date = date.toEpochDay(), tMin = lo, tMax = hi,
                     rainMm = rain?.optDoubleOrNull(i), humidityPct = rh?.optDoubleOrNull(i),
                     frost = (lo ?: 99.0) <= 0.0, source = SOURCE,
+                    wetHours = agg?.wet, warmHours = agg?.warm, hotHours = agg?.hot,
                 )
             }
         } finally {
             conn.disconnect()
         }
+    }
+
+    private class Agg(var wet: Int = 0, var warm: Int = 0, var hot: Int = 0, var any: Boolean = false)
+
+    /** Per local date: hours with RH ≥ 90 % or rain > 0, hours in 21–30 °C, hours > 35 °C. */
+    private fun aggregateHourly(hourly: JSONObject?): Map<String, Agg> {
+        if (hourly == null) return emptyMap()
+        val time = hourly.optJSONArray("time") ?: return emptyMap()
+        val t = hourly.optJSONArray("temperature_2m"); val rh = hourly.optJSONArray("relative_humidity_2m"); val pr = hourly.optJSONArray("precipitation")
+        val out = HashMap<String, Agg>()
+        for (i in 0 until time.length()) {
+            val day = time.getString(i).substringBefore('T')
+            val agg = out.getOrPut(day) { Agg() }
+            val temp = t?.optDoubleOrNull(i); val hum = rh?.optDoubleOrNull(i); val rain = pr?.optDoubleOrNull(i)
+            if (temp == null && hum == null) continue
+            agg.any = true
+            if ((hum ?: 0.0) >= 90.0 || (rain ?: 0.0) > 0.0) agg.wet++
+            if (temp != null && temp >= 21.0 && temp <= 30.0) agg.warm++
+            if (temp != null && temp > 35.0) agg.hot++
+        }
+        return out.filterValues { it.any }
     }
 
     private fun org.json.JSONArray.optDoubleOrNull(i: Int): Double? =

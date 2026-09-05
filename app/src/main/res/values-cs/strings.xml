@@ -332,4 +332,22 @@
     <string name="forecast_harvest_at">Při současném tempu %1$s %2$s kolem %3$s (+%4$s za den)</string>
     <string name="forecast_target">Cílová cukernatost pro odhad sklizně</string>
     <string name="cellar_tools">Sklepní kalkulačky</string>
+    <string name="risk_title">Riziko chorob</string>
+    <string name="risk_low">nízké</string>
+    <string name="risk_moderate">střední</string>
+    <string name="risk_high">vysoké</string>
+    <string name="risk_peronospora">Peronospora</string>
+    <string name="risk_oidium">Padlí</string>
+    <string name="risk_botrytis">Botrytida</string>
+    <string name="risk_no_data">Stáhněte počasí z Open-Meteo (se zadanými souřadnicemi vinice), aby se zobrazilo riziko chorob – modely potřebují hodinovou vlhkost a teplotu.</string>
+    <string name="risk_forecast">Další dny: %1$s</string>
+    <string name="risk_disclaimer">Zjednodušené ukazatele jen z počasí (bez keře, odrůdy a krytí postřikem). Slouží k rozhodnutí, kdy se jít podívat, ne místo dívání.</string>
+    <string name="risk_per_primary">Podmínky primární infekce %1$s (≥10 °C, ≥10 mm, letorosty vyrašené) – příznaky možné od %2$s</string>
+    <string name="risk_per_secondary">Vlhká noc/noci s ≥12 °C v posledních 2 dnech – okno sekundární infekce</string>
+    <string name="risk_per_dry">V posledních dnech bez infekčních podmínek</string>
+    <string name="risk_oid_index">Index %1$d/100 – %2$d dnů s ≥6 teplými hodinami (21–30 °C) za poslední týden</string>
+    <string name="risk_bot_wet">%1$d vlhké dny z posledních 3 (déšť nebo dlouhé ovlhčení při 15–25 °C)</string>
+    <string name="risk_bot_dry">Poslední dny sucho</string>
+    <string name="risk_oid_hot">Horko nad 35 °C index sráží</string>
+    <string name="risk_forecast_day">%1$s %2$s</string>
 </resources>

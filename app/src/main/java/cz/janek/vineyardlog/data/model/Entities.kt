@@ -195,6 +195,12 @@ data class WeatherDay(
     val note: String = "",
     /** "" = typed by hand, "open-meteo" = fetched; fetched rows may be refreshed, typed ones are kept. */
     @ColumnInfo(defaultValue = "") val source: String = "",
+    /** Hours with RH ≥ 90 % or rain (leaf-wetness proxy), from hourly data. */
+    val wetHours: Int? = null,
+    /** Hours with 21–30 °C (powdery mildew window). */
+    val warmHours: Int? = null,
+    /** Hours above 35 °C. */
+    val hotHours: Int? = null,
 )
 
 /** A photo attached to an entry; the JPEG lives in the app's private files/photos directory. */

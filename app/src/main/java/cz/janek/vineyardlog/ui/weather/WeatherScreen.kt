@@ -62,6 +62,10 @@ import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.data.web.OpenMeteo
+import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.PhenologyStage
+import cz.janek.vineyardlog.ui.components.RiskCard
+import cz.janek.vineyardlog.util.DiseaseRisk
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.ChartSeries
@@ -92,6 +96,18 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
     var message by mutableStateOf<String?>(null)
     var fetching by mutableStateOf(false)
         private set
+    var forecast by mutableStateOf<List<WeatherDay>>(emptyList())
+        private set
+    private var forecastLoadedFor: Pair<Double, Double>? = null
+    val entries = c.entryDao.observeAll().stateIn(viewModelScope, started, emptyList())
+
+    /** Load the 3-day forecast once per coordinates (used only for the risk card). */
+    fun ensureForecast() {
+        val s = settings.value; val lat = s.latitude ?: return; val lon = s.longitude ?: return
+        if (forecastLoadedFor == lat to lon) return
+        forecastLoadedFor = lat to lon
+        viewModelScope.launch { forecast = runCatching { OpenMeteo.fetchForecast(lat, lon) }.getOrDefault(emptyList()) }
+    }
 
     fun save(day: WeatherDay) = viewModelScope.launch { c.weatherDao.upsert(day) }
     fun delete(date: Long) = viewModelScope.launch { c.weatherDao.delete(date) }
@@ -141,6 +157,16 @@ fun WeatherScreen() {
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm.message) { vm.message?.let { snackbar.showSnackbar(it); vm.message = null } }
     val cumulative = remember(all, year, settings) { Gdd.cumulative(all, year, settings) }
+    val entries by vm.entries.collectAsStateWithLifecycle()
+    LaunchedEffect(settings.latitude, settings.longitude) { vm.ensureForecast() }
+    val risk = remember(all, vm.forecast, entries, settings) {
+        val thisYear = LocalDate.now().year
+        val budBreak = entries.filter { it.entry.type == EntryType.PHENOLOGY && it.entry.phenologyStage == PhenologyStage.BUD_BREAK && yearOf(it.entry.date) == thisYear }
+            .minOfOrNull { it.entry.date }
+        val shootsOut = budBreak?.plus(15) ?: LocalDate.of(thisYear, 5, 1).toEpochDay()
+        val recent = all.filter { it.date >= todayEpochDay() - 40 && it.wetHours != null }
+        if (recent.isEmpty()) null else DiseaseRisk.summarize(recent, vm.forecast, shootsOut)
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_weather)) }) },
@@ -157,6 +183,9 @@ fun WeatherScreen() {
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(years) { y -> FilterChip(selected = year == y, onClick = { vm.year.value = y }, label = { Text(y.toString()) }) }
                 }
+            }
+            if (year == LocalDate.now().year) {
+                item { RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
             }
             item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
