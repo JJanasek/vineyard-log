@@ -70,6 +70,7 @@ scrape them. Two lighter ways are built in:
   and pre-fills name, supplier, category, package, price, dose range, PHI and links to technical
   sheets. Check the dose against the label before trusting it.
 - **Import your old markdown diary**: `python3 tools/import_markdown_log.py /path/to/vinohrad-log -o old-log.json` converts the per-variety markdown files (harvest table, additives with shop links, dated steps) into a backup; load it with *Settings → Import backup (merge)*, which adds without deleting anything.
+- **Vinařský dům range**: `python3 tools/vinarskydum_catalog_to_json.py -o vinarskydum-products.json` downloads the fungicide, insecticide, herbicide, vine-fertiliser and biological-control categories (one request per second; their terms carry no database clause) for *Settings → Import products (merge)*. Keep the file to yourself.
 - **Lipera catalog PDF**: Lipera publishes an official product catalog on
   [lipera.cz/dokumenty-ke-stazeni](https://www.lipera.cz/dokumenty-ke-stazeni/). Download it and run
 
@@ -100,6 +101,8 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 ```
 
 ## Roadmap / ideas
+
+A Czech proposal for the hobby-grower direction (units, variety templates, forecasts, charts) is in [docs/navrh-hobby-vinar.md](docs/navrh-hobby-vinar.md).
 
 - ~~**Czech UI**~~ – done: all UI strings are resources (`values` / `values-cs`); Settings → Language switches between system default, English and Czech.
 - ~~**Photos and a field guide**~~ – done: entries take photos from the gallery or camera (stored downscaled in app storage, not in the JSON backup); *Vineyard → book icon* opens a bilingual field guide with 20 diseases, pests, deficiencies and disorders, 14 of them with Wikimedia Commons photos (credits in `app/src/main/assets/guide/CREDITS.md`). Each guide page can start a scouting entry.
