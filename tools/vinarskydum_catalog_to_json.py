@@ -53,7 +53,7 @@ def category_products(slug):
     while True:
         url = f"{BASE}/{slug}/" + (f"strana-{page}/" if page > 1 else "")
         try:
-            body = get(url)
+            body, _ = get_cached(url)
         except Exception as e:
             print(f"  {url}: {e}", file=sys.stderr); break
         found = []
@@ -71,8 +71,49 @@ def category_products(slug):
         page += 1; time.sleep(1.0)
     return urls
 
-def parse_product(url, default_cat):
+import os, hashlib
+CACHE = os.path.expanduser("~/.cache/vineyard-log/vinarskydum")
+
+def get_cached(url):
+    os.makedirs(CACHE, exist_ok=True)
+    f = os.path.join(CACHE, hashlib.sha1(url.encode()).hexdigest() + ".html")
+    if os.path.exists(f):
+        return open(f, encoding="utf-8").read(), True
     body = get(url)
+    open(f, "w", encoding="utf-8").write(body)
+    return body, False
+
+BREADCRUMB_CAT = [
+    (r"fungicid|houbov", "FUNGICIDE"), (r"insekticid|škůdc|skudc|akaricid|biologick", "INSECTICIDE"), (r"herbicid|plevel", "HERBICIDE"),
+    (r"listov", "FOLIAR_FERTILIZER"), (r"hnojiv|substrát|substrat", "SOIL_FERTILIZER"), (r"smáč|smac|adjuv", "ADJUVANT"), (r"stimul|humin", "BIOSTIMULANT"),
+]
+
+def vine_dose_from_table(body):
+    """Returns (dose_min, dose_max, unit, phi_days) from the crop table row for grapevine, if present."""
+    for table in re.findall(r"<table.*?</table>", body, re.S):
+        head = [text(h) for h in re.findall(r"<th[^>]*>(.*?)</th>", table, re.S)]
+        if not head: continue
+        dose_col = next((i for i, h in enumerate(head) if re.search(r"dávk", h, re.I)), None)
+        phi_col = next((i for i, h in enumerate(head) if re.search(r"^OL|ochrann", h, re.I)), None)
+        if dose_col is None: continue
+        hdr = head[dose_col].lower()
+        per = "10l" if "10 l" in hdr or "10l" in hdr else ("hl" if "100 l" in hdr else ("ha" if "ha" in hdr else "10l"))
+        for row in re.findall(r"<tr[^>]*>(.*?)</tr>", table, re.S):
+            cells = [text(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)]
+            if len(cells) <= dose_col or not re.search(r"r[ée]va|vinn", cells[0], re.I): continue
+            m = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:[-–]\s*(\d+(?:[.,]\d+)?))?\s*(g|ml|kg|l)?", cells[dose_col])
+            if not m: continue
+            lo = float(m.group(1).replace(",", ".")); hi = float(m.group(2).replace(",", ".")) if m.group(2) else lo
+            unit_base = (m.group(3) or "g").lower()
+            phi = None
+            if phi_col is not None and len(cells) > phi_col:
+                nums = [int(x) for x in re.findall(r"\d+", cells[phi_col])]
+                if nums: phi = max(nums)
+            return lo, hi, f"{unit_base}/{per}", phi
+    return None
+
+def parse_product(url, default_cat):
+    body, _ = get_cached(url)
     name = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S)
     name = text(name.group(1)) if name else url.rstrip("/").rsplit("/", 1)[-1]
     price = None
@@ -87,10 +128,20 @@ def parse_product(url, default_cat):
         package = f"{mm.group(1)} {mm.group(2).lower()}" if mm else ""
     desc = re.search(r'class="description-inner"(.*?)(?=<div class="p-detail|<section|<footer)', body, re.S)
     desc = text(desc.group(1)) if desc else ""
-    dose_min = dose_max = None; unit = ""
+    bc = re.search(r'class="breadcrumbs[^"]*"(.*?)</(?:nav|div|ul|ol)>', body, re.S)
+    crumbs = [text(x) for x in re.findall(r'<a[^>]*>(.*?)</a>', bc.group(1), re.S)] if bc else []
+    crumbs = [c for c in crumbs if c and c.lower() not in ("domů", "vinohrad a zahrada")]
+    subcat = crumbs[-1] if crumbs else ""
+    if subcat.lower() in name.lower() or name.lower() in subcat.lower(): subcat = crumbs[-2] if len(crumbs) >= 2 else ""
+    dose_min = dose_max = None; unit = ""; table_phi = None
+    tbl = vine_dose_from_table(body)
+    if tbl:
+        dose_min, dose_max, unit, table_phi = tbl
     anchor = re.search(r"dávk", desc, re.I)
-    for chunk in ([desc[anchor.start():]] if anchor else []) + [desc]:
+    for chunk in ([] if tbl else ([desc[anchor.start():]] if anchor else []) + [desc]):
         m = DOSE.search(chunk)
+        if m and m.group(4).lower().replace(" ", "") in ("l", "kg"):
+            m = None  # "400 g/l" is the active-ingredient concentration, not a dose
         if m:
             dose_min = float(m.group(1).replace(",", ".")); dose_max = float(m.group(2).replace(",", ".")) if m.group(2) else dose_min
             per = m.group(4).lower().replace(" ", "")
@@ -103,13 +154,21 @@ def parse_product(url, default_cat):
             dose_min = float(m.group(1).replace(",", ".")); dose_max = float(m.group(2).replace(",", ".")) if m.group(2) else dose_min; unit = "%"
     phi = PHI.search(desc); active = ACTIVE.search(desc)
     cat = default_cat
-    for pat, c in CAT_WORDS:
-        if re.search(pat, (name + " " + params.get("kategorie", "")).lower()):
+    crumb_text = " ".join(crumbs).lower()
+    for pat, c in BREADCRUMB_CAT:
+        if re.search(pat, crumb_text):
             cat = c; break
+    else:
+        for pat, c in CAT_WORDS:
+            if re.search(pat, (name + " " + params.get("kategorie", "")).lower()):
+                cat = c; break
+    if not package:
+        mm = re.search(r"-(\d+(?:-\d+)?)-?(kg|g|l|ml)/?$", url)
+        if mm: package = f"{mm.group(1).replace('-', '.')} {mm.group(2)}"
     return {
         "name": name, "supplier": "VINARSKY_DUM", "category": cat, "activeIngredient": active.group(1).strip() if active else "",
-        "doseMin": dose_min, "doseMax": dose_max, "doseUnit": unit, "phiDays": int(phi.group(1)) if phi else None,
-        "purpose": desc[:400], "url": url, "packageSize": package, "price": price,
+        "doseMin": dose_min, "doseMax": dose_max, "doseUnit": unit, "phiDays": table_phi if table_phi is not None else (int(phi.group(1)) if phi else None),
+        "purpose": ((subcat + " – ") if subcat and subcat.lower() not in name.lower() else "") + desc[:400], "url": url, "packageSize": package, "price": price,
         "notes": "Z nabídky vinarskydum.cz; dávku a ochrannou lhůtu ověřte na etiketě.",
     }
 
@@ -128,7 +187,7 @@ def main():
                 products.append(parse_product(url, cat))
             except Exception as e:
                 print(f"  {url}: {e}", file=sys.stderr)
-            time.sleep(1.0)
+            if not os.path.exists(os.path.join(CACHE, hashlib.sha1(url.encode()).hexdigest() + ".html")): time.sleep(1.0)
     json.dump({"source": "vinarskydum.cz product pages, personal import", "products": products}, open(a.output, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     by = {}
     for p in products: by[p["category"]] = by.get(p["category"], 0) + 1
