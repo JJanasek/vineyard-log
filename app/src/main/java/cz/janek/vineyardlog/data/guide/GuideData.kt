@@ -17,8 +17,8 @@ data class GuideEntry(
     val symptoms: Bi,
     val conditions: Bi,
     val action: Bi,
-    /** Asset under assets/guide/, null when we have no licensed photo. */
-    val image: String?,
+    /** Assets under assets/guide/; empty when we have no licensed photo. The first one is the thumbnail. */
+    val images: List<String>,
     /** Category to open in Products when looking for a treatment. */
     val productCategory: ProductCategory?,
 )
@@ -38,7 +38,7 @@ object GuideData {
                "Teplo a vlhko: primární infekce potřebuje zhruba 10 °C, 10 mm srážek a 10 cm dlouhé letorosty (pravidlo „3×10“). Sekundární šíření za teplých nocí s ovlhčením listů."),
             Bi("Protect before rain events from the 10 cm shoot stage to bunch closure; copper (organic) or systemic/penetrant fungicides in rotation; keep the canopy open and dry. Log each spray with its PHI.",
                "Ošetřujte preventivně před dešti od 10 cm letorostů do uzavírání hroznů; měď (ekologicky) nebo systémové/penetrantní fungicidy střídavě; vzdušné keře. Každý postřik zapište s ochrannou lhůtou."),
-            "peronospora.jpg", ProductCategory.FUNGICIDE,
+            listOf("peronospora.jpg", "peronospora_2.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "oidium", GuideKind.DISEASE,
@@ -49,7 +49,7 @@ object GuideData {
                "Sucho a teplo (20–28 °C), zastíněné a husté keře; na rozdíl od peronospory nepotřebuje déšť. Citlivé odrůdy nejvíce mezi kvetením a uzavíráním hroznů."),
             Bi("Sulphur early in the season (not above about 30 °C), specific fungicides from just before flowering; remove leaves in the fruit zone for light and air.",
                "Síra na začátku sezóny (ne při teplotách nad zhruba 30 °C), specifické fungicidy od doby těsně před kvetením; odlistění zóny hroznů pro světlo a vzduch."),
-            "oidium.jpg", ProductCategory.FUNGICIDE,
+            listOf("oidium.jpg", "oidium_2.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "botrytis", GuideKind.DISEASE,
@@ -60,7 +60,7 @@ object GuideData {
                "Vlhko během kvetení a hlavně od zaměkání do sklizně, husté hrozny, bobule poškozené obaleči, kroupami, padlím nebo úpalem, přehnojení dusíkem."),
             Bi("Loose canopy and leaf removal in the bunch zone after fruit set, moderate nitrogen, botryticide at bunch closure and/or veraison on sensitive varieties; harvest affected lots early, sort out rotten fruit.",
                "Vzdušné keře, odlistění zóny hroznů po odkvětu, umírněné hnojení dusíkem, botryticid při uzavírání hroznů a/nebo zaměkání u citlivých odrůd; napadené partie sklidit dříve, hnilé hrozny vytřídit."),
-            "botrytis.jpg", ProductCategory.FUNGICIDE,
+            listOf("botrytis.jpg", "botrytis_2.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "black_rot", GuideKind.DISEASE,
@@ -71,7 +71,7 @@ object GuideData {
                "Teplá deštivá období od rašení do uzavírání hroznů; přezimuje v mumiích ponechaných ve vinici. Ve střední Evropě přibývá, hlavně u opuštěných nebo neošetřovaných vinic v okolí."),
             Bi("Remove mummies and infected wood in winter; most downy/powdery mildew programmes with strobilurins or triazoles also cover black rot in the critical flowering-to-bunch-closure window.",
                "V zimě odstraňte mumie a napadené dřevo; většina programů proti peronospoře a padlí se strobiluriny nebo triazoly kryje i černou hnilobu v kritickém období kvetení až uzavírání hroznů."),
-            "black_rot.jpg", ProductCategory.FUNGICIDE,
+            listOf("black_rot.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "esca", GuideKind.DISEASE,
@@ -82,7 +82,7 @@ object GuideData {
                "Houby vnikají velkými řeznými ranami, hlavně za vlhkých zim; starší keře, velké řezy a stres z horka příznaky zesilují. Příznaky se často rok od roku střídají."),
             Bi("No cure. Prune late in dry weather with small cuts, protect big wounds, mark symptomatic vines (log them here per year), regenerate by trunk renewal or replace; remove dead wood from the vineyard.",
                "Neléčitelné. Řez v suchém počasí, pozdě a s malými ranami, ochrana velkých ran, označení nemocných keřů (zapisujte je zde po letech), obnova kmene nebo výměna keře; mrtvé dřevo z vinice odstranit."),
-            "esca.jpg", null,
+            listOf("esca.jpg"), null
         ),
         GuideEntry(
             "phomopsis", GuideKind.DISEASE,
@@ -93,7 +93,7 @@ object GuideData {
                "Chladná vlhká jara, infekce hned po rašení; šíří se deštěm z napadeného dřeva."),
             Bi("Cut out heavily affected canes, early-season fungicide at 3–10 cm shoots when spring is wet; most early downy-mildew products also act on Phomopsis.",
                "Silně napadené réví vyřezat, časný postřik při 3–10 cm letorostů za vlhkého jara; většina časných přípravků proti peronospoře působí i na fomopsis."),
-            "phomopsis.jpg", ProductCategory.FUNGICIDE,
+            listOf("phomopsis.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "rotbrenner", GuideKind.DISEASE,
@@ -104,7 +104,7 @@ object GuideData {
                "Dlouhá vlhká období v květnu a červnu na suchých kamenitých polohách; askospory pocházejí ze starého listí na zemi."),
             Bi("Rarely needs a dedicated spray: the first downy-mildew treatments cover it. Mulching or incorporating old leaves reduces the inoculum.",
                "Zvláštní ošetření většinou není třeba: kryjí ho první postřiky proti peronospoře. Mulčování nebo zapravení starého listí snižuje zdroj infekce."),
-            null, ProductCategory.FUNGICIDE,
+            emptyList(), ProductCategory.FUNGICIDE,
         ),
         GuideEntry(
             "lobesia", GuideKind.PEST,
@@ -115,7 +115,7 @@ object GuideData {
                "Teplá léta; nálet se sleduje feromonovými lapáky. Na Moravě dvě až tři generace."),
             Bi("Mating disruption (pheromone dispensers) for larger areas; otherwise Bacillus thuringiensis or specific insecticides timed to egg hatch from trap catches. Record trap counts as scouting entries.",
                "Feromonové matení (dispenzery) pro větší plochy; jinak Bacillus thuringiensis nebo specifické insekticidy načasované na líhnutí housenek podle lapáků. Úlovky z lapáků zapisujte jako kontroly."),
-            "lobesia.jpg", ProductCategory.INSECTICIDE,
+            listOf("lobesia.jpg", "lobesia_2.jpg"), ProductCategory.INSECTICIDE
         ),
         GuideEntry(
             "erineum_mite", GuideKind.PEST,
@@ -126,7 +126,7 @@ object GuideData {
                "Roztoči přezimují pod šupinami pupenů; teplé jaro jim svědčí. Často zaměňováno s peronosporou (plsť nejde setřít)."),
             Bi("Usually no treatment. Sulphur sprays against powdery mildew early in the season suppress it; predatory mites (Typhlodromus pyri) keep it in check.",
                "Většinou bez zásahu. Časné sirnaté postřiky proti padlí ho potlačují; dravý roztoč Typhlodromus pyri ho drží pod kontrolou."),
-            "erineum_mite.jpg", null,
+            listOf("erineum_mite.jpg", "erineum_mite_2.jpg", "erineum_mite_3.jpg"), null
         ),
         GuideEntry(
             "scaphoideus", GuideKind.PEST,
@@ -137,7 +137,7 @@ object GuideData {
                "Šíří se na sever; zlaté žloutnutí je v ČR karanténní choroba. Žluté lepové desky od června ukáží dospělce."),
             Bi("Report suspected flavescence dorée to the plant-health authority (ÚKZÚZ). Insecticide treatments only when the vector is confirmed and prescribed; remove symptomatic vines.",
                "Podezření na zlaté žloutnutí hlaste ÚKZÚZ. Insekticidní ošetření jen při potvrzeném výskytu přenašeče a podle nařízení; keře s příznaky odstranit."),
-            "scaphoideus.jpg", ProductCategory.INSECTICIDE,
+            listOf("scaphoideus.jpg"), ProductCategory.INSECTICIDE
         ),
         GuideEntry(
             "drosophila_suzukii", GuideKind.PEST,
@@ -148,7 +148,7 @@ object GuideData {
                "Od zaměkání, teplé vlhké počasí, modré a tenkoslupké odrůdy; přezrálé ovoce a bobuloviny v okolí tlak zvyšují."),
             Bi("Harvest on time, remove damaged fruit, vinegar traps for monitoring; insecticides have short PHIs and limited effect, so sanitation matters most.",
                "Sklízet včas, poškozené hrozny odstranit, octové lapáky pro sledování; insekticidy mají krátké ochranné lhůty a omezený účinek, nejdůležitější je hygiena porostu."),
-            "drosophila_suzukii.jpg", ProductCategory.INSECTICIDE,
+            listOf("drosophila_suzukii.jpg", "drosophila_suzukii_2.jpg"), ProductCategory.INSECTICIDE
         ),
         GuideEntry(
             "chlorosis", GuideKind.DEFICIENCY,
@@ -159,7 +159,7 @@ object GuideData {
                "Vápenité půdy (Pálava, Mikulovsko), chladné vlhké jaro, utužená nebo zamokřená půda, citlivé podnože; železo v půdě je, ale není přijatelné."),
             Bi("Foliar iron chelate sprays give quick relief; soil-applied Fe-EDDHA chelate in spring for lasting effect; long term choose lime-tolerant rootstocks (e.g. Fercal, 41B) and improve soil structure.",
                "Listové aplikace chelátu železa rychle pomohou; půdní aplikace chelátu Fe-EDDHA na jaře má trvalejší účinek; dlouhodobě volit podnože tolerantní k vápnu (např. Fercal, 41B) a zlepšit strukturu půdy."),
-            "chlorosis.jpg", ProductCategory.FOLIAR_FERTILIZER,
+            listOf("chlorosis.jpg"), ProductCategory.FOLIAR_FERTILIZER
         ),
         GuideEntry(
             "mg_deficiency", GuideKind.DEFICIENCY,
@@ -170,7 +170,7 @@ object GuideData {
                "Lehké písčité nebo kyselé půdy, vysoké hnojení draslíkem (antagonismus K–Mg), sucho, podnože jako SO4 a vysoká úroda."),
             Bi("Foliar magnesium sulphate (Epsom salt, about 2–4 % solution, several applications from bunch closure) for the current season; soil magnesium (kieserite, dolomitic lime on acid soils) for the long term; do not overdo potassium.",
                "Listově síran hořečnatý (hořká sůl, zhruba 2–4% roztok, několik aplikací od uzavírání hroznů) pro běžnou sezónu; do půdy hořčík (kieserit, dolomitický vápenec na kyselých půdách) dlouhodobě; nepřehánět draslík."),
-            null, ProductCategory.FOLIAR_FERTILIZER,
+            emptyList(), ProductCategory.FOLIAR_FERTILIZER,
         ),
         GuideEntry(
             "k_deficiency", GuideKind.DEFICIENCY,
@@ -181,7 +181,7 @@ object GuideData {
                "Lehké půdy, sucho, utužené podorničí, vysoká úroda; nadbytek hořčíku a vápníku snižuje příjem draslíku."),
             Bi("Confirm with a petiole or soil test before fertilising; potassium sulphate to the soil in autumn or spring, foliar potassium as a short-term fix.",
                "Před hnojením potvrdit rozborem řapíků nebo půdy; síran draselný do půdy na podzim nebo na jaře, listový draslík jako krátkodobá pomoc."),
-            null, ProductCategory.SOIL_FERTILIZER,
+            emptyList(), ProductCategory.SOIL_FERTILIZER,
         ),
         GuideEntry(
             "n_deficiency", GuideKind.DEFICIENCY,
@@ -192,7 +192,7 @@ object GuideData {
                "Chudé písčité půdy, konkurence ozelenění v suchých letech, málo organické hmoty, vysoká úroda."),
             Bi("Moderate nitrogen after bud break (30–50 kg N/ha is typical for a deficient site), compost or manure, manage the cover crop; foliar urea around veraison raises YAN in the must.",
                "Umírněné hnojení dusíkem po rašení (u nedostatkových stanovišť obvykle 30–50 kg N/ha), kompost nebo hnůj, regulace ozelenění; listová močovina kolem zaměkání zvýší dusík v moštu."),
-            null, ProductCategory.SOIL_FERTILIZER,
+            emptyList(), ProductCategory.SOIL_FERTILIZER,
         ),
         GuideEntry(
             "b_deficiency", GuideKind.DEFICIENCY,
@@ -203,7 +203,7 @@ object GuideData {
                "Písčité, kyselé nebo velmi suché půdy; sucho před kvetením blokuje příjem boru i tam, kde ho půda má dost."),
             Bi("Foliar boron shortly before flowering at label rate (narrow margin between deficiency and toxicity, never exceed the dose); soil correction only after a soil test.",
                "Listový bor krátce před kvetením v dávce dle etikety (úzké rozmezí mezi nedostatkem a toxicitou, dávku nepřekračovat); půdní korekce jen po rozboru půdy."),
-            null, ProductCategory.FOLIAR_FERTILIZER,
+            emptyList(), ProductCategory.FOLIAR_FERTILIZER,
         ),
         GuideEntry(
             "sunburn", GuideKind.DISORDER,
@@ -214,7 +214,7 @@ object GuideData {
                "Vlny veder nad zhruba 35 °C, pozdní odlistění nebo odlistění na západní (odpolední) straně, vodní stres."),
             Bi("Remove leaves early (right after fruit set) and mainly on the east/morning side; keep some shading on the west side; kaolin sprays on exposed sites.",
                "Odlistění provádět brzy (hned po odkvětu) a hlavně na východní/ranní straně; na západní straně ponechat částečné zastínění; na exponovaných polohách kaolin."),
-            "sunburn.jpg", null,
+            listOf("sunburn.jpg", "sunburn_2.jpg"), null
         ),
         GuideEntry(
             "frost", GuideKind.DISORDER,
@@ -225,7 +225,7 @@ object GuideData {
                "Jasné bezvětrné noci pod zhruba −2 °C po rašení, hromadění studeného vzduchu v nižších částech vinice."),
             Bi("Late pruning and leaving a sacrificial cane delay bud break; keep the soil bare and firm in frost weeks; wind machines, candles or sprinkling on frost-prone sites. Log the event with the block and severity.",
                "Pozdní řez a ponechání obětního tažně oddálí rašení; v týdnech mrazů udržovat půdu holou a utuženou; větrné stroje, svíce nebo postřik vodou na mrazových polohách. Událost zapište s tratí a rozsahem."),
-            "frost.jpg", null,
+            listOf("frost.jpg", "frost_2.jpg"), null
         ),
         GuideEntry(
             "hail", GuideKind.DISORDER,
@@ -236,7 +236,7 @@ object GuideData {
                "Letní bouřky; škody závisí na fenofázi, od ztráty letorostů v květnu po ztrátu hroznů před sklizní."),
             Bi("Within a few days apply a protective fungicide (often copper or a botryticide), remove badly damaged clusters, support regrowth with light foliar nutrition; insure if the site is exposed.",
                "Do několika dnů ochranný postřik (často měď nebo botryticid), silně poškozené hrozny odstranit, obrůstání podpořit lehkou listovou výživou; exponované polohy pojistit."),
-            "hail.jpg", ProductCategory.FUNGICIDE,
+            listOf("hail.jpg", "hail_2.jpg"), ProductCategory.FUNGICIDE
         ),
         GuideEntry(
             "coulure", GuideKind.DISORDER,
@@ -247,7 +247,7 @@ object GuideData {
                "Chladné, deštivé nebo naopak velmi horké počasí při kvetení, nadměrný růst, nedostatek boru nebo zinku; náchylné jsou např. Merlot, Grenache a Tramín."),
             Bi("Balance vigour (nitrogen, pruning, cover crop), tip shoots at flowering on vigorous vines, correct boron/zinc before flowering if a test shows a deficiency.",
                "Vyrovnat růst (dusík, řez, ozelenění), na bujných keřích zaštipovat letorosty při kvetení, bor/zinek doplnit před kvetením, pokud rozbor ukáže nedostatek."),
-            null, ProductCategory.FOLIAR_FERTILIZER,
+            emptyList(), ProductCategory.FOLIAR_FERTILIZER,
         ),
     )
 

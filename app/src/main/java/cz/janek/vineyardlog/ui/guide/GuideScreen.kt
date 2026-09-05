@@ -83,8 +83,8 @@ fun GuideScreen(onOpen: (String) -> Unit, onBack: () -> Unit) {
 private fun GuideRow(e: GuideEntry, czech: Boolean, onClick: () -> Unit) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (e.image != null) {
-                AssetImage("guide/${e.image}", Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)), targetPx = 200)
+            if (e.images.isNotEmpty()) {
+                AssetImage("guide/${e.images.first()}", Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)), targetPx = 200)
             } else {
                 Spacer(Modifier.size(72.dp))
             }
@@ -108,13 +108,13 @@ fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (S
             return@Scaffold
         }
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
-            if (entry.image != null) {
+            entry.images.forEach { img ->
                 AssetImage(
-                    "guide/${entry.image}",
+                    "guide/$img",
                     Modifier.fillMaxWidth().aspectRatio(4f / 3f),
                     contentDescription = entry.name.get(czech),
                 )
-                credits[entry.key]?.let { c ->
+                credits[img.removeSuffix(".jpg")]?.let { c ->
                     Text(
                         stringResource(R.string.photo_credit, c.author.ifBlank { "?" }, c.license),
                         style = MaterialTheme.typography.labelSmall,
