@@ -106,6 +106,7 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
             e.blockId?.let { KeyValueRow(stringResource(R.string.block), blockNames[it] ?: "#$it") }
             e.batchId?.let { KeyValueRow(stringResource(R.string.batch), batchNames[it] ?: "#$it") }
             e.phenologyStage?.let { KeyValueRow(stringResource(R.string.stage), it.label) }
+            e.sprayVolumeL?.let { KeyValueRow(stringResource(R.string.spray_volume), "${it.fmt()} L") }
             e.waterLPerHa?.let { KeyValueRow(stringResource(R.string.water_volume), "${it.fmt()} l/ha") }
             e.quantity?.let { KeyValueRow(stringResource(R.string.quantity), "${it.fmt()} ${e.quantityUnit}".trim()) }
             if (e.tempC != null || e.windKmh != null || e.humidityPct != null || e.weatherNote.isNotBlank()) {

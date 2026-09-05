@@ -125,6 +125,8 @@ data class LogEntry(
     val phenologyStage: PhenologyStage? = null,
     /** Spray water volume, litres per hectare. */
     val waterLPerHa: Double? = null,
+    /** Litres of spray mix actually used on the block (small-vineyard way of recording a spray). */
+    val sprayVolumeL: Double? = null,
     /** Generic amount for the entry: harvest kg, racked litres, bottles... */
     val quantity: Double? = null,
     val quantityUnit: String = "",

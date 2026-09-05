@@ -373,4 +373,19 @@
     <string name="backup_folder_none">Složka není vybrána</string>
     <string name="msg_backup_done">Záloha zapsána do složky (%1$d řádků, %2$d fotek).</string>
     <string name="msg_backup_failed">Záloha do složky selhala: %1$s</string>
+    <string name="hobby_section">Jednotky pro malou vinici</string>
+    <string name="area_unit">Jednotka výměry</string>
+    <string name="area_unit_m2">m²</string>
+    <string name="area_unit_a">ary (a)</string>
+    <string name="area_unit_ha">hektary (ha)</string>
+    <string name="sprayer_volume">Můj postřikovač</string>
+    <string name="sprayer_hint">Slouží k přepočtu, kolik přípravku patří do jedné náplně.</string>
+    <string name="spray_volume">Spotřeba jíchy</string>
+    <string name="spray_volume_hint">Litry jíchy skutečně vystříkané na této trati</string>
+    <string name="per_10l">≈ %1$s g/10 l · náplň %2$s l: %3$s g</string>
+    <string name="per_10l_ml">≈ %1$s ml/10 l · náplň %2$s l: %3$s ml</string>
+    <string name="total_for_mix">≈ %1$s na %2$s l jíchy</string>
+    <string name="per_vine_hint">≈ %1$s na keř · %2$s na tuto trať</string>
+    <string name="yield_per_vine">%1$s kg na keř</string>
+    <string name="dose_units_hint">Jednotky: kg/ha, l/ha, g/hl, g/10 l, ml/10 l, g/keř, %</string>
 </resources>

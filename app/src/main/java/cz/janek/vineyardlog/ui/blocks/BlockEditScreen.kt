@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import cz.janek.vineyardlog.AppContainer
 import cz.janek.vineyardlog.data.model.Block
@@ -42,9 +43,13 @@ import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.ui.toIntLenient
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : ViewModel() {
+    val settings = c.settings.settings.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000), cz.janek.vineyardlog.data.settings.Settings())
+    private var areaFactor = 100.0
     var name by mutableStateOf("")
     var variety by mutableStateOf("")
     var areaHa by mutableStateOf("")
@@ -59,9 +64,10 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
     var error by mutableStateOf<String?>(null)
 
     init {
-        if (id != null) viewModelScope.launch {
-            c.blockDao.get(id)?.let { b ->
-                name = b.name; variety = b.variety; areaHa = b.areaHa.input(); vineCount = b.vineCount.input()
+        viewModelScope.launch {
+            areaFactor = c.settings.settings.first().areaFactor
+            if (id != null) c.blockDao.get(id)?.let { b ->
+                name = b.name; variety = b.variety; areaHa = b.areaHa?.let { it * areaFactor }.input(); vineCount = b.vineCount.input()
                 rowSpacing = b.rowSpacingM.input(); vineSpacing = b.vineSpacingM.input(); plantedYear = b.plantedYear.input()
                 rootstock = b.rootstock; training = b.trainingSystem; notes = b.notes; archived = b.archived
             }
@@ -74,7 +80,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
             id = id ?: 0,
             name = name.trim(),
             variety = variety.trim(),
-            areaHa = areaHa.toDoubleLenient(),
+            areaHa = areaHa.toDoubleLenient()?.let { it / areaFactor },
             vineCount = vineCount.toIntLenient(),
             rowSpacingM = rowSpacing.toDoubleLenient(),
             vineSpacingM = vineSpacing.toDoubleLenient(),
@@ -91,6 +97,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
 @Composable
 fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
     val vm = appViewModel(key = "blockEdit${blockId ?: "new"}") { BlockEditViewModel(it, blockId) }
+    val settings by vm.settings.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm.error) { vm.error?.let { snackbar.showSnackbar(it); vm.error = null } }
 
@@ -109,7 +116,7 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
             AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required), placeholder = stringResource(R.string.block_name_hint))
             AppTextField(vm.variety, { vm.variety = it }, stringResource(R.string.variety), placeholder = stringResource(R.string.variety_hint))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = "ha")
+                NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = settings.areaLabel)
                 NumberField(vm.vineCount, { vm.vineCount = it }, stringResource(R.string.vines), Modifier.weight(1f), integer = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

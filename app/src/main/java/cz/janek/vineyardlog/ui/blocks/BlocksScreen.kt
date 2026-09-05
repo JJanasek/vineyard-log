@@ -50,6 +50,8 @@ import kotlinx.coroutines.flow.stateIn
 class BlocksViewModel(c: AppContainer) : ViewModel() {
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val settings = c.settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), cz.janek.vineyardlog.data.settings.Settings())
+
     /** Weather-only disease risk from stored days (no forecast here; the Weather tab has it). */
     val risk = combine(c.weatherDao.observeAll(), c.entryDao.observeAll(), c.settings.settings) { weather, entries, _ ->
         val thisYear = LocalDate.now().year
@@ -77,6 +79,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val openNow by vm.openThisMonth.collectAsStateWithLifecycle()
     val risk by vm.risk.collectAsStateWithLifecycle()
+    val settings by vm.settings.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -107,7 +110,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
                 EmptyState(stringResource(R.string.blocks_empty))
             } else {
                 LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp)) {
-                    items(blocks, key = { it.id }) { b -> BlockCard(b) { onOpenBlock(b.id) } }
+                    items(blocks, key = { it.id }) { b -> BlockCard(b, settings.areaFactor, settings.areaLabel) { onOpenBlock(b.id) } }
                 }
             }
         }
@@ -115,7 +118,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
 }
 
 @Composable
-private fun BlockCard(b: Block, onClick: () -> Unit) {
+private fun BlockCard(b: Block, areaFactor: Double, areaLabel: String, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).alpha(if (b.archived) 0.5f else 1f),
@@ -124,7 +127,7 @@ private fun BlockCard(b: Block, onClick: () -> Unit) {
             Text(b.name, style = MaterialTheme.typography.titleMedium)
             val line = listOfNotNull(
                 b.variety.takeIf { it.isNotBlank() },
-                b.areaHa?.let { "${it.fmt(3)} ha" },
+                b.areaHa?.let { "${(it * areaFactor).fmt(if (areaFactor >= 100) 0 else 3)} $areaLabel" },
                 b.vineCount?.let { stringResource(R.string.n_vines, it) },
                 b.plantedYear?.let { stringResource(R.string.planted_year, it) },
                 if (b.archived) stringResource(R.string.archived) else null,

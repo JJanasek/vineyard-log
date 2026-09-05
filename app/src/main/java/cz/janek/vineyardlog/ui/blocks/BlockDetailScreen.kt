@@ -145,7 +145,7 @@ fun BlockDetailScreen(
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     val info = listOfNotNull(
                         b.variety.takeIf { it.isNotBlank() },
-                        b.areaHa?.let { "${it.fmt(3)} ha" },
+                        b.areaHa?.let { "${(it * settings.areaFactor).fmt(if (settings.areaFactor >= 100) 0 else 3)} ${settings.areaLabel}" },
                         b.vineCount?.let { stringResource(R.string.n_vines, it) },
                         b.plantedYear?.let { stringResource(R.string.planted_year, it) },
                         b.rootstock.takeIf { it.isNotBlank() }?.let { stringResource(R.string.on_rootstock, it) },
@@ -161,7 +161,7 @@ fun BlockDetailScreen(
                 }
             }
 
-            item { SeasonCard(yearEntries, yearMeasurements, weather, settings, year) }
+            item { SeasonCard(yearEntries, yearMeasurements, weather, settings, year, b) }
 
             if (yearMeasurements.isNotEmpty()) {
                 item {
@@ -217,6 +217,7 @@ private fun SeasonCard(
     weather: List<cz.janek.vineyardlog.data.model.WeatherDay>,
     settings: Settings,
     year: Int,
+    block: cz.janek.vineyardlog.data.model.Block? = null,
 ) {
     val phenology = yearEntries
         .filter { it.entry.type == EntryType.PHENOLOGY && it.entry.phenologyStage != null }
@@ -242,6 +243,9 @@ private fun SeasonCard(
                 Stat(stringResource(R.string.canopy), canopy.toString())
                 Stat(stringResource(R.string.gdd), gddNow?.fmt(0) ?: "–")
                 Stat(stringResource(R.string.harvest), if (harvestKg > 0) "${harvestKg.fmt()} kg" else "–")
+            }
+            if (harvestKg > 0 && (block?.vineCount ?: 0) > 0) {
+                Text(stringResource(R.string.yield_per_vine, (harvestKg / block!!.vineCount!!).fmt(2)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (phenology.isNotEmpty()) {
                 SectionTitle(stringResource(R.string.phenology))

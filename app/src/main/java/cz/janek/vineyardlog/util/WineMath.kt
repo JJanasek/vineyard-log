@@ -37,6 +37,33 @@ object WineMath {
         else -> 300.0
     }
 
+    /** Small-vineyard spray hints. Dose unit strings as typed by the user. */
+    data class SprayHint(val per10lValue: Double, val per10lUnit: String, val perTank: Double)
+
+    /**
+     * Converts a per-hectare dose (kg/ha, l/ha) to a concentration per 10 l of mix using the water
+     * volume the label assumes (l/ha), and to the amount for one sprayer fill. Returns null for other units.
+     */
+    fun sprayHint(dose: Double, unit: String, waterLPerHa: Double, tankL: Double): SprayHint? {
+        val u = unit.trim().lowercase().replace(" ", "")
+        if (waterLPerHa <= 0) return null
+        return when (u) {
+            "kg/ha" -> { val g10 = dose * 1000.0 / waterLPerHa * 10.0; SprayHint(g10, "g", g10 * tankL / 10.0) }
+            "g/ha" -> { val g10 = dose / waterLPerHa * 10.0; SprayHint(g10, "g", g10 * tankL / 10.0) }
+            "l/ha" -> { val ml10 = dose * 1000.0 / waterLPerHa * 10.0; SprayHint(ml10, "ml", ml10 * tankL / 10.0) }
+            "ml/ha" -> { val ml10 = dose / waterLPerHa * 10.0; SprayHint(ml10, "ml", ml10 * tankL / 10.0) }
+            "g/hl", "g/100l" -> SprayHint(dose / 10.0, "g", dose / 10.0 * tankL / 10.0)
+            "ml/hl", "ml/100l" -> SprayHint(dose / 10.0, "ml", dose / 10.0 * tankL / 10.0)
+            "g/10l" -> SprayHint(dose, "g", dose * tankL / 10.0)
+            "ml/10l" -> SprayHint(dose, "ml", dose * tankL / 10.0)
+            "%" -> SprayHint(dose * 100.0, "ml", dose * 100.0 * tankL / 10.0)  // 0.2 % = 20 ml per 10 l
+            else -> null
+        }
+    }
+
+    /** Total amount of product for [mixL] litres of mix given a per-10-l concentration. */
+    fun totalForMix(per10l: Double, mixL: Double) = per10l * mixL / 10.0
+
     /** Least-squares slope (units per day) and last point of the sugar readings, expressed in [MeasurementKind] of the latest reading. */
     data class Trend(val kind: MeasurementKind, val lastDate: Long, val lastValue: Double, val perDay: Double, val points: Int)
 

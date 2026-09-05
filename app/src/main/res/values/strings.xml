@@ -373,4 +373,19 @@
     <string name="backup_folder_none">No folder chosen</string>
     <string name="msg_backup_done">Backup written to the folder (%1$d rows, %2$d photos).</string>
     <string name="msg_backup_failed">Backup to folder failed: %1$s</string>
+    <string name="hobby_section">Small-vineyard units</string>
+    <string name="area_unit">Area unit</string>
+    <string name="area_unit_m2">m²</string>
+    <string name="area_unit_a">ares (a)</string>
+    <string name="area_unit_ha">hectares (ha)</string>
+    <string name="sprayer_volume">My sprayer tank</string>
+    <string name="sprayer_hint">Used to show how much product goes into one tank fill.</string>
+    <string name="spray_volume">Spray mix used</string>
+    <string name="spray_volume_hint">Litres of mix actually applied on this block</string>
+    <string name="per_10l">≈ %1$s g/10 l · one %2$s l tank: %3$s g</string>
+    <string name="per_10l_ml">≈ %1$s ml/10 l · one %2$s l tank: %3$s ml</string>
+    <string name="total_for_mix">≈ %1$s for %2$s l of mix</string>
+    <string name="per_vine_hint">≈ %1$s per vine · %2$s for this block</string>
+    <string name="yield_per_vine">%1$s kg per vine</string>
+    <string name="dose_units_hint">Units: kg/ha, l/ha, g/hl, g/10 l, ml/10 l, g/keř, %</string>
 </resources>

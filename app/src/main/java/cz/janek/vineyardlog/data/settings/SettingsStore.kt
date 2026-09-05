@@ -32,7 +32,15 @@ data class Settings(
     /** SAF tree URI of the synced backup folder, empty if none. */
     val backupFolder: String = "",
     val lastFolderBackupAt: Long = 0L,
-)
+    /** "m2", "a" or "ha" for showing and editing block areas. */
+    val areaUnit: String = "a",
+    /** Litres in one fill of the user's sprayer, for per-tank hints. */
+    val sprayerVolumeL: Double = 15.0,
+) {
+    /** Factor from hectares to the display unit. */
+    val areaFactor: Double get() = when (areaUnit) { "m2" -> 10_000.0; "a" -> 100.0; else -> 1.0 }
+    val areaLabel: String get() = when (areaUnit) { "m2" -> "m²"; "a" -> "a"; else -> "ha" }
+}
 
 class SettingsStore(private val context: Context) {
     private object Keys {
@@ -48,6 +56,8 @@ class SettingsStore(private val context: Context) {
         val TARGET_NM = doublePreferencesKey("target_sugar_nm")
         val BACKUP_FOLDER = stringPreferencesKey("backup_folder")
         val LAST_FOLDER_BACKUP = longPreferencesKey("last_folder_backup")
+        val AREA_UNIT = stringPreferencesKey("area_unit")
+        val SPRAYER_L = doublePreferencesKey("sprayer_volume_l")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -65,6 +75,8 @@ class SettingsStore(private val context: Context) {
             targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
             backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
             lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
+            areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
+            sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
         )
     }
 
@@ -84,6 +96,8 @@ class SettingsStore(private val context: Context) {
                 targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
                 backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
                 lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
+                areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
+                sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -98,6 +112,8 @@ class SettingsStore(private val context: Context) {
             p[Keys.TARGET_NM] = next.targetSugarNm
             p[Keys.BACKUP_FOLDER] = next.backupFolder
             p[Keys.LAST_FOLDER_BACKUP] = next.lastFolderBackupAt
+            p[Keys.AREA_UNIT] = next.areaUnit
+            p[Keys.SPRAYER_L] = next.sprayerVolumeL
         }
     }
 }

@@ -58,9 +58,11 @@ def category_products(slug):
             print(f"  {url}: {e}", file=sys.stderr); break
         found = []
         for block in re.split(r'<div class="product"', body)[1:]:
-            m = re.search(r'href="(https://www\.vinarskydum\.cz/[^"#?]+/)"', block)
-            if m and not re.search(r"/(strana-|kategorie/)", m.group(1)) and m.group(1) not in found:
-                found.append(m.group(1))
+            m = re.search(r'href="((?:https://www\.vinarskydum\.cz)?/[a-z0-9][a-z0-9-]*/)"', block)
+            if not m: continue
+            url = m.group(1) if m.group(1).startswith("http") else BASE + m.group(1)
+            if not re.search(r"/(strana-|kategorie/)", url) and url not in found:
+                found.append(url)
         new = [u for u in found if u not in urls]
         urls += new
         print(f"  {slug} page {page}: {len(new)} products", file=sys.stderr)

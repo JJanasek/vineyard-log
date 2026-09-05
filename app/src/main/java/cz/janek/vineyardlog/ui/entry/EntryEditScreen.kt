@@ -85,6 +85,8 @@ import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.suggestedKinds
 import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.util.formatDate
+import cz.janek.vineyardlog.util.WineMath
+import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.util.todayEpochDay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -125,6 +127,7 @@ class EntryEditViewModel(
     var notes by mutableStateOf("")
     var stage by mutableStateOf<PhenologyStage?>(null)
     var waterLha by mutableStateOf("")
+    var sprayVolume by mutableStateOf("")
     var quantity by mutableStateOf("")
     var quantityUnit by mutableStateOf("")
     var tempC by mutableStateOf("")
@@ -157,7 +160,7 @@ class EntryEditViewModel(
                     domain = e.domain; type = e.type; date = e.date
                     blockId = e.blockId; batchId = e.batchId
                     title = e.title; notes = e.notes; stage = e.phenologyStage
-                    waterLha = e.waterLPerHa.input(); quantity = e.quantity.input(); quantityUnit = e.quantityUnit
+                    waterLha = e.waterLPerHa.input(); sprayVolume = e.sprayVolumeL.input(); quantity = e.quantity.input(); quantityUnit = e.quantityUnit
                     tempC = e.tempC.input(); windKmh = e.windKmh.input(); humidityPct = e.humidityPct.input()
                     weatherNote = e.weatherNote; laborHours = e.laborHours.input(); cost = e.cost.input()
                     createdAt = e.createdAt
@@ -246,6 +249,7 @@ class EntryEditViewModel(
             notes = notes.trim(),
             phenologyStage = if (type == EntryType.PHENOLOGY) stage else null,
             waterLPerHa = waterLha.toDoubleLenient(),
+            sprayVolumeL = sprayVolume.toDoubleLenient(),
             quantity = quantity.toDoubleLenient(),
             quantityUnit = quantityUnit.trim(),
             tempC = tempC.toDoubleLenient(),
@@ -377,10 +381,12 @@ fun EntryEditScreen(
             }
 
             if (vm.type == EntryType.SPRAY) {
-                NumberField(
-                    vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), suffix = "l/ha",
-                    supportingText = stringResource(R.string.default_water_hint, settings.defaultWaterLha.input()),
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NumberField(vm.sprayVolume, { vm.sprayVolume = it }, stringResource(R.string.spray_volume), Modifier.weight(1f), suffix = "L",
+                        supportingText = stringResource(R.string.spray_volume_hint))
+                    NumberField(vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), Modifier.weight(1f), suffix = "l/ha",
+                        supportingText = stringResource(R.string.default_water_hint, settings.defaultWaterLha.input()))
+                }
             }
             if (vm.type == EntryType.SPRAY || vm.type == EntryType.FERTILIZATION || vm.type == EntryType.WEATHER_EVENT) {
                 SectionTitle(stringResource(R.string.conditions))
@@ -457,12 +463,32 @@ fun EntryEditScreen(
                 val options = if (row.productId != null && domainProducts.none { it.id == row.productId }) {
                     domainProducts + products.filter { it.id == row.productId }
                 } else domainProducts
+                val block = blocks.firstOrNull { it.id == vm.blockId }
                 UsageRowEditor(
                     row = row,
                     products = options,
                     entryDate = vm.date,
                     onChange = { vm.updateUsage(i, it) },
                     onRemove = { vm.removeUsage(i) },
+                    sprayHint = if (vm.type == EntryType.SPRAY) {
+                        val water = vm.waterLha.toDoubleLenient() ?: settings.defaultWaterLha
+                        row.dose.toDoubleLenient()?.let { d -> WineMath.sprayHint(d, row.doseUnit, water, settings.sprayerVolumeL) }?.let { h ->
+                            val base = if (h.per10lUnit == "ml") stringResource(R.string.per_10l_ml, h.per10lValue.fmt(1), settings.sprayerVolumeL.fmt(), h.perTank.fmt(1))
+                            else stringResource(R.string.per_10l, h.per10lValue.fmt(1), settings.sprayerVolumeL.fmt(), h.perTank.fmt(1))
+                            val mix = vm.sprayVolume.toDoubleLenient()
+                            if (mix != null && mix > 0) base + " · " + stringResource(R.string.total_for_mix, "${WineMath.totalForMix(h.per10lValue, mix).fmt(1)} ${h.per10lUnit}", mix.fmt())
+                            else base
+                        }
+                    } else if (vm.type == EntryType.FERTILIZATION && block?.areaHa != null) {
+                        row.dose.toDoubleLenient()?.let { d ->
+                            val u = row.doseUnit.trim().lowercase().replace(" ", "")
+                            val totalKg = when (u) { "kg/ha" -> d * block.areaHa; "g/ha" -> d * block.areaHa / 1000.0; "l/ha" -> d * block.areaHa; else -> null }
+                            totalKg?.let { t ->
+                                val perVine = block.vineCount?.takeIf { it > 0 }?.let { "${(t * 1000.0 / it).fmt(0)} g" } ?: "–"
+                                stringResource(R.string.per_vine_hint, perVine, "${t.fmt(2)} ${if (u == "l/ha") "l" else "kg"}")
+                            }
+                        }
+                    } else null,
                 )
             }
             OutlinedButton(onClick = { vm.addUsage() }) {
@@ -511,6 +537,7 @@ private fun UsageRowEditor(
     entryDate: Long,
     onChange: (UsageRow) -> Unit,
     onRemove: () -> Unit,
+    sprayHint: String? = null,
 ) {
     val product = products.firstOrNull { it.id == row.productId }
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
@@ -550,6 +577,9 @@ private fun UsageRowEditor(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(row.dose, { onChange(row.copy(dose = it)) }, stringResource(R.string.dose), Modifier.weight(1f))
                 AppTextField(row.doseUnit, { onChange(row.copy(doseUnit = it)) }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = stringResource(R.string.dose_unit_hint))
+            }
+            if (sprayHint != null) {
+                Text(sprayHint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(row.totalAmount, { onChange(row.copy(totalAmount = it)) }, stringResource(R.string.total_used), Modifier.weight(1f))

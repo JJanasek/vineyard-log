@@ -102,7 +102,7 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 
 ## Roadmap / ideas
 
-A Czech proposal for the hobby-grower direction (units, variety templates, forecasts, charts) is in [docs/navrh-hobby-vinar.md](docs/navrh-hobby-vinar.md).
+A Czech proposal for the hobby-grower direction (units, variety templates, forecasts, charts) is in [docs/navrh-hobby-vinar.md](docs/navrh-hobby-vinar.md). Its first item is done: Settings → Small-vineyard units lets you show areas in m², ares or ha and set your sprayer tank; spray entries take the litres of mix used and every product row shows the g/10 l concentration, the amount per tank fill and the total for the mix; fertiliser rows show grams per vine; block pages show kg per vine.
 
 - ~~**Czech UI**~~ – done: all UI strings are resources (`values` / `values-cs`); Settings → Language switches between system default, English and Czech.
 - ~~**Photos and a field guide**~~ – done: entries take photos from the gallery or camera (stored downscaled in app storage, not in the JSON backup); *Vineyard → book icon* opens a bilingual field guide with 20 diseases, pests, deficiencies and disorders, 14 of them with Wikimedia Commons photos (credits in `app/src/main/assets/guide/CREDITS.md`). Each guide page can start a scouting entry.
