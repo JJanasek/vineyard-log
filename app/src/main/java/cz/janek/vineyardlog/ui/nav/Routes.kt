@@ -27,6 +27,9 @@ object Routes {
     const val CALCULATORS = "calculators"
     const val MAP_PICKER = "mapPicker?lat={lat}&lon={lon}"
     fun mapPicker(lat: Double?, lon: Double?) = "mapPicker?lat=${lat ?: ""}&lon=${lon ?: ""}"
+    const val REMINDERS = "reminders"
+    const val REMINDER_EDIT = "reminderEdit?id={id}"
+    fun reminderEdit(id: Long? = null) = "reminderEdit?id=${id ?: -1}"
     const val GUIDE = "guide"
     const val GUIDE_ENTRY = "guide/{key}"
     fun guide(key: String) = "guide/$key"
@@ -40,8 +43,8 @@ object Routes {
     const val BATCH = "batch/{id}"
     fun batch(id: Long) = "batch/$id"
 
-    const val BATCH_EDIT = "batchEdit?id={id}"
-    fun batchEdit(id: Long? = null) = "batchEdit?id=${id ?: -1}"
+    const val BATCH_EDIT = "batchEdit?id={id}&blockId={blockId}"
+    fun batchEdit(id: Long? = null, blockId: Long? = null) = "batchEdit?id=${id ?: -1}&blockId=${blockId ?: -1}"
 
     const val PRODUCT_EDIT = "productEdit?id={id}&url={url}"
     fun productEdit(id: Long? = null, url: String? = null): String {

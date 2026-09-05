@@ -277,3 +277,40 @@ fun Double.fmt(maxDecimals: Int = 2): String {
     val s = String.format(java.util.Locale.US, "%.${maxDecimals}f", this)
     return s.trimEnd('0').trimEnd('.')
 }
+
+/** How often a [Reminder] fires. */
+enum class Repeat(@androidx.annotation.StringRes val labelRes: Int) {
+    ONCE(cz.janek.vineyardlog.R.string.repeat_once),
+    DAILY(cz.janek.vineyardlog.R.string.repeat_daily),
+    WEEKLY(cz.janek.vineyardlog.R.string.repeat_weekly),
+    EVERY_N_DAYS(cz.janek.vineyardlog.R.string.repeat_every_n_days),
+}
+
+/**
+ * A user-set notification, e.g. "control sampling every Monday 7:00 from 20. 8. to 31. 10.".
+ * Tapping the notification opens a new entry prefilled with [entryType], [blockId] and [title].
+ */
+@Serializable
+@Entity(tableName = "reminders")
+data class Reminder(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val repeat: Repeat = Repeat.WEEKLY,
+    /** ISO weekday 1 = Monday … 7 = Sunday, used by [Repeat.WEEKLY]. */
+    val weekday: Int = 1,
+    /** Interval for [Repeat.EVERY_N_DAYS]. */
+    val everyDays: Int = 7,
+    val hour: Int = 7,
+    val minute: Int = 0,
+    /** First day (epoch day) the reminder may fire; for ONCE the only day. */
+    val startDate: Long,
+    /** Last day (epoch day) inclusive, or null for no end. */
+    val endDate: Long? = null,
+    val entryType: EntryType? = null,
+    val blockId: Long? = null,
+    val batchId: Long? = null,
+    val notes: String = "",
+    val enabled: Boolean = true,
+    /** Set automatically for pre-harvest-interval reminders created from a spray entry. */
+    val auto: Boolean = false,
+)

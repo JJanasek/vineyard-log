@@ -40,6 +40,10 @@ import cz.janek.vineyardlog.ui.components.RiskCard
 import cz.janek.vineyardlog.data.model.EntryType
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.util.DiseaseRisk
+import cz.janek.vineyardlog.util.RiskLevel
+import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.data.varieties.Level
+import androidx.compose.runtime.remember
 import cz.janek.vineyardlog.util.todayEpochDay
 import cz.janek.vineyardlog.util.yearOf
 import kotlinx.coroutines.flow.SharingStarted
@@ -96,7 +100,21 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
-            if (risk != null) RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 6.dp), compact = true)
+            if (risk != null) {
+                RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 6.dp), compact = true)
+                val sensitive = remember(blocks, risk) {
+                    val r = risk!!
+                    blocks.mapNotNull { Varieties.find(it.variety) }.distinct().filter { v ->
+                        (r.peronospora == RiskLevel.HIGH && v.risk.peronospora == Level.HIGH) ||
+                            (r.oidium == RiskLevel.HIGH && v.risk.oidium == Level.HIGH) ||
+                            (r.botrytis == RiskLevel.HIGH && v.risk.botrytis == Level.HIGH)
+                    }.map { it.name }
+                }
+                if (sensitive.isNotEmpty()) {
+                    Text(stringResource(R.string.susceptible_varieties, sensitive.joinToString(", ")), Modifier.padding(horizontal = 20.dp),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
             Card(onClick = onOpenPlan, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
                 Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Icon(Icons.Default.Checklist, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

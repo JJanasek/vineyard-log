@@ -40,6 +40,11 @@ import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.NumberField
+import cz.janek.vineyardlog.ui.components.DropdownField
+import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.data.model.fmt
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.material3.MaterialTheme
 import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.ui.toIntLenient
@@ -115,6 +120,17 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
         ) {
             AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required), placeholder = stringResource(R.string.block_name_hint))
             AppTextField(vm.variety, { vm.variety = it }, stringResource(R.string.variety), placeholder = stringResource(R.string.variety_hint))
+            DropdownField(
+                stringResource(R.string.pick_variety), Varieties.all, Varieties.find(vm.variety),
+                { it.name + if (it.piwi) " (PIWI)" else "" }, { vm.variety = it.name },
+            )
+            Varieties.find(vm.variety)?.let { v ->
+                val czech = LocalConfiguration.current.locales[0]?.language == "cs"
+                Text(
+                    stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md(), v.targetNm.fmt(1)) + "\n" + v.note.get(czech),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = settings.areaLabel)
                 NumberField(vm.vineCount, { vm.vineCount = it }, stringResource(R.string.vines), Modifier.weight(1f), integer = true)
@@ -138,3 +154,6 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
         }
     }
 }
+
+/** "09-20" -> "20. 9." */
+internal fun String.md(): String = runCatching { "${substring(3, 5).toInt()}. ${substring(0, 2).toInt()}." }.getOrDefault(this)

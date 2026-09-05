@@ -100,6 +100,10 @@ při 3–10 cm letorostů a odstranění napadeného réví v zimě.
 ## 8. Doplnění plánu (5. 9. 2026 večer)
 
 ### 8a. Předvyplnění podle toho, co máš vysazené
+**Hotovo (5. 9. 2026):** katalog 31 odrůd (`data/varieties/Varieties.kt`) s barvou, raností, oknem sklizně,
+cílovou °NM a citlivostí na choroby; výběr odrůdy v editaci tratě, řádek s oknem sklizně v detailu tratě,
+cílová °NM pro odhad sklizně podle odrůdy, nová šarže z tratě (odrůda, barva, název), citlivé odrůdy
+u vysokého rizika, odrůdové úkoly kontrol zralosti při „Obnovit výchozí“ v plánu sezóny.
 Odrůdový katalog (bod 2a) se použije na víc míst: trať si vybere odrůdu ze seznamu a aplikace
 předvyplní barvu, ranost, okno sklizně a cílovou cukernatost; plán sezóny dostane odrůdové
 položky (kontroly zralosti od zaměkání u raných dřív, botrytida u hustých hroznů RB/RŠ, obaleči);
@@ -108,6 +112,12 @@ odrůdu, barvu a šablonu sklepního protokolu (bílé bez JMF / rosé z MP / č
 dostanou předvyplněný objem z výlisnosti tratě a cílovou °NM z odrůdy.
 
 ### 8b. Připomínky a záložka „Přehled“
+**Hotovo (5. 9. 2026) – připomínky:** Počasí → zvoneček. Vlastní připomínky (jednou / denně / týdně v daný den /
+každých N dní, čas, od–do, typ záznamu, trať nebo šarže), šablony „Kontrolní odběr každé pondělí 7:00 do 31. 10.“,
+„Kontrola vinice každé 3 dny“ a „Kontrola kvašení denně po 3 týdny“. AlarmManager (přesný, pokud to systém dovolí),
+přežije restart i aktualizaci, klepnutí na notifikaci otevře předvyplněný záznam. Automaticky: připomínka konce
+ochranné lhůty po uložení postřiku (vypínatelné v Nastavení). Karta „Nejbližší připomínky“ v záložce Počasí.
+Zbývá: záložka Přehled s grafy, další automatické připomínky (úkoly plánu, riziko, kvašení, odhad sklizně).
 - **Vlastní připomínky**: název, opakování (jednou / denně / týdně v daný den), od–do (např. od
   zaměkání do sklizně), volitelně typ záznamu, který se má připomínkou založit („Kontrolní odběr
   cukernatosti – každé pondělí 8:00“). Notifikace Androidu (oprávnění POST_NOTIFICATIONS,

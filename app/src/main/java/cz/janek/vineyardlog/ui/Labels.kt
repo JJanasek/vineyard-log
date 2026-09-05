@@ -20,6 +20,7 @@ val PhenologyStage.label: String @Composable get() = stringResource(labelRes)
 val MeasurementKind.label: String @Composable get() = stringResource(labelRes)
 val WineStyle.label: String @Composable get() = stringResource(labelRes)
 val BatchStatus.label: String @Composable get() = stringResource(labelRes)
+val cz.janek.vineyardlog.data.model.Repeat.label: String @Composable get() = stringResource(labelRes)
 
 val MeasurementKind.labelWithUnit: String
     @Composable get() = if (unit.isBlank()) label else "$label [$unit]"

@@ -3,6 +3,7 @@ package cz.janek.vineyardlog.data.settings
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -41,6 +42,8 @@ data class Settings(
     val chmiRainName: String = "",
     val chmiTempWsi: String = "",
     val chmiTempName: String = "",
+    /** Create a one-off reminder when the pre-harvest interval of a saved spray ends. */
+    val phiReminders: Boolean = true,
 ) {
     /** Factor from hectares to the display unit. */
     val areaFactor: Double get() = when (areaUnit) { "m2" -> 10_000.0; "a" -> 100.0; else -> 1.0 }
@@ -67,6 +70,7 @@ class SettingsStore(private val context: Context) {
         val CHMI_RAIN_NAME = stringPreferencesKey("chmi_rain_name")
         val CHMI_TEMP_WSI = stringPreferencesKey("chmi_temp_wsi")
         val CHMI_TEMP_NAME = stringPreferencesKey("chmi_temp_name")
+        val PHI_REMINDERS = booleanPreferencesKey("phi_reminders")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -88,6 +92,7 @@ class SettingsStore(private val context: Context) {
             sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
             chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
             chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
+            phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
         )
     }
 
@@ -111,6 +116,7 @@ class SettingsStore(private val context: Context) {
                 sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
                 chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
                 chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
+            phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -129,6 +135,7 @@ class SettingsStore(private val context: Context) {
             p[Keys.SPRAYER_L] = next.sprayerVolumeL
             p[Keys.CHMI_RAIN_WSI] = next.chmiRainWsi; p[Keys.CHMI_RAIN_NAME] = next.chmiRainName
             p[Keys.CHMI_TEMP_WSI] = next.chmiTempWsi; p[Keys.CHMI_TEMP_NAME] = next.chmiTempName
+            p[Keys.PHI_REMINDERS] = next.phiReminders
         }
     }
 }

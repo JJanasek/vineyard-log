@@ -16,15 +16,22 @@ import cz.janek.vineyardlog.ui.theme.VineyardTheme
 class MainActivity : AppCompatActivity() {
     /** A product page URL shared from the browser; consumed by AppRoot. */
     private var sharedUrl by mutableStateOf<String?>(null)
+    /** A navigation route requested by a notification tap; consumed by AppRoot. */
+    private var pendingRoute by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         sharedUrl = extractUrl(intent)
+        pendingRoute = intent?.getStringExtra(EXTRA_ROUTE)
         lifecycleScope.launch { appContainer.folderBackup.backupIfStale() }
+        lifecycleScope.launch { runCatching { appContainer.reminders.rescheduleAll() } }
         setContent {
             VineyardTheme {
-                AppRoot(sharedUrl = sharedUrl, onSharedUrlConsumed = { sharedUrl = null })
+                AppRoot(
+                    sharedUrl = sharedUrl, onSharedUrlConsumed = { sharedUrl = null },
+                    pendingRoute = pendingRoute, onRouteConsumed = { pendingRoute = null },
+                )
             }
         }
     }
@@ -32,6 +39,11 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         extractUrl(intent)?.let { sharedUrl = it }
+        intent.getStringExtra(EXTRA_ROUTE)?.let { pendingRoute = it }
+    }
+
+    companion object {
+        const val EXTRA_ROUTE = "route"
     }
 
     private fun extractUrl(intent: Intent?): String? {

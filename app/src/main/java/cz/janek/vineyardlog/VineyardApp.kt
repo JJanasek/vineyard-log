@@ -27,6 +27,8 @@ class AppContainer(context: Context) {
     val backupDao get() = db.backupDao()
     val photoDao get() = db.photoDao()
     val taskDao get() = db.taskDao()
+    val reminderDao get() = db.reminderDao()
+    val reminders by lazy { cz.janek.vineyardlog.data.reminders.ReminderScheduler(appContext, this) }
 }
 
 class VineyardApp : Application() {

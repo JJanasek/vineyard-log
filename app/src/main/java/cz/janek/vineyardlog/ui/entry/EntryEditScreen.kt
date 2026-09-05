@@ -275,6 +275,14 @@ class EntryEditViewModel(
         }
         viewModelScope.launch {
             val id = c.entryDao.save(entry, usageRows, measRows)
+            if (type == EntryType.SPRAY && settings.value.phiReminders) {
+                val used = usageRows.mapNotNull { u -> products.value.firstOrNull { it.id == u.productId } }
+                val phi = used.mapNotNull { it.phiDays }.maxOrNull()
+                if (phi != null && date + phi >= todayEpochDay()) {
+                    val names = used.filter { it.phiDays == phi }.joinToString(", ") { it.name }
+                    runCatching { c.reminders.addPhiReminder(date + phi, date, names, entry.blockId) }
+                }
+            }
             c.photoDao.insertAll(photos.filter { it.isNew }.map { Photo(entryId = id, fileName = it.fileName) })
             removedPhotos.forEach { r -> r.id?.let { c.photoDao.delete(it) }; c.photos.delete(r.fileName) }
             saved = true

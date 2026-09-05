@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -224,6 +225,7 @@ fun SettingsScreen(
     var targetNm by remember(settings.targetSugarNm) { mutableStateOf(settings.targetSugarNm.input()) }
     var areaUnit by remember(settings.areaUnit) { mutableStateOf(settings.areaUnit) }
     var sprayerL by remember(settings.sprayerVolumeL) { mutableStateOf(settings.sprayerVolumeL.input()) }
+    var phiRem by remember(settings.phiReminders) { mutableStateOf(settings.phiReminders) }
     var lat by remember(settings.latitude) { mutableStateOf(settings.latitude.input()) }
     var lon by remember(settings.longitude) { mutableStateOf(settings.longitude.input()) }
     val noLocationMsg = stringResource(R.string.msg_no_location)
@@ -299,6 +301,10 @@ fun SettingsScreen(
             val units = listOf("m2" to R.string.area_unit_m2, "a" to R.string.area_unit_a, "ha" to R.string.area_unit_ha)
             DropdownField(stringResource(R.string.area_unit), units, units.firstOrNull { it.first == areaUnit } ?: units[1], { stringResource(it.second) }, { areaUnit = it.first })
             NumberField(sprayerL, { sprayerL = it }, stringResource(R.string.sprayer_volume), suffix = "L", supportingText = stringResource(R.string.sprayer_hint))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Switch(checked = phiRem, onCheckedChange = { phiRem = it })
+                Text(stringResource(R.string.phi_reminders), style = MaterialTheme.typography.bodyMedium)
+            }
 
             SectionTitle(stringResource(R.string.vineyard_location))
             Text(stringResource(R.string.location_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -369,6 +375,7 @@ fun SettingsScreen(
                             targetSugarNm = targetNm.toDoubleLenient() ?: it.targetSugarNm,
                             areaUnit = areaUnit,
                             sprayerVolumeL = sprayerL.toDoubleLenient() ?: it.sprayerVolumeL,
+                            phiReminders = phiRem,
                         )
                     }
                     vm.message = savedMessage

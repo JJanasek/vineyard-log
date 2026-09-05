@@ -49,6 +49,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.IconButton
+import cz.janek.vineyardlog.util.formatDateTime
+import cz.janek.vineyardlog.data.model.Reminder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -103,6 +107,8 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
         private set
     private var forecastLoadedFor: Pair<Double, Double>? = null
     val entries = c.entryDao.observeAll().stateIn(viewModelScope, started, emptyList())
+    val reminders = c.reminderDao.observeAll().stateIn(viewModelScope, started, emptyList())
+    fun nextFire(r: Reminder): Long? = c.reminders.nextFire(r)
 
     /** Load the 3-day forecast once per coordinates (used only for the risk card). */
     fun ensureForecast() {
@@ -175,7 +181,7 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun WeatherScreen() {
+fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
     val vm = appViewModel { WeatherViewModel(it) }
     val all by vm.all.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -190,6 +196,7 @@ fun WeatherScreen() {
     LaunchedEffect(vm.message) { vm.message?.let { snackbar.showSnackbar(it); vm.message = null } }
     val cumulative = remember(all, year, settings) { Gdd.cumulative(all, year, settings) }
     val entries by vm.entries.collectAsStateWithLifecycle()
+    val reminders by vm.reminders.collectAsStateWithLifecycle()
     LaunchedEffect(settings.latitude, settings.longitude) { vm.ensureForecast() }
     val risk = remember(all, vm.forecast, entries, settings) {
         val thisYear = LocalDate.now().year
@@ -201,7 +208,14 @@ fun WeatherScreen() {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_weather)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tab_weather)) },
+                actions = {
+                    IconButton(onClick = onOpenReminders) { Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.reminders)) }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -218,6 +232,28 @@ fun WeatherScreen() {
             }
             if (year == LocalDate.now().year) {
                 item { RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
+                item {
+                    val upcoming = remember(reminders) {
+                        reminders.mapNotNull { r -> vm.nextFire(r)?.let { it to r } }.sortedBy { it.first }.take(3)
+                    }
+                    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable { onOpenReminders() }) {
+                        Column(Modifier.padding(12.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.upcoming_reminders), style = MaterialTheme.typography.titleMedium)
+                                TextButton(onClick = onOpenReminders) { Text(stringResource(R.string.manage)) }
+                            }
+                            if (upcoming.isEmpty()) {
+                                Text(stringResource(R.string.no_upcoming), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            upcoming.forEach { (at, r) ->
+                                Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text(r.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                                    Text(formatDateTime(at), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {

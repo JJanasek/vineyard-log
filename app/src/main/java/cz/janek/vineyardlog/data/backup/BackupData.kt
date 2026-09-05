@@ -10,6 +10,7 @@ import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
 import cz.janek.vineyardlog.data.model.SeasonTask
 import cz.janek.vineyardlog.data.model.TaskDone
+import cz.janek.vineyardlog.data.model.Reminder
 import cz.janek.vineyardlog.data.model.WeatherDay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -30,6 +31,7 @@ data class BackupData(
     val photos: List<Photo> = emptyList(),
     val tasks: List<SeasonTask> = emptyList(),
     val taskDone: List<TaskDone> = emptyList(),
+    val reminders: List<Reminder> = emptyList(),
 ) {
     val totalRows: Int
         get() = blocks.size + products.size + batches.size + batchSources.size +

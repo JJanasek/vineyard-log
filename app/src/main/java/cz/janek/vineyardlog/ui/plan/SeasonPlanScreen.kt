@@ -70,6 +70,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.ui.blocks.md
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
@@ -91,7 +94,14 @@ class SeasonPlanViewModel(private val c: AppContainer) : ViewModel() {
     fun delete(id: Long) = viewModelScope.launch { c.taskDao.deleteTask(id) }
     fun restoreDefaults(czech: Boolean) = viewModelScope.launch {
         val existing = c.taskDao.allTasks().map { it.title.trim().lowercase() }.toSet()
-        val fresh = SeedData.tasks(czech).filter { it.title.trim().lowercase() !in existing }
+        val varietyTasks = c.blockDao.observeAll().first().filter { !it.archived }.mapNotNull { Varieties.find(it.variety) }.distinct().map { v ->
+            val from = v.harvestFrom.substring(0, 2).toInt(); val to = v.harvestTo.substring(0, 2).toInt()
+            SeasonTask(
+                title = c.appContext.getString(R.string.ripeness_task_variety, v.name, v.harvestFrom.md(), v.harvestTo.md()),
+                monthFrom = (from - 1).coerceAtLeast(1), monthTo = to, entryType = EntryType.RIPENESS, sortOrder = 50,
+            )
+        }
+        val fresh = (SeedData.tasks(czech) + varietyTasks).filter { it.title.trim().lowercase() !in existing }
         c.taskDao.insertTasks(fresh)
         message = c.appContext.getString(R.string.msg_tasks_restored, fresh.size)
     }

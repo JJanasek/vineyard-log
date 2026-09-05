@@ -44,6 +44,7 @@ import cz.janek.vineyardlog.data.model.Batch
 import cz.janek.vineyardlog.data.model.BatchSource
 import cz.janek.vineyardlog.data.model.BatchStatus
 import cz.janek.vineyardlog.data.model.WineStyle
+import cz.janek.vineyardlog.data.varieties.Varieties
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.BackTopBar
@@ -60,7 +61,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-class BatchEditViewModel(private val c: AppContainer, private val id: Long?) : ViewModel() {
+class BatchEditViewModel(private val c: AppContainer, private val id: Long?, private val fromBlockId: Long? = null) : ViewModel() {
     var name by mutableStateOf("")
     var vintage by mutableStateOf(LocalDate.now().year.toString())
     var variety by mutableStateOf("")
@@ -81,6 +82,10 @@ class BatchEditViewModel(private val c: AppContainer, private val id: Long?) : V
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
+        if (id == null && fromBlockId != null) viewModelScope.launch {
+            c.blockDao.get(fromBlockId)?.let { b -> prefillFromBlock(b) }
+            if (fromBlockId !in sourceBlockIds) sourceBlockIds.add(fromBlockId)
+        }
         if (id != null) viewModelScope.launch {
             c.batchDao.getWithSources(id)?.let { d ->
                 val b = d.batch
@@ -94,7 +99,18 @@ class BatchEditViewModel(private val c: AppContainer, private val id: Long?) : V
     }
 
     fun toggleSource(blockId: Long) {
-        if (blockId in sourceBlockIds) sourceBlockIds.remove(blockId) else sourceBlockIds.add(blockId)
+        if (blockId in sourceBlockIds) sourceBlockIds.remove(blockId) else {
+            sourceBlockIds.add(blockId)
+            viewModelScope.launch { c.blockDao.get(blockId)?.let { prefillFromBlock(it) } }
+        }
+    }
+
+    /** Variety, style and name from the block, only into empty fields. */
+    private fun prefillFromBlock(b: cz.janek.vineyardlog.data.model.Block) {
+        if (variety.isBlank()) variety = b.variety
+        val info = Varieties.find(b.variety)
+        if (info != null && id == null && style == WineStyle.WHITE && info.isRed) style = WineStyle.RED
+        if (name.isBlank()) name = b.variety.ifBlank { b.name }
     }
 
     fun save(onDone: () -> Unit) {
@@ -124,8 +140,8 @@ class BatchEditViewModel(private val c: AppContainer, private val id: Long?) : V
 }
 
 @Composable
-fun BatchEditScreen(batchId: Long?, onDone: () -> Unit) {
-    val vm = appViewModel(key = "batchEdit${batchId ?: "new"}") { BatchEditViewModel(it, batchId) }
+fun BatchEditScreen(batchId: Long?, onDone: () -> Unit, fromBlockId: Long? = null) {
+    val vm = appViewModel(key = "batchEdit${batchId ?: "new"}-${fromBlockId ?: 0}") { BatchEditViewModel(it, batchId, fromBlockId) }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm.error) { vm.error?.let { snackbar.showSnackbar(it); vm.error = null } }

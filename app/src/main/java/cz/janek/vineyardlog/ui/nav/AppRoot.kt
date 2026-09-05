@@ -40,12 +40,25 @@ import cz.janek.vineyardlog.ui.settings.SettingsScreen
 import cz.janek.vineyardlog.ui.timeline.TimelineScreen
 import cz.janek.vineyardlog.ui.tools.CalculatorsScreen
 import cz.janek.vineyardlog.ui.weather.WeatherScreen
+import cz.janek.vineyardlog.ui.reminders.RemindersScreen
+import cz.janek.vineyardlog.ui.reminders.ReminderEditScreen
 
 private fun Long.orNull(): Long? = if (this < 0) null else this
 
 @Composable
-fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
+fun AppRoot(
+    sharedUrl: String? = null,
+    onSharedUrlConsumed: () -> Unit = {},
+    pendingRoute: String? = null,
+    onRouteConsumed: () -> Unit = {},
+) {
     val navController = rememberNavController()
+    LaunchedEffect(pendingRoute) {
+        if (!pendingRoute.isNullOrBlank()) {
+            runCatching { navController.navigate(pendingRoute) }
+            onRouteConsumed()
+        }
+    }
     LaunchedEffect(sharedUrl) {
         if (!sharedUrl.isNullOrBlank()) {
             navController.navigate(Routes.productEdit(url = sharedUrl))
@@ -100,7 +113,20 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                 )
             }
             composable(Tab.WEATHER.route) {
-                WeatherScreen()
+                WeatherScreen(onOpenReminders = { navController.navigate(Routes.REMINDERS) })
+            }
+            composable(Routes.REMINDERS) {
+                RemindersScreen(
+                    onBack = { navController.popBackStack() },
+                    onEdit = { navController.navigate(Routes.reminderEdit(it)) },
+                )
+            }
+            composable(
+                Routes.REMINDER_EDIT,
+                arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
+            ) { entry ->
+                val id = (entry.arguments?.getLong("id") ?: -1L).orNull()
+                ReminderEditScreen(reminderId = id, onDone = { navController.popBackStack() })
             }
             composable(Tab.PRODUCTS.route) {
                 ProductsScreen(
@@ -169,6 +195,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                         navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, blockId = id, type = type))
                     },
                     onDeleted = { navController.popBackStack() },
+                    onNewBatch = { navController.navigate(Routes.batchEdit(blockId = id)) },
                 )
             }
             composable(
@@ -194,10 +221,14 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
             }
             composable(
                 Routes.BATCH_EDIT,
-                arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
+                arguments = listOf(
+                    navArgument("id") { type = NavType.LongType; defaultValue = -1L },
+                    navArgument("blockId") { type = NavType.LongType; defaultValue = -1L },
+                ),
             ) { entry ->
                 val id = (entry.arguments?.getLong("id") ?: -1L).orNull()
-                BatchEditScreen(batchId = id, onDone = { navController.popBackStack() })
+                val fromBlock = (entry.arguments?.getLong("blockId") ?: -1L).orNull()
+                BatchEditScreen(batchId = id, fromBlockId = fromBlock, onDone = { navController.popBackStack() })
             }
 
             composable(

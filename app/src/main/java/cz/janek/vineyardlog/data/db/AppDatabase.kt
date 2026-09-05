@@ -13,6 +13,7 @@ import cz.janek.vineyardlog.data.dao.EntryDao
 import cz.janek.vineyardlog.data.dao.MeasurementDao
 import cz.janek.vineyardlog.data.dao.PhotoDao
 import cz.janek.vineyardlog.data.dao.ProductDao
+import cz.janek.vineyardlog.data.dao.ReminderDao
 import cz.janek.vineyardlog.data.dao.TaskDao
 import cz.janek.vineyardlog.data.dao.WeatherDao
 import cz.janek.vineyardlog.data.model.Batch
@@ -23,6 +24,7 @@ import cz.janek.vineyardlog.data.model.Measurement
 import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
+import cz.janek.vineyardlog.data.model.Reminder
 import cz.janek.vineyardlog.data.model.SeasonTask
 import cz.janek.vineyardlog.data.model.TaskDone
 import cz.janek.vineyardlog.data.model.WeatherDay
@@ -34,14 +36,14 @@ import kotlinx.coroutines.launch
     entities = [
         Block::class, Product::class, Batch::class, BatchSource::class,
         LogEntry::class, ProductUsage::class, Measurement::class, WeatherDay::class,
-        Photo::class, SeasonTask::class, TaskDone::class,
+        Photo::class, SeasonTask::class, TaskDone::class, Reminder::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5),
-        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 5, to = 6), AutoMigration(from = 6, to = 7),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -54,6 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun backupDao(): BackupDao
     abstract fun photoDao(): PhotoDao
     abstract fun taskDao(): TaskDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         const val NAME = "vineyard_log.db"

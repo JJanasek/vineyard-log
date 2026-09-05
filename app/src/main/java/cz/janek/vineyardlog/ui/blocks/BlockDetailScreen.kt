@@ -60,6 +60,8 @@ import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.ripenessKinds
 import cz.janek.vineyardlog.util.Gdd
 import cz.janek.vineyardlog.util.WineMath
+import cz.janek.vineyardlog.data.varieties.Varieties
+import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.dayOfYear
 import cz.janek.vineyardlog.util.formatDate
 import cz.janek.vineyardlog.util.formatDateShort
@@ -96,6 +98,7 @@ fun BlockDetailScreen(
     onOpenEntry: (Long) -> Unit,
     onNewEntry: (EntryType?) -> Unit,
     onDeleted: () -> Unit,
+    onNewBatch: () -> Unit = {},
 ) {
     val vm = appViewModel(key = "block$blockId") { BlockDetailViewModel(it, blockId) }
     val block by vm.block.collectAsStateWithLifecycle()
@@ -131,6 +134,7 @@ fun BlockDetailScreen(
                         DropdownMenuItem(text = { Text(t.label) }, onClick = { fabMenu = false; onNewEntry(t) })
                     }
                     DropdownMenuItem(text = { Text(stringResource(R.string.other_ellipsis)) }, onClick = { fabMenu = false; onNewEntry(null) })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.new_batch_from_block)) }, onClick = { fabMenu = false; onNewBatch() })
                 }
             }
         },
@@ -152,6 +156,13 @@ fun BlockDetailScreen(
                         b.trainingSystem.takeIf { it.isNotBlank() },
                     ).joinToString(" · ")
                     if (info.isNotBlank()) Text(info, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Varieties.find(b.variety)?.let { v ->
+                        val czech = LocalConfiguration.current.locales[0]?.language == "cs"
+                        Text(
+                            stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md(), v.targetNm.fmt(1)),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     if (b.notes.isNotBlank()) Text(b.notes, style = MaterialTheme.typography.bodySmall)
                 }
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -272,7 +283,7 @@ private fun SeasonCard(
                 KeyValueRow(stringResource(R.string.latest_kind, latestSugar.kind.label), "${latestSugar.value.fmt()} ${latestSugar.kind.unit} (${formatDate(latestSugar.date)})")
                 val trend = WineMath.sugarTrend(yearMeasurements.filter { it.kind == latestSugar.kind })
                 if (trend != null && trend.perDay > 0) {
-                    val targetNm = settings.targetSugarNm
+                    val targetNm = block?.variety?.let { Varieties.find(it) }?.targetNm ?: settings.targetSugarNm
                     val target = when (trend.kind) { MeasurementKind.BRIX -> targetNm * WineMath.BX_PER_NM; MeasurementKind.OECHSLE -> targetNm * WineMath.OE_PER_NM; else -> targetNm }
                     val days = WineMath.daysTo(trend, target)
                     if (days != null && days < 120) {
