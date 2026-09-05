@@ -89,9 +89,57 @@ Postřiky s datem, přípravkem, dávkou, objemem jíchy a počasím při aplika
 mezery v krytí. Fomopsis se infikuje hned po rašení za chladného vlhka – klíčový je první postřik
 při 3–10 cm letorostů a odstranění napadeného réví v zimě.
 
-## Navržené pořadí
-1. Jednotky pro malovinaře (bez toho je zadávání postřiků nepřirozené).
-2. Odrůdový katalog + cíl sklizně podle odrůdy.
-3. Grafy 1 a 2 (počasí + riziko + postřiky; srovnání ročníků).
-4. Šablony protokolů ve sklepě a kostra postřiků.
-5. Přílohy PDF, GDD do sklizně po první sezóně.
+## Navržené pořadí (aktualizované)
+1. ~~Jednotky pro malovinaře~~ – hotovo.
+2. ČHMÚ jako zdroj počasí (Hluk 4 km) – malé, velký přínos pro riziko a GDD.
+3. Odrůdový katalog + předvyplnění tratí, šarží, plánu a cílů podle odrůd.
+4. Záložka Přehled s grafy a připomínkami (vlastní i automatické).
+5. Šablony protokolů ve sklepě a kostra postřiků.
+6. Vlastní fotky k tématům atlasu; přílohy PDF; GDD do sklizně po první sezóně.
+
+## 8. Doplnění plánu (5. 9. 2026 večer)
+
+### 8a. Předvyplnění podle toho, co máš vysazené
+Odrůdový katalog (bod 2a) se použije na víc míst: trať si vybere odrůdu ze seznamu a aplikace
+předvyplní barvu, ranost, okno sklizně a cílovou cukernatost; plán sezóny dostane odrůdové
+položky (kontroly zralosti od zaměkání u raných dřív, botrytida u hustých hroznů RB/RŠ, obaleči);
+riziková karta zvýrazní choroby, na které jsou tvoje odrůdy citlivé; nová šarže z tratě zdědí
+odrůdu, barvu a šablonu sklepního protokolu (bílé bez JMF / rosé z MP / červené). Kalkulačky
+dostanou předvyplněný objem z výlisnosti tratě a cílovou °NM z odrůdy.
+
+### 8b. Připomínky a záložka „Přehled“
+- **Vlastní připomínky**: název, opakování (jednou / denně / týdně v daný den), od–do (např. od
+  zaměkání do sklizně), volitelně typ záznamu, který se má připomínkou založit („Kontrolní odběr
+  cukernatosti – každé pondělí 8:00“). Notifikace Androidu (oprávnění POST_NOTIFICATIONS,
+  AlarmManager/WorkManager), klepnutí otevře rovnou formulář záznamu.
+- **Automatické připomínky** (zapínatelné): konec ochranné lhůty posledního postřiku; úkoly plánu
+  sezóny na začátku jejich okna; vysoké riziko chorob po denním stažení počasí na pozadí; kvašení
+  bez poklesu cukru 3 dny; další odběr podle odhadu sklizně („za 5 dní bys měl být na 21 °NM“).
+- **Záložka Přehled** nahradí záložku Počasí: nahoře riziko a dnešní/nejbližší připomínky a úkoly,
+  pod tím grafy (počasí sezóny s postřiky a rizikem, srovnání ročníků GDD, zrání po tratích, roční
+  přehled sklizně) a nakonec sekce Počasí (stažení, seznam dnů). Deník zůstává první záložkou.
+Odhad: připomínky 1–1,5 dne, záložka Přehled s grafy 1,5–2 dny.
+
+### 8c. ČHMÚ jako druhý zdroj počasí
+Ověřeno na opendata.chmi.cz (otevřená data od června 2024, JSON): stanice v `meta1-YYYYMMDD.json`
+(WSI, název, souřadnice, výška), denní data `recent/data/daily/MM/dly-{WSI}-{RRRRMM}.json`
+s prvky TMI, TMA, TPM, SRA, H…; starší roky v `historical`. Nejblíž k Vlčnovu: **Hluk 4 km** a
+**Nivnice 5,6 km** (jen srážkoměry: SRA), **Staré Město 14 km** a **Strání 15 km** (automatické:
+teploty, vlhkost, srážky). Porovnání 27.–30. 8. 2026: Hluk 28. 8. 10,4 mm, Staré Město 28. 8. 5,6 mm,
+Nivnice 29. 8. 4,7 mm; Open-Meteo 29. 8. 21 mm. Rozdíl má dvě příčiny: ČHMÚ počítá srážkový den
+07:00–07:00 (noční déšť z 28./29. 8. patří do 28. 8.) a model přeceňuje lokální přeháňku.
+Návrh: v nastavení „Najít stanice ČHMÚ“ (vybere se srážkoměr a teplotní stanice zvlášť), tlačítko
+„Stáhnout z ČHMÚ“ vedle Open-Meteo; naměřené hodnoty (zdroj „chmi“) přepíší modelové, ručně zadané
+dny nikdy; hodinové ukazatele pro riziko (ovlhčení, teplé hodiny) zůstanou z Open-Meteo, protože
+denní soubory ČHMÚ je nemají (10minutová data by to uměla, ale jsou jen pro automatické stanice).
+Odhad: 1 den.
+
+### 8d. Fotky v atlasu
+Hotovo: 24 fotek z Commons, u peronospory, padlí, botrytidy, vlnovníka, obalečů (oba druhy), úpalu,
+krup a mrazu 2–3 fotky k tématu. Commons nemá licencované fotky révy pro nedostatky živin (Mg, K, N, B),
+červenou spálu, sprchávání ani další fotky escy a fomopsisu. Návrh: (1) **vlastní fotky k tématu** –
+u každé položky atlasu tlačítko „Přidat svou fotku“, které uloží fotku jako pozorování s odkazem na
+téma a zobrazí ji v atlasu; časem tak vznikne tvoje vlastní galerie (a základ pro pozdější
+rozpoznávání); (2) u nedostatků živin jednoduché schéma listu místo fotky; (3) zdroje s licencí
+CC BY-NC (např. Bugwood/IPM Images) jdou použít v aplikaci pro osobní použití, ale ne do
+veřejného repozitáře.
