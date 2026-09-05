@@ -91,11 +91,15 @@ při 3–10 cm letorostů a odstranění napadeného réví v zimě.
 
 ## Navržené pořadí (aktualizované)
 1. ~~Jednotky pro malovinaře~~ – hotovo.
-2. ČHMÚ jako zdroj počasí (Hluk 4 km) – malé, velký přínos pro riziko a GDD.
-3. Odrůdový katalog + předvyplnění tratí, šarží, plánu a cílů podle odrůd.
-4. Záložka Přehled s grafy a připomínkami (vlastní i automatické).
+2. ~~ČHMÚ jako zdroj počasí (Hluk 4 km)~~ – hotovo (5. 9.).
+3. ~~Odrůdový katalog + předvyplnění tratí, šarží, plánu a cílů podle odrůd~~ – hotovo (5. 9.).
+4. Záložka Přehled s grafy; připomínky hotové (5. 9.), zbývají automatické (úkoly plánu, riziko na pozadí, kvašení, odhad odběru).
 5. Šablony protokolů ve sklepě a kostra postřiků.
 6. Vlastní fotky k tématům atlasu; přílohy PDF; GDD do sklizně po první sezóně.
+7. Diagnostika napříč ročníky (GDD vs. cukr při sklizni, postřiky vs. výskyt chorob, YAN vs. délka kvašení, roční Cu/S, náklady na trať).
+8. Počasí z vlastní stanice (CSV import, později čidla hustoty), rozpoznávání fotek.
+
+Hotovo mimo pořadí (6. 9.): malovinařské jednotky i v deníku a detailu záznamu; typ záznamu Obnova vinice (dosadba, přeštěpování, zmlazení, vyklučení, nová výsadba) se souhrnem na trati.
 
 ## 8. Doplnění plánu (5. 9. 2026 večer)
 
