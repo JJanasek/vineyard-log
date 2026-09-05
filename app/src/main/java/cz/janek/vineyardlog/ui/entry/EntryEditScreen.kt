@@ -3,7 +3,23 @@ package cz.janek.vineyardlog.ui.entry
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import cz.janek.vineyardlog.ui.components.PhotoImage
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +69,7 @@ import cz.janek.vineyardlog.data.model.EntryType
 import cz.janek.vineyardlog.data.model.LogEntry
 import cz.janek.vineyardlog.data.model.Measurement
 import cz.janek.vineyardlog.data.model.MeasurementKind
+import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
@@ -82,6 +99,8 @@ data class UsageRow(
     val note: String = "",
 )
 
+data class PhotoItem(val id: Long?, val fileName: String, val isNew: Boolean)
+
 data class MeasRow(
     val kind: MeasurementKind,
     val value: String = "",
@@ -95,13 +114,14 @@ class EntryEditViewModel(
     initialBlockId: Long?,
     initialBatchId: Long?,
     initialType: EntryType?,
+    initialTitle: String? = null,
 ) : ViewModel() {
     var domain by mutableStateOf(initialDomain)
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
     var date by mutableStateOf(todayEpochDay())
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
-    var title by mutableStateOf("")
+    var title by mutableStateOf(initialTitle.orEmpty())
     var notes by mutableStateOf("")
     var stage by mutableStateOf<PhenologyStage?>(null)
     var waterLha by mutableStateOf("")
@@ -115,6 +135,9 @@ class EntryEditViewModel(
     var cost by mutableStateOf("")
     val usages = mutableStateListOf<UsageRow>()
     val measurements = mutableStateListOf<MeasRow>()
+    val photos = mutableStateListOf<PhotoItem>()
+    private val removedPhotos = mutableListOf<PhotoItem>()
+    private var saved = false
     var loaded by mutableStateOf(entryId == null)
         private set
     var error by mutableStateOf<String?>(null)
@@ -144,6 +167,8 @@ class EntryEditViewModel(
                     })
                     measurements.clear()
                     measurements.addAll(d.measurements.map { MeasRow(it.kind, it.value.input(), it.note) })
+                    photos.clear()
+                    photos.addAll(d.photos.map { PhotoItem(it.id, it.fileName, isNew = false) })
                 }
                 loaded = true
             }
@@ -168,6 +193,29 @@ class EntryEditViewModel(
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
         if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
         if (measurements.isEmpty()) measurements.addAll(suggestedKinds(t).map { MeasRow(it) })
+    }
+
+    fun photoFile(item: PhotoItem) = c.photos.file(item.fileName)
+
+    fun addPhoto(uri: android.net.Uri, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            runCatching { c.photos.import(uri) }
+                .onSuccess { photos.add(PhotoItem(null, it, isNew = true)) }
+                .onFailure { error = c.appContext.getString(R.string.msg_photo_failed, it.message ?: it.javaClass.simpleName) }
+            onDone()
+        }
+    }
+
+    fun removePhoto(item: PhotoItem) {
+        photos.remove(item)
+        if (item.isNew) c.photos.delete(item.fileName) else removedPhotos.add(item)
+    }
+
+    fun newCaptureTarget() = c.photos.newCaptureTarget()
+
+    override fun onCleared() {
+        // Editing abandoned: drop files we imported but never attached to a saved entry.
+        if (!saved) photos.filter { it.isNew }.forEach { c.photos.delete(it.fileName) }
     }
 
     fun addUsage() = usages.add(UsageRow())
@@ -222,7 +270,10 @@ class EntryEditViewModel(
             Measurement(date = date, kind = it.kind, value = it.value.toDoubleLenient()!!, note = it.note.trim())
         }
         viewModelScope.launch {
-            c.entryDao.save(entry, usageRows, measRows)
+            val id = c.entryDao.save(entry, usageRows, measRows)
+            c.photoDao.insertAll(photos.filter { it.isNew }.map { Photo(entryId = id, fileName = it.fileName) })
+            removedPhotos.forEach { r -> r.id?.let { c.photoDao.delete(it) }; c.photos.delete(r.fileName) }
+            saved = true
             onDone()
         }
     }
@@ -236,9 +287,10 @@ fun EntryEditScreen(
     initialBatchId: Long?,
     initialType: EntryType?,
     onDone: () -> Unit,
+    initialTitle: String? = null,
 ) {
-    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}") {
-        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType)
+    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}") {
+        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle)
     }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val batches by vm.batches.collectAsStateWithLifecycle()
@@ -349,6 +401,52 @@ fun EntryEditScreen(
 
             AppTextField(vm.title, { vm.title = it }, stringResource(R.string.title_optional), placeholder = stringResource(R.string.title_hint))
             AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
+
+            // ---- photos ----
+            SectionTitle(stringResource(R.string.photos))
+            val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                uri?.let { vm.addPhoto(it) }
+            }
+            var captureTarget by remember { mutableStateOf<Pair<java.io.File, android.net.Uri>?>(null) }
+            val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+                val target = captureTarget
+                if (ok && target != null) vm.addPhoto(target.second) { target.first.delete() } else target?.first?.delete()
+                captureTarget = null
+            }
+            if (vm.photos.isNotEmpty()) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(vm.photos, key = { it.fileName }) { item ->
+                        Box {
+                            PhotoImage(
+                                file = vm.photoFile(item),
+                                contentDescription = stringResource(R.string.photo),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.size(110.dp).clip(RoundedCornerShape(10.dp)),
+                            )
+                            IconButton(
+                                onClick = { vm.removePhoto(item) },
+                                modifier = Modifier.align(Alignment.TopEnd).size(32.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.Cancel, contentDescription = stringResource(R.string.remove_photo),
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f), CircleShape),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = {
+                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) { Icon(Icons.Default.PhotoLibrary, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_photo)) }
+                OutlinedButton(onClick = {
+                    val target = vm.newCaptureTarget()
+                    captureTarget = target
+                    runCatching { takePhoto.launch(target.second) }.onFailure { captureTarget = null; target.first.delete() }
+                }) { Icon(Icons.Default.PhotoCamera, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.take_photo)) }
+            }
 
             // ---- products ----
             SectionTitle(stringResource(R.string.tab_products))

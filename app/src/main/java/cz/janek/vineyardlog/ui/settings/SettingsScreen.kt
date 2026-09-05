@@ -112,7 +112,10 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     fun confirmImport() = viewModelScope.launch {
         val data = pendingImport ?: return@launch
         pendingImport = null
-        runCatching { c.backupDao.replaceAll(data) }
+        runCatching {
+            c.backupDao.replaceAll(data)
+            c.photos.pruneUnreferenced(data.photos.map { it.fileName }.toSet())
+        }
             .onSuccess { message = c.appContext.getString(R.string.msg_restored, data.totalRows) }
             .onFailure { message = c.appContext.getString(R.string.msg_import_failed, it.message ?: "") }
     }

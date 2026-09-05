@@ -237,4 +237,23 @@
     <string name="archived_filter">Archivované</string>
     <string name="clear">Vymazat</string>
     <string name="unit_bottles">lahví</string>
+    <string name="photos">Fotky</string>
+    <string name="add_photo">Přidat fotku</string>
+    <string name="take_photo">Vyfotit</string>
+    <string name="remove_photo">Odebrat fotku</string>
+    <string name="msg_photo_failed">Fotku se nepodařilo přidat: %1$s</string>
+    <string name="n_photos">%1$d fotek</string>
+    <string name="photo">Fotka</string>
+    <string name="field_guide">Atlas chorob a poruch</string>
+    <string name="guide_diseases">Choroby</string>
+    <string name="guide_pests">Škůdci</string>
+    <string name="guide_deficiencies">Nedostatky živin</string>
+    <string name="guide_disorders">Poruchy a poškození</string>
+    <string name="symptoms">Příznaky</string>
+    <string name="conditions_when">Kdy se objevuje</string>
+    <string name="what_to_do">Co dělat</string>
+    <string name="log_observation">Zapsat pozorování</string>
+    <string name="guide_disclaimer">Obecná orientační příručka pro střední Evropu. Ověřte u poradce a řiďte se etiketou přípravku.</string>
+    <string name="photo_credit">Foto: %1$s, %2$s (Wikimedia Commons)</string>
+    <string name="products_for">Přípravky: %1$s</string>
 </resources>

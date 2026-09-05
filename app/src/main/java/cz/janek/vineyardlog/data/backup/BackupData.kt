@@ -5,6 +5,7 @@ import cz.janek.vineyardlog.data.model.BatchSource
 import cz.janek.vineyardlog.data.model.Block
 import cz.janek.vineyardlog.data.model.LogEntry
 import cz.janek.vineyardlog.data.model.Measurement
+import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
 import cz.janek.vineyardlog.data.model.WeatherDay
@@ -23,6 +24,8 @@ data class BackupData(
     val usages: List<ProductUsage> = emptyList(),
     val measurements: List<Measurement> = emptyList(),
     val weather: List<WeatherDay> = emptyList(),
+    /** Photo rows only; the JPEG files are not part of the JSON backup. */
+    val photos: List<Photo> = emptyList(),
 ) {
     val totalRows: Int
         get() = blocks.size + products.size + batches.size + batchSources.size +

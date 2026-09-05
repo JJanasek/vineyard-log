@@ -10,6 +10,7 @@ import cz.janek.vineyardlog.data.model.BatchSource
 import cz.janek.vineyardlog.data.model.Block
 import cz.janek.vineyardlog.data.model.LogEntry
 import cz.janek.vineyardlog.data.model.Measurement
+import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
 import cz.janek.vineyardlog.data.model.WeatherDay
@@ -25,6 +26,7 @@ interface BackupDao {
     @Query("SELECT * FROM product_usages") suspend fun allUsages(): List<ProductUsage>
     @Query("SELECT * FROM measurements") suspend fun allMeasurements(): List<Measurement>
     @Query("SELECT * FROM weather_days") suspend fun allWeather(): List<WeatherDay>
+    @Query("SELECT * FROM photos") suspend fun allPhotos(): List<Photo>
 
     @Insert suspend fun insertBlocks(items: List<Block>)
     @Insert suspend fun insertProducts(items: List<Product>)
@@ -34,7 +36,9 @@ interface BackupDao {
     @Insert suspend fun insertUsages(items: List<ProductUsage>)
     @Insert suspend fun insertMeasurements(items: List<Measurement>)
     @Insert suspend fun insertWeather(items: List<WeatherDay>)
+    @Insert suspend fun insertPhotos(items: List<Photo>)
 
+    @Query("DELETE FROM photos") suspend fun clearPhotos()
     @Query("DELETE FROM measurements") suspend fun clearMeasurements()
     @Query("DELETE FROM product_usages") suspend fun clearUsages()
     @Query("DELETE FROM entries") suspend fun clearEntries()
@@ -54,12 +58,13 @@ interface BackupDao {
         usages = allUsages(),
         measurements = allMeasurements(),
         weather = allWeather(),
+        photos = allPhotos(),
     )
 
     /** Replace everything with the given backup, in FK-safe order. */
     @Transaction
     suspend fun replaceAll(data: BackupData) {
-        clearMeasurements(); clearUsages(); clearEntries(); clearBatchSources()
+        clearPhotos(); clearMeasurements(); clearUsages(); clearEntries(); clearBatchSources()
         clearBatches(); clearBlocks(); clearProducts(); clearWeather()
         insertBlocks(data.blocks)
         insertProducts(data.products)
@@ -69,5 +74,6 @@ interface BackupDao {
         insertUsages(data.usages)
         insertMeasurements(data.measurements)
         insertWeather(data.weather)
+        insertPhotos(data.photos)
     }
 }

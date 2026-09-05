@@ -29,6 +29,8 @@ import cz.janek.vineyardlog.ui.blocks.BlockEditScreen
 import cz.janek.vineyardlog.ui.blocks.BlocksScreen
 import cz.janek.vineyardlog.ui.entry.EntryDetailScreen
 import cz.janek.vineyardlog.ui.entry.EntryEditScreen
+import cz.janek.vineyardlog.ui.guide.GuideDetailScreen
+import cz.janek.vineyardlog.ui.guide.GuideScreen
 import cz.janek.vineyardlog.ui.products.ProductEditScreen
 import cz.janek.vineyardlog.ui.products.ProductsScreen
 import cz.janek.vineyardlog.ui.settings.SettingsScreen
@@ -82,6 +84,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                 BlocksScreen(
                     onOpenBlock = { navController.navigate(Routes.block(it)) },
                     onNewBlock = { navController.navigate(Routes.blockEdit()) },
+                    onOpenGuide = { navController.navigate(Routes.GUIDE) },
                 )
             }
             composable(Tab.CELLAR.route) {
@@ -101,6 +104,19 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.GUIDE) {
+                GuideScreen(onOpen = { navController.navigate(Routes.guide(it)) }, onBack = { navController.popBackStack() })
+            }
+            composable(Routes.GUIDE_ENTRY, arguments = listOf(navArgument("key") { type = NavType.StringType })) { entry ->
+                val key = entry.arguments?.getString("key") ?: return@composable
+                GuideDetailScreen(
+                    entryKey = key,
+                    onBack = { navController.popBackStack() },
+                    onLogObservation = { title ->
+                        navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.SCOUTING, title = title))
+                    },
+                )
             }
 
             composable(Routes.BLOCK, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
@@ -174,6 +190,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                     navArgument("blockId") { type = NavType.LongType; defaultValue = -1L },
                     navArgument("batchId") { type = NavType.LongType; defaultValue = -1L },
                     navArgument("type") { type = NavType.StringType; defaultValue = "" },
+                    navArgument("title") { type = NavType.StringType; defaultValue = "" },
                 ),
             ) { entry ->
                 val args = entry.arguments
@@ -188,6 +205,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                     initialBlockId = blockId,
                     initialBatchId = batchId,
                     initialType = type,
+                    initialTitle = args?.getString("title")?.takeIf { it.isNotBlank() },
                     onDone = { navController.popBackStack() },
                 )
             }

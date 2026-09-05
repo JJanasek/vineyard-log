@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,12 +40,19 @@ class BlocksViewModel(c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit) {
+fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuide: () -> Unit = {}) {
     val vm = appViewModel { BlocksViewModel(it) }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_vineyard)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tab_vineyard)) },
+                actions = {
+                    IconButton(onClick = onOpenGuide) { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = stringResource(R.string.field_guide)) }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onNewBlock) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_block)) }
         },

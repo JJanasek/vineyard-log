@@ -23,6 +23,9 @@ enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageV
 
 object Routes {
     const val SETTINGS = "settings"
+    const val GUIDE = "guide"
+    const val GUIDE_ENTRY = "guide/{key}"
+    fun guide(key: String) = "guide/$key"
 
     const val BLOCK = "block/{id}"
     fun block(id: Long) = "block/$id"
@@ -45,15 +48,18 @@ object Routes {
     const val ENTRY = "entry/{id}"
     fun entry(id: Long) = "entry/$id"
 
-    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}"
+    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}&title={title}"
     fun entryEdit(
         id: Long? = null,
         domain: Domain = Domain.VINEYARD,
         blockId: Long? = null,
         batchId: Long? = null,
         type: EntryType? = null,
+        title: String? = null,
     ): String {
-        val base = "entryEdit?id=${id ?: -1}&domain=${domain.name}&blockId=${blockId ?: -1}&batchId=${batchId ?: -1}"
-        return if (type != null) "$base&type=${type.name}" else base
+        var s = "entryEdit?id=${id ?: -1}&domain=${domain.name}&blockId=${blockId ?: -1}&batchId=${batchId ?: -1}"
+        if (type != null) s += "&type=${type.name}"
+        if (!title.isNullOrBlank()) s += "&title=${android.net.Uri.encode(title)}"
+        return s
     }
 }

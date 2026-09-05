@@ -3,7 +3,21 @@ package cz.janek.vineyardlog.ui.entry
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import cz.janek.vineyardlog.ui.components.PhotoImage
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -49,7 +63,13 @@ class EntryDetailViewModel(private val c: AppContainer, private val id: Long) : 
     val batchNames = c.batchDao.observeAll().map { l -> l.associate { it.id to it.name } }.stateIn(viewModelScope, started, emptyMap())
     val settings = c.settings.settings.stateIn(viewModelScope, started, cz.janek.vineyardlog.data.settings.Settings())
 
-    fun delete(onDone: () -> Unit) = viewModelScope.launch { c.entryDao.deleteEntry(id); onDone() }
+    fun photoFile(p: cz.janek.vineyardlog.data.model.Photo) = c.photos.file(p.fileName)
+
+    fun delete(onDone: () -> Unit) = viewModelScope.launch {
+        entry.value?.photos?.forEach { c.photos.delete(it.fileName) }
+        c.entryDao.deleteEntry(id)
+        onDone()
+    }
 }
 
 @Composable
@@ -60,6 +80,7 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
     val batchNames by vm.batchNames.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     var confirmDelete by remember { mutableStateOf(false) }
+    var fullscreen by remember { mutableStateOf<cz.janek.vineyardlog.data.model.Photo?>(null) }
 
     Scaffold(
         topBar = {
@@ -125,6 +146,27 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
             if (e.notes.isNotBlank()) {
                 SectionTitle(stringResource(R.string.notes))
                 Text(e.notes, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (d.photos.isNotEmpty()) {
+                SectionTitle(stringResource(R.string.photos))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    d.photos.forEach { photo ->
+                        PhotoImage(
+                            file = vm.photoFile(photo),
+                            contentDescription = stringResource(R.string.photo),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(110.dp).clip(RoundedCornerShape(10.dp)).clickable { fullscreen = photo },
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fullscreen?.let { photo ->
+        Dialog(onDismissRequest = { fullscreen = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Box(Modifier.fillMaxSize().background(Color.Black).clickable { fullscreen = null }, contentAlignment = Alignment.Center) {
+                PhotoImage(file = vm.photoFile(photo), contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize(), targetPx = 1600)
             }
         }
     }

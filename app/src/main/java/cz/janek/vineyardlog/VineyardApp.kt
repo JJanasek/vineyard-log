@@ -3,6 +3,7 @@ package cz.janek.vineyardlog
 import android.app.Application
 import android.content.Context
 import cz.janek.vineyardlog.data.db.AppDatabase
+import cz.janek.vineyardlog.data.photos.PhotoStore
 import cz.janek.vineyardlog.data.settings.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,7 @@ class AppContainer(context: Context) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val db: AppDatabase = AppDatabase.build(context, appScope)
     val settings = SettingsStore(context)
+    val photos = PhotoStore(appContext)
 
     val blockDao get() = db.blockDao()
     val productDao get() = db.productDao()
@@ -22,6 +24,7 @@ class AppContainer(context: Context) {
     val measurementDao get() = db.measurementDao()
     val weatherDao get() = db.weatherDao()
     val backupDao get() = db.backupDao()
+    val photoDao get() = db.photoDao()
 }
 
 class VineyardApp : Application() {

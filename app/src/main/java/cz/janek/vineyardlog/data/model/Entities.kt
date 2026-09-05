@@ -194,6 +194,21 @@ data class WeatherDay(
     val note: String = "",
 )
 
+/** A photo attached to an entry; the JPEG lives in the app's private files/photos directory. */
+@Serializable
+@Entity(
+    tableName = "photos",
+    foreignKeys = [ForeignKey(entity = LogEntry::class, parentColumns = ["id"], childColumns = ["entryId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index("entryId")],
+)
+data class Photo(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val entryId: Long,
+    val fileName: String,
+    val caption: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
 // ---- Relations (read models) ----
 
 data class UsageWithProduct(
@@ -207,6 +222,8 @@ data class EntryWithDetails(
     val usages: List<UsageWithProduct>,
     @Relation(parentColumn = "id", entityColumn = "entryId")
     val measurements: List<Measurement>,
+    @Relation(parentColumn = "id", entityColumn = "entryId")
+    val photos: List<Photo> = emptyList(),
 )
 
 data class BatchWithSources(

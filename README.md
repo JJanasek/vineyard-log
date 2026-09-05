@@ -13,7 +13,7 @@ Minimum Android 8.0 (API 26). UI in English and Czech (follows the phone languag
 | Tab | Contents |
 | --- | --- |
 | **Log** | One timeline of all entries, filterable by year and vineyard/cellar. |
-| **Vineyard** | Blocks (parcels): variety, area, vines, rootstock. Per block and season: spray/fertiliser counts, phenology dates with GDD at that date, ripening curve (sugar/TA/pH), earliest harvest date from the pre-harvest interval (PHI) of the sprays used, harvest kg. |
+| **Vineyard** | Blocks (parcels): variety, area, vines, rootstock. A field guide (diseases, pests, deficiencies, frost/hail/sunburn) with photos. Per block and season: spray/fertiliser counts, phenology dates with GDD at that date, ripening curve (sugar/TA/pH), earliest harvest date from the pre-harvest interval (PHI) of the sprays used, harvest kg. |
 | **Cellar** | Batches (wine lots): vintage, style, status, vessel, yeast, source blocks. Fermentation curve (sugar + temperature by day), latest readings, SO₂ additions, cellar log. |
 | **Weather** | Daily min/max, rain, humidity, frost/hail flags. Season GDD (configurable base and season window), cumulative GDD chart, season comparison table. |
 | **Products** | Your catalog of sprays, fertilisers, yeasts, nutrients, enzymes... with supplier (Lipera, Vinařský dům, other), label dose range, PHI, purpose and product URL. Entries pick products from here so doses are pre-filled. |
@@ -21,7 +21,7 @@ Minimum Android 8.0 (API 26). UI in English and Czech (follows the phone languag
 Entry types cover: spray, fertilisation, canopy work, soil work, phenology stage, scouting,
 ripeness check, harvest, weather event; must preparation, yeast pitch, nutrient addition,
 other addition, fermentation check, analysis, racking, SO₂ addition, fining/filtration,
-malolactic, tasting note, bottling. Every entry can carry products (with dose and total used)
+malolactic, tasting note, bottling. Every entry can carry photos, products (with dose and total used)
 and numeric measurements (°Bx / °NM / °Oe, TA, pH, YAN, temperature, SG, free/total SO₂,
 alcohol, residual sugar, malic, VA, soil analysis...).
 
@@ -101,7 +101,7 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 ## Roadmap / ideas
 
 - ~~**Czech UI**~~ – done: all UI strings are resources (`values` / `values-cs`); Settings → Language switches between system default, English and Czech.
-- **Photos and a field guide** – attach photos to entries (disease pressure, deficiency symptoms), and a built-in reference of common vine diseases (peronospora, oidium, botrytis, black rot, esca, phomopsis) and nutrient deficiencies (N, K, Mg, Fe chlorosis, B, Zn) with symptom descriptions and example images.
+- ~~**Photos and a field guide**~~ – done: entries take photos from the gallery or camera (stored downscaled in app storage, not in the JSON backup); *Vineyard → book icon* opens a bilingual field guide with 20 diseases, pests, deficiencies and disorders, 14 of them with Wikimedia Commons photos (credits in `app/src/main/assets/guide/CREDITS.md`). Each guide page can start a scouting entry.
 - **Weather without typing** – first pull daily min/max/rain for the vineyard's GPS position from a free API (Open-Meteo or ČHMÚ open data); later connect a station or fermentation probe (research which hardware has an open/local API: Ecowitt gateways, WeatherFlow Tempest, iSpindel / Tilt for must density, WeeWX-compatible stations).
 - **Season checklist** – a yearly to-do template (pruning, tying, shoot thinning, first spray at 10 cm shoots, leaf pulling, netting, harvest prep) with per-year tick-offs, optionally tied to phenology stages.
 - **Vendor catalog import** – one-off import of the enology / plant-protection ranges from Lipera and Vinařský dům (both Shoptet shops with public sitemaps) into the product table, refreshed manually a few times a year.
@@ -109,4 +109,4 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Personal, open-source project; no affiliation with the suppliers mentioned.
+MIT, see [LICENSE](LICENSE), for the code. The field-guide photos under `app/src/main/assets/guide/` are Wikimedia Commons images under their own CC licences, listed in `CREDITS.md` there. Personal, open-source project; no affiliation with the suppliers mentioned.

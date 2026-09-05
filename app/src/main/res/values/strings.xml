@@ -237,4 +237,23 @@
     <string name="archived_filter">Archived</string>
     <string name="clear">Clear</string>
     <string name="unit_bottles">bottles</string>
+    <string name="photos">Photos</string>
+    <string name="add_photo">Add photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="msg_photo_failed">Could not add the photo: %1$s</string>
+    <string name="n_photos">%1$d photos</string>
+    <string name="photo">Photo</string>
+    <string name="field_guide">Field guide</string>
+    <string name="guide_diseases">Diseases</string>
+    <string name="guide_pests">Pests</string>
+    <string name="guide_deficiencies">Nutrient deficiencies</string>
+    <string name="guide_disorders">Disorders and damage</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="conditions_when">When it appears</string>
+    <string name="what_to_do">What to do</string>
+    <string name="log_observation">Log observation</string>
+    <string name="guide_disclaimer">General field reference for Central Europe. Confirm with an advisor and follow the product label.</string>
+    <string name="photo_credit">Photo: %1$s, %2$s (Wikimedia Commons)</string>
+    <string name="products_for">Products: %1$s</string>
 </resources>
