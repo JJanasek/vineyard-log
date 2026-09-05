@@ -2,6 +2,9 @@ package cz.janek.vineyardlog.ui.entry
 
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
+import cz.janek.vineyardlog.data.model.Domain
+import cz.janek.vineyardlog.ui.hobbyDose
+import cz.janek.vineyardlog.util.Units
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -107,8 +110,15 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
             e.batchId?.let { KeyValueRow(stringResource(R.string.batch), batchNames[it] ?: "#$it") }
             e.phenologyStage?.let { KeyValueRow(stringResource(R.string.stage), it.label) }
             e.sprayVolumeL?.let { KeyValueRow(stringResource(R.string.spray_volume), "${it.fmt()} L") }
-            e.waterLPerHa?.let { KeyValueRow(stringResource(R.string.water_volume), "${it.fmt()} l/ha") }
-            e.quantity?.let { KeyValueRow(stringResource(R.string.quantity), "${it.fmt()} ${e.quantityUnit}".trim()) }
+            e.waterLPerHa?.let { w ->
+                val area = Units.perArea(w, "l/ha", settings)
+                KeyValueRow(stringResource(R.string.water_volume), if (area != null) "$area (${w.fmt()} l/ha)" else "${w.fmt()} l/ha")
+            }
+            e.quantity?.let { q ->
+                val original = "${q.fmt()} ${e.quantityUnit}".trim()
+                val hobby = if (e.domain == Domain.VINEYARD) Units.quantity(q, e.quantityUnit, settings) else original
+                KeyValueRow(stringResource(R.string.quantity), if (hobby != original) "$hobby ($original)" else original)
+            }
             if (e.tempC != null || e.windKmh != null || e.humidityPct != null || e.weatherNote.isNotBlank()) {
                 SectionTitle(stringResource(R.string.conditions))
                 e.tempC?.let { KeyValueRow(stringResource(R.string.mk_temperature), "${it.fmt()} °C") }
@@ -120,7 +130,11 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
                 SectionTitle(stringResource(R.string.tab_products))
                 d.usages.forEach { u ->
                     val p = u.product
-                    val dose = u.usage.dose?.let { "${it.fmt()} ${u.usage.doseUnit}".trim() } ?: ""
+                    val dose = u.usage.dose?.let { d ->
+                        val original = "${d.fmt()} ${u.usage.doseUnit}".trim()
+                        val hobby = hobbyDose(d, u.usage.doseUnit, e.type, e.waterLPerHa, settings)
+                        if (hobby != original) "$hobby ($original)" else original
+                    } ?: ""
                     KeyValueRow(p?.name ?: stringResource(R.string.deleted_product), dose)
                     val extra = buildString {
                         u.usage.totalAmount?.let { append(stringResource(R.string.total_prefix, "${it.fmt()} ${u.usage.totalUnit}".trim())) }

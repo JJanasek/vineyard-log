@@ -87,7 +87,7 @@ class BlockDetailViewModel(private val c: AppContainer, private val id: Long) : 
 
 private val quickTypes = listOf(
     EntryType.SPRAY, EntryType.FERTILIZATION, EntryType.CANOPY, EntryType.PHENOLOGY,
-    EntryType.RIPENESS, EntryType.HARVEST, EntryType.SCOUTING,
+    EntryType.RIPENESS, EntryType.HARVEST, EntryType.SCOUTING, EntryType.RENEWAL,
 )
 
 @Composable
@@ -194,6 +194,7 @@ fun BlockDetailScreen(
                     }
                 }
             }
+            item { RenewalCard(entries, block) }
 
             item { SectionTitle(stringResource(R.string.log_n, year), Modifier.padding(horizontal = 16.dp)) }
             if (yearEntries.isEmpty()) {
@@ -303,5 +304,28 @@ private fun Stat(label: String, value: String) {
     Column {
         Text(value, style = MaterialTheme.typography.titleMedium)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Replanting / regrafting summary from entries of type RENEWAL (all years). */
+@Composable
+private fun RenewalCard(entries: List<EntryWithDetails>, block: cz.janek.vineyardlog.data.model.Block?) {
+    val renewal = entries.filter { it.entry.type == EntryType.RENEWAL }
+    if (renewal.isEmpty()) return
+    val total = renewal.sumOf { it.entry.quantity ?: 0.0 }
+    val young = renewal.filter { it.entry.date >= todayEpochDay() - 3 * 365 }.sumOf { it.entry.quantity ?: 0.0 }
+    val vines = block?.vineCount ?: 0
+    val share = if (vines > 0) "${(total / vines * 100).fmt(0)} %" else "–"
+    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Column(Modifier.padding(12.dp)) {
+            Text(stringResource(R.string.renewal_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.renewal_total, total.fmt(0), share), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.renewal_young, young.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            renewal.groupBy { yearOf(it.entry.date) }.toSortedMap(compareByDescending { it }).forEach { (y, list) ->
+                val parts = list.groupBy { it.entry.title.ifBlank { it.entry.type.label } }
+                    .map { (t, l) -> "$t ${l.sumOf { it.entry.quantity ?: 0.0 }.fmt(0)}" }
+                Text(stringResource(R.string.renewal_year_line, y, parts.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+            }
+        }
     }
 }

@@ -8,6 +8,9 @@ import cz.janek.vineyardlog.data.model.Measurement
 import cz.janek.vineyardlog.data.model.MeasurementKind
 import cz.janek.vineyardlog.data.model.UsageWithProduct
 import cz.janek.vineyardlog.data.model.fmt
+import cz.janek.vineyardlog.data.model.Domain
+import cz.janek.vineyardlog.data.settings.Settings
+import cz.janek.vineyardlog.util.Units
 
 fun Double?.input(): String = this?.fmt() ?: ""
 fun Int?.input(): String = this?.toString() ?: ""
@@ -16,10 +19,17 @@ fun String.toDoubleLenient(): Double? = trim().replace(',', '.').takeIf { it.isN
 fun String.toIntLenient(): Int? = trim().takeIf { it.isNotBlank() }?.toIntOrNull()
 
 @Composable
-fun usageText(u: UsageWithProduct): String {
+fun usageText(u: UsageWithProduct, entryType: EntryType? = null, waterLPerHa: Double? = null): String {
     val name = u.product?.name ?: stringResource(R.string.deleted_product)
-    val dose = u.usage.dose?.let { "${it.fmt()} ${u.usage.doseUnit}".trim() }
+    val dose = u.usage.dose?.let { hobbyDose(it, u.usage.doseUnit, entryType, waterLPerHa, LocalSettings.current) }
     return if (dose.isNullOrBlank()) name else "$name $dose"
+}
+
+/** Dose text in the user's units: per 10 l and per are for sprays, per are for other vineyard work, unchanged in the cellar. */
+fun hobbyDose(dose: Double, unit: String, entryType: EntryType?, waterLPerHa: Double?, settings: Settings): String = when {
+    entryType == EntryType.SPRAY -> Units.sprayDose(dose, unit, waterLPerHa, settings)
+    entryType?.domain == Domain.VINEYARD -> Units.quantity(dose, unit, settings)
+    else -> "${dose.fmt()} $unit".trim()
 }
 
 @Composable

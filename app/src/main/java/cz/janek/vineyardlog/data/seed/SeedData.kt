@@ -20,6 +20,7 @@ object SeedData {
             t("Winter pruning", "Zimní řez", 1, 3, type = EntryType.CANOPY),
             t("Repair trellis, tighten wires, replace posts", "Oprava opěrné konstrukce, dopnutí drátů, výměna sloupků", 2, 3, type = EntryType.VINEYARD_OTHER),
             t("Tie down canes", "Vyvázání tažňů", 3, 4, type = EntryType.CANOPY),
+            t("Replant gaps, regraft or renew old vines", "Dosadba chybějících keřů, přeštěpování, obnova starých keřů", 3, 5, type = EntryType.RENEWAL),
             t("Soil test, spring fertilisation", "Rozbor půdy, jarní hnojení", 3, 4, type = EntryType.FERTILIZATION),
             t("Frost watch, prepare frost protection", "Sledování mrazů, příprava ochrany", 4, 5, type = EntryType.WEATHER_EVENT),
             t("Record bud break", "Zapsat rašení", 4, 4, stage = PhenologyStage.BUD_BREAK, type = EntryType.PHENOLOGY),

@@ -48,6 +48,8 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -195,6 +197,7 @@ class EntryEditViewModel(
         if (t == EntryType.HARVEST && quantityUnit.isBlank()) quantityUnit = "kg"
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
         if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
+        if (t == EntryType.RENEWAL && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_vines)
         if (measurements.isEmpty()) measurements.addAll(suggestedKinds(t).map { MeasRow(it) })
     }
 
@@ -406,7 +409,17 @@ fun EntryEditScreen(
                 AppTextField(vm.weatherNote, { vm.weatherNote = it }, stringResource(R.string.weather_note), placeholder = stringResource(R.string.weather_note_hint))
             }
 
-            if (vm.type in setOf(EntryType.HARVEST, EntryType.RACKING, EntryType.BOTTLING, EntryType.MUST_PREP, EntryType.VINEYARD_OTHER, EntryType.CELLAR_OTHER)) {
+            if (vm.type == EntryType.RENEWAL) {
+                Text(stringResource(R.string.method), style = MaterialTheme.typography.labelMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(R.string.renewal_replant, R.string.renewal_regraft, R.string.renewal_rejuvenate, R.string.renewal_grub, R.string.renewal_new).forEach { res ->
+                        val label = stringResource(res)
+                        FilterChip(selected = vm.title == label, onClick = { vm.title = if (vm.title == label) "" else label }, label = { Text(label) })
+                    }
+                }
+                Text(stringResource(R.string.renewal_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (vm.type in setOf(EntryType.HARVEST, EntryType.RACKING, EntryType.BOTTLING, EntryType.MUST_PREP, EntryType.VINEYARD_OTHER, EntryType.CELLAR_OTHER, EntryType.RENEWAL)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     NumberField(vm.quantity, { vm.quantity = it }, stringResource(R.string.quantity), Modifier.weight(2f))
                     AppTextField(vm.quantityUnit, { vm.quantityUnit = it }, stringResource(R.string.unit), Modifier.weight(1f))

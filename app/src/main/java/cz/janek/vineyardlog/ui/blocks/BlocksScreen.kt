@@ -50,11 +50,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 
 class BlocksViewModel(c: AppContainer) : ViewModel() {
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val settings = c.settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), cz.janek.vineyardlog.data.settings.Settings())
+
+    /** Vines renewed per block (sum of RENEWAL entry quantities), for the "renewed N %" tag. */
+    val renewed = c.entryDao.observeAll().map { es ->
+        es.filter { it.entry.type == EntryType.RENEWAL && it.entry.blockId != null }
+            .groupBy { it.entry.blockId!! }.mapValues { (_, l) -> l.sumOf { it.entry.quantity ?: 0.0 } }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /** Weather-only disease risk from stored days (no forecast here; the Weather tab has it). */
     val risk = combine(c.weatherDao.observeAll(), c.entryDao.observeAll(), c.settings.settings) { weather, entries, _ ->
@@ -84,6 +91,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
     val openNow by vm.openThisMonth.collectAsStateWithLifecycle()
     val risk by vm.risk.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
+    val renewed by vm.renewed.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -128,7 +136,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
                 EmptyState(stringResource(R.string.blocks_empty))
             } else {
                 LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp)) {
-                    items(blocks, key = { it.id }) { b -> BlockCard(b, settings.areaFactor, settings.areaLabel) { onOpenBlock(b.id) } }
+                    items(blocks, key = { it.id }) { b -> BlockCard(b, settings.areaFactor, settings.areaLabel, renewed[b.id]) { onOpenBlock(b.id) } }
                 }
             }
         }
@@ -136,7 +144,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
 }
 
 @Composable
-private fun BlockCard(b: Block, areaFactor: Double, areaLabel: String, onClick: () -> Unit) {
+private fun BlockCard(b: Block, areaFactor: Double, areaLabel: String, renewedVines: Double?, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).alpha(if (b.archived) 0.5f else 1f),
@@ -148,6 +156,7 @@ private fun BlockCard(b: Block, areaFactor: Double, areaLabel: String, onClick: 
                 b.areaHa?.let { "${(it * areaFactor).fmt(if (areaFactor >= 100) 0 else 3)} $areaLabel" },
                 b.vineCount?.let { stringResource(R.string.n_vines, it) },
                 b.plantedYear?.let { stringResource(R.string.planted_year, it) },
+                renewedVines?.takeIf { it > 0 && (b.vineCount ?: 0) > 0 }?.let { stringResource(R.string.renewed_pct, (it / b.vineCount!! * 100).toInt()) },
                 if (b.archived) stringResource(R.string.archived) else null,
             ).joinToString(" · ")
             if (line.isNotBlank()) {

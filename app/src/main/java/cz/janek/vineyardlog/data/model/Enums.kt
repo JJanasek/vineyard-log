@@ -41,6 +41,7 @@ enum class EntryType(@StringRes val labelRes: Int, val domain: Domain) {
     FERTILIZATION(R.string.et_fertilization, Domain.VINEYARD),
     CANOPY(R.string.et_canopy, Domain.VINEYARD),
     SOIL_WORK(R.string.et_soil_work, Domain.VINEYARD),
+    RENEWAL(R.string.et_renewal, Domain.VINEYARD),
     PHENOLOGY(R.string.et_phenology, Domain.VINEYARD),
     SCOUTING(R.string.et_scouting, Domain.VINEYARD),
     RIPENESS(R.string.et_ripeness, Domain.VINEYARD),

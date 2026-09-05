@@ -453,4 +453,17 @@
     <string name="no_upcoming">Nothing scheduled.</string>
     <string name="add">Add</string>
     <string name="reminder_title">Title</string>
+    <string name="unit_vines">vines</string>
+    <string name="method">Method</string>
+    <string name="renewal_replant">Replanting gaps</string>
+    <string name="renewal_regraft">Regrafting</string>
+    <string name="renewal_rejuvenate">Rejuvenation cut</string>
+    <string name="renewal_grub">Grubbing up</string>
+    <string name="renewal_new">New planting</string>
+    <string name="renewal_title">Vineyard renewal</string>
+    <string name="renewal_total">Renewed in total: %1$s vines (%2$s of the block)</string>
+    <string name="renewal_young">Young vines (last 3 years): %1$s</string>
+    <string name="renewal_hint">Log replanting, regrafting or rejuvenation as entries of type Renewal with the number of vines; the block then shows how much has been renewed.</string>
+    <string name="renewed_pct">renewed %1$d %%</string>
+    <string name="renewal_year_line">%1$d · %2$s</string>
 </resources>

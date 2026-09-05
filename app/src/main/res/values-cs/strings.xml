@@ -453,4 +453,17 @@
     <string name="no_upcoming">Nic naplánováno.</string>
     <string name="add">Přidat</string>
     <string name="reminder_title">Název</string>
+    <string name="unit_vines">keřů</string>
+    <string name="method">Způsob</string>
+    <string name="renewal_replant">Dosadba</string>
+    <string name="renewal_regraft">Přeštěpování</string>
+    <string name="renewal_rejuvenate">Zmlazení řezem</string>
+    <string name="renewal_grub">Vyklučení</string>
+    <string name="renewal_new">Nová výsadba</string>
+    <string name="renewal_title">Obnova vinice</string>
+    <string name="renewal_total">Obnoveno celkem: %1$s keřů (%2$s tratě)</string>
+    <string name="renewal_young">Mladé keře (poslední 3 roky): %1$s</string>
+    <string name="renewal_hint">Dosadbu, přeštěpování nebo zmlazení zapisuj jako záznam typu Obnova s počtem keřů; trať pak ukazuje, kolik je obnoveno.</string>
+    <string name="renewed_pct">obnoveno %1$d %%</string>
+    <string name="renewal_year_line">%1$d · %2$s</string>
 </resources>
