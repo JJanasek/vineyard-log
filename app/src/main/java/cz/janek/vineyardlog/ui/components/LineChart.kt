@@ -87,8 +87,8 @@ fun LineChart(
                 val txt = measurer.measure(fmtAxis(v), labelStyle)
                 drawText(txt, topLeft = Offset(padL - txt.size.width - 4.dp.toPx(), y - txt.size.height / 2))
             }
-            // x labels
-            val xSteps = 4
+            // x labels (fewer when the x-range is short, so labels do not repeat)
+            val xSteps = (xMax - xMin).toInt().coerceIn(1, 4)
             for (i in 0..xSteps) {
                 val xv = xMin + (xMax - xMin) * i / xSteps
                 val x = padL + w * i / xSteps

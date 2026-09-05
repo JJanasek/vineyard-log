@@ -1,6 +1,7 @@
 package cz.janek.vineyardlog.ui.weather
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -257,8 +259,14 @@ private fun WeatherDayDialog(
                     NumberField(rh, { rh = it }, "Humidity", Modifier.weight(1f), suffix = "%")
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = frost, onCheckedChange = { frost = it }); Text("Frost")
-                    Checkbox(checked = hail, onCheckedChange = { hail = it }); Text("Hail")
+                    Row(
+                        Modifier.weight(1f).toggleable(value = frost, role = Role.Checkbox, onValueChange = { frost = it }),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) { Checkbox(checked = frost, onCheckedChange = null); Text("Frost") }
+                    Row(
+                        Modifier.weight(1f).toggleable(value = hail, role = Role.Checkbox, onValueChange = { hail = it }),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) { Checkbox(checked = hail, onCheckedChange = null); Text("Hail") }
                 }
                 AppTextField(note, { note = it }, "Note")
             }

@@ -47,6 +47,19 @@ Or copy the APK to the phone and open it (allow installing from unknown sources)
 `./gradlew assembleRelease` produces a minified, unsigned APK; sign it with your own keystore
 before distributing.
 
+### Emulator (optional)
+
+An API 36 x86_64 image and the emulator are installed in the SDK. On this Fedora machine the
+emulator only runs with the ANGLE renderer and without the desktop display variables:
+
+```bash
+unset DISPLAY WAYLAND_DISPLAY
+~/Android/Sdk/emulator/emulator -avd vlog36 -no-window -no-audio -gpu angle_indirect -accel on -no-snapshot &
+~/Android/Sdk/platform-tools/adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+Drop `-no-window` to get a visible window.
+
 ## Project layout
 
 ```

@@ -28,6 +28,14 @@ private val LightColors = lightColorScheme(
     onTertiaryContainer = Color(0xFF250046),
     background = Color(0xFFFCFAF4),
     surface = Color(0xFFFCFAF4),
+    surfaceVariant = Color(0xFFE6E2D8),
+    onSurfaceVariant = Color(0xFF4A4740),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF6F3EC),
+    surfaceContainer = Color(0xFFF0EDE5),
+    surfaceContainerHigh = Color(0xFFEAE7DF),
+    surfaceContainerHighest = Color(0xFFE4E1D8),
+    outlineVariant = Color(0xFFCBC7BC),
 )
 
 private val DarkColors = darkColorScheme(
@@ -43,12 +51,23 @@ private val DarkColors = darkColorScheme(
     onTertiary = Color(0xFF3B0A5B),
     tertiaryContainer = Color(0xFF522573),
     onTertiaryContainer = Color(0xFFEDDCFF),
+    background = Color(0xFF15140F),
+    surface = Color(0xFF15140F),
+    surfaceVariant = Color(0xFF45433B),
+    onSurfaceVariant = Color(0xFFC8C5BA),
+    surfaceContainerLowest = Color(0xFF0F0E0A),
+    surfaceContainerLow = Color(0xFF1D1C17),
+    surfaceContainer = Color(0xFF22201B),
+    surfaceContainerHigh = Color(0xFF2C2A25),
+    surfaceContainerHighest = Color(0xFF37352F),
+    outlineVariant = Color(0xFF45433B),
 )
 
 @Composable
 fun VineyardTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    // Own vine/soil/grape palette by default; flip to true to follow the phone's wallpaper colours.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
