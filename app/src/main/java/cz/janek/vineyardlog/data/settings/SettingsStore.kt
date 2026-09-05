@@ -36,6 +36,11 @@ data class Settings(
     val areaUnit: String = "a",
     /** Litres in one fill of the user's sprayer, for per-tank hints. */
     val sprayerVolumeL: Double = 15.0,
+    /** ČHMÚ stations: WIGOS ids and display names, empty if not chosen. */
+    val chmiRainWsi: String = "",
+    val chmiRainName: String = "",
+    val chmiTempWsi: String = "",
+    val chmiTempName: String = "",
 ) {
     /** Factor from hectares to the display unit. */
     val areaFactor: Double get() = when (areaUnit) { "m2" -> 10_000.0; "a" -> 100.0; else -> 1.0 }
@@ -58,6 +63,10 @@ class SettingsStore(private val context: Context) {
         val LAST_FOLDER_BACKUP = longPreferencesKey("last_folder_backup")
         val AREA_UNIT = stringPreferencesKey("area_unit")
         val SPRAYER_L = doublePreferencesKey("sprayer_volume_l")
+        val CHMI_RAIN_WSI = stringPreferencesKey("chmi_rain_wsi")
+        val CHMI_RAIN_NAME = stringPreferencesKey("chmi_rain_name")
+        val CHMI_TEMP_WSI = stringPreferencesKey("chmi_temp_wsi")
+        val CHMI_TEMP_NAME = stringPreferencesKey("chmi_temp_name")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -77,6 +86,8 @@ class SettingsStore(private val context: Context) {
             lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
             areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
             sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
+            chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
+            chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
         )
     }
 
@@ -98,6 +109,8 @@ class SettingsStore(private val context: Context) {
                 lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
                 areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
                 sprayerVolumeL = p[Keys.SPRAYER_L] ?: d.sprayerVolumeL,
+                chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
+                chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -114,6 +127,8 @@ class SettingsStore(private val context: Context) {
             p[Keys.LAST_FOLDER_BACKUP] = next.lastFolderBackupAt
             p[Keys.AREA_UNIT] = next.areaUnit
             p[Keys.SPRAYER_L] = next.sprayerVolumeL
+            p[Keys.CHMI_RAIN_WSI] = next.chmiRainWsi; p[Keys.CHMI_RAIN_NAME] = next.chmiRainName
+            p[Keys.CHMI_TEMP_WSI] = next.chmiTempWsi; p[Keys.CHMI_TEMP_NAME] = next.chmiTempName
         }
     }
 }

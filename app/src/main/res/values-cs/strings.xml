@@ -388,4 +388,18 @@
     <string name="per_vine_hint">≈ %1$s na keř · %2$s na tuto trať</string>
     <string name="yield_per_vine">%1$s kg na keř</string>
     <string name="dose_units_hint">Jednotky: kg/ha, l/ha, g/hl, g/10 l, ml/10 l, g/keř, %</string>
+    <string name="chmi_section">Stanice ČHMÚ</string>
+    <string name="chmi_text">Naměřené hodnoty z otevřených dat ČHMÚ (CC BY 4.0). Vyberte srážkoměr a teplotní stanici poblíž vinice; naměřené dny přepíší Open-Meteo, ručně zadané zůstanou.</string>
+    <string name="chmi_find">Najít stanice</string>
+    <string name="chmi_rain_station">Srážky (srážkoměr)</string>
+    <string name="chmi_temp_station">Teplota a vlhkost</string>
+    <string name="chmi_none">žádná</string>
+    <string name="chmi_station_label">%1$s (%2$s km)</string>
+    <string name="fetch_chmi">Stáhnout z ČHMÚ</string>
+    <string name="msg_chmi_no_station">Nejprve v nastavení vyberte stanice ČHMÚ.</string>
+    <string name="msg_chmi_fetched">ČHMÚ: %1$d dnů (srážky: %2$s, teploty: %3$s), %4$d ručně zadaných ponecháno.</string>
+    <string name="msg_chmi_failed">Stažení z ČHMÚ selhalo: %1$s</string>
+    <string name="msg_chmi_stations">Nalezeno %1$d stanic do %2$d km.</string>
+    <string name="chmi_credit">Naměřená data: ČHMÚ, opendata.chmi.cz (CC BY 4.0). Srážky jsou za klimatologický den 07–07 h.</string>
+    <string name="source_chmi">ČHMÚ</string>
 </resources>

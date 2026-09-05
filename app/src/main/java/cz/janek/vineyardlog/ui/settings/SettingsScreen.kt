@@ -22,6 +22,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.size
+import cz.janek.vineyardlog.data.model.fmt
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Upload
@@ -39,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,8 @@ import cz.janek.vineyardlog.data.backup.BackupCodec
 import cz.janek.vineyardlog.data.backup.BackupData
 import cz.janek.vineyardlog.data.backup.BackupMerger
 import cz.janek.vineyardlog.data.backup.SeasonExport
+import cz.janek.vineyardlog.data.web.Chmi
+import cz.janek.vineyardlog.data.web.ChmiStation
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
@@ -117,6 +124,31 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     }
 
     var exportYear by mutableStateOf(LocalDate.now().year)
+    var chmiStations by mutableStateOf<List<ChmiStation>>(emptyList())
+    var chmiSearching by mutableStateOf(false)
+
+    fun findChmiStations() {
+        val s = settings.value; val lat = s.latitude; val lon = s.longitude
+        if (lat == null || lon == null) { message = c.appContext.getString(R.string.msg_set_coordinates); return }
+        viewModelScope.launch {
+            chmiSearching = true
+            runCatching { Chmi.stationsNear(lat, lon) }
+                .onSuccess { list ->
+                    chmiStations = list
+                    message = c.appContext.getString(R.string.msg_chmi_stations, list.size, 40)
+                    // sensible defaults when nothing chosen yet
+                    val cur = settings.value
+                    val rain = list.firstOrNull { it.hasRain }; val temp = list.firstOrNull { it.hasTemp }
+                    if (cur.chmiRainWsi.isBlank() && rain != null) c.settings.update { it.copy(chmiRainWsi = rain.wsi, chmiRainName = rain.name) }
+                    if (cur.chmiTempWsi.isBlank() && temp != null) c.settings.update { it.copy(chmiTempWsi = temp.wsi, chmiTempName = temp.name) }
+                }
+                .onFailure { message = c.appContext.getString(R.string.msg_chmi_failed, it.message ?: "") }
+            chmiSearching = false
+        }
+    }
+
+    fun setChmiRain(st: ChmiStation?) = viewModelScope.launch { c.settings.update { it.copy(chmiRainWsi = st?.wsi ?: "", chmiRainName = st?.name ?: "") } }
+    fun setChmiTemp(st: ChmiStation?) = viewModelScope.launch { c.settings.update { it.copy(chmiTempWsi = st?.wsi ?: "", chmiTempName = st?.name ?: "") } }
 
     fun exportPdf(context: Context, uri: Uri) = writeTo(context, uri) { SeasonExport(context, c).writePdf(exportYear, it) }
     fun exportEntriesCsv(context: Context, uri: Uri) = writeTo(context, uri) { SeasonExport(context, c).writeEntriesCsv(exportYear, it) }
@@ -281,6 +313,36 @@ fun SettingsScreen(
                 OutlinedButton(onClick = { locationPermission.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION) }, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.MyLocation, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.use_current_location))
                 }
+            }
+
+            SectionTitle(stringResource(R.string.chmi_section))
+            Text(stringResource(R.string.chmi_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { vm.findChmiStations() }, enabled = !vm.chmiSearching, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Search, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.chmi_find))
+                }
+                if (vm.chmiSearching) CircularProgressIndicator(Modifier.size(22.dp))
+            }
+            val rainOptions = vm.chmiStations.filter { it.hasRain }
+            val tempOptions = vm.chmiStations.filter { it.hasTemp }
+            val noneLabel = stringResource(R.string.chmi_none)
+            if (vm.chmiStations.isNotEmpty()) {
+                DropdownField(
+                    stringResource(R.string.chmi_rain_station), rainOptions, rainOptions.firstOrNull { it.wsi == settings.chmiRainWsi },
+                    { stringResource(R.string.chmi_station_label, it.name, it.distanceKm.fmt(1)) }, { vm.setChmiRain(it) },
+                    noneLabel = noneLabel, onSelectNone = { vm.setChmiRain(null) },
+                )
+                DropdownField(
+                    stringResource(R.string.chmi_temp_station), tempOptions, tempOptions.firstOrNull { it.wsi == settings.chmiTempWsi },
+                    { stringResource(R.string.chmi_station_label, it.name, it.distanceKm.fmt(1)) }, { vm.setChmiTemp(it) },
+                    noneLabel = noneLabel, onSelectNone = { vm.setChmiTemp(null) },
+                )
+            } else {
+                Text(
+                    stringResource(R.string.chmi_rain_station) + ": " + settings.chmiRainName.ifBlank { noneLabel } + " · " +
+                        stringResource(R.string.chmi_temp_station) + ": " + settings.chmiTempName.ifBlank { noneLabel },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
 
             SectionTitle(stringResource(R.string.defaults))

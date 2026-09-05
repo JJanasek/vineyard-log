@@ -388,4 +388,18 @@
     <string name="per_vine_hint">≈ %1$s per vine · %2$s for this block</string>
     <string name="yield_per_vine">%1$s kg per vine</string>
     <string name="dose_units_hint">Units: kg/ha, l/ha, g/hl, g/10 l, ml/10 l, g/keř, %</string>
+    <string name="chmi_section">ČHMÚ stations</string>
+    <string name="chmi_text">Measured values from the Czech Hydrometeorological Institute open data (CC BY 4.0). Pick a rain gauge and a temperature station near the vineyard; measured days override Open-Meteo, typed days stay.</string>
+    <string name="chmi_find">Find stations</string>
+    <string name="chmi_rain_station">Rain (gauge)</string>
+    <string name="chmi_temp_station">Temperature and humidity</string>
+    <string name="chmi_none">none</string>
+    <string name="chmi_station_label">%1$s (%2$s km)</string>
+    <string name="fetch_chmi">Fetch from ČHMÚ</string>
+    <string name="msg_chmi_no_station">Pick the ČHMÚ stations in Settings first.</string>
+    <string name="msg_chmi_fetched">ČHMÚ: %1$d days (rain: %2$s, temperature: %3$s), %4$d typed days kept.</string>
+    <string name="msg_chmi_failed">ČHMÚ fetch failed: %1$s</string>
+    <string name="msg_chmi_stations">Found %1$d stations within %2$d km.</string>
+    <string name="chmi_credit">Measured data: ČHMÚ, opendata.chmi.cz (CC BY 4.0). Rain is the 07–07 climatological day.</string>
+    <string name="source_chmi">ČHMÚ</string>
 </resources>

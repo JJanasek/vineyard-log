@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -62,6 +63,8 @@ import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.data.web.OpenMeteo
+import cz.janek.vineyardlog.data.web.Chmi
+import androidx.compose.material.icons.filled.Sensors
 import cz.janek.vineyardlog.data.model.EntryType
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.ui.components.RiskCard
@@ -111,6 +114,35 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
 
     fun save(day: WeatherDay) = viewModelScope.launch { c.weatherDao.upsert(day) }
     fun delete(date: Long) = viewModelScope.launch { c.weatherDao.delete(date) }
+
+    /** Measured days from the chosen ČHMÚ stations; typed days are kept, hourly aggregates from Open-Meteo rows are preserved. */
+    fun fetchChmi(year: Int) {
+        val s = settings.value
+        if (s.chmiRainWsi.isBlank() && s.chmiTempWsi.isBlank()) { message = c.appContext.getString(R.string.msg_chmi_no_station); return }
+        viewModelScope.launch {
+            fetching = true
+            runCatching {
+                val fetched = Chmi.fetchYear(s.chmiRainWsi, s.chmiTempWsi, year)
+                val from = LocalDate.of(year, 1, 1).toEpochDay(); val to = LocalDate.of(year, 12, 31).toEpochDay()
+                val existing = c.weatherDao.listRange(from, to).associateBy { it.date }
+                var kept = 0
+                val rows = fetched.mapNotNull { d ->
+                    val old = existing[d.date]
+                    when {
+                        old == null -> d
+                        old.source.isBlank() -> { kept++; null }
+                        else -> old.copy(
+                            tMin = d.tMin ?: old.tMin, tMax = d.tMax ?: old.tMax, rainMm = d.rainMm ?: old.rainMm,
+                            humidityPct = d.humidityPct ?: old.humidityPct, frost = old.frost || d.frost, source = Chmi.SOURCE,
+                        )
+                    }
+                }
+                c.weatherDao.upsertAll(rows)
+                c.appContext.getString(R.string.msg_chmi_fetched, rows.size, s.chmiRainName.ifBlank { "–" }, s.chmiTempName.ifBlank { "–" }, kept)
+            }.onSuccess { message = it }.onFailure { message = c.appContext.getString(R.string.msg_chmi_failed, it.message ?: it.javaClass.simpleName) }
+            fetching = false
+        }
+    }
 
     /** Fill the selected year from Open-Meteo; typed days are never overwritten. */
     fun fetchOpenMeteo(year: Int) {
@@ -208,9 +240,12 @@ fun WeatherScreen() {
                                 style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp),
                             )
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                        FlowRow(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                             OutlinedButton(onClick = { vm.fetchOpenMeteo(year) }, enabled = !vm.fetching) {
                                 Icon(Icons.Default.CloudDownload, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.fetch_open_meteo))
+                            }
+                            OutlinedButton(onClick = { vm.fetchChmi(year) }, enabled = !vm.fetching) {
+                                Icon(Icons.Default.Sensors, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.fetch_chmi))
                             }
                             if (vm.fetching) CircularProgressIndicator(Modifier.size(22.dp))
                         }
@@ -253,6 +288,12 @@ fun WeatherScreen() {
                     )
                 }
             }
+            if (yearDays.any { it.source == Chmi.SOURCE }) {
+                item {
+                    Text(stringResource(R.string.chmi_credit), Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             if (yearDays.any { it.source == OpenMeteo.SOURCE }) {
                 item {
                     Text(stringResource(R.string.open_meteo_credit), Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -275,6 +316,7 @@ fun WeatherScreen() {
                     trailingContent = {
                         Row {
                             if (d.source == OpenMeteo.SOURCE) Icon(Icons.Default.Cloud, contentDescription = stringResource(R.string.source_open_meteo), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (d.source == Chmi.SOURCE) Icon(Icons.Default.Sensors, contentDescription = stringResource(R.string.source_chmi), tint = MaterialTheme.colorScheme.primary)
                             if (d.frost) Icon(Icons.Default.AcUnit, contentDescription = stringResource(R.string.frost), tint = MaterialTheme.colorScheme.primary)
                             if (d.hail) Icon(Icons.Default.Warning, contentDescription = stringResource(R.string.hail), tint = MaterialTheme.colorScheme.error)
                         }
