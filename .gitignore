@@ -14,3 +14,4 @@
 *.keystore
 /release/
 .kotlin/
+/old-log-2025.json

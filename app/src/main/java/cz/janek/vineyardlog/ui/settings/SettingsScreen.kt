@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -46,6 +47,7 @@ import androidx.lifecycle.viewModelScope
 import cz.janek.vineyardlog.AppContainer
 import cz.janek.vineyardlog.data.backup.BackupCodec
 import cz.janek.vineyardlog.data.backup.BackupData
+import cz.janek.vineyardlog.data.backup.BackupMerger
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
@@ -111,6 +113,18 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
             .onFailure { message = c.appContext.getString(R.string.msg_products_failed, it.message ?: "") }
     }
 
+    /** Merge a backup into the current data (nothing deleted). */
+    fun importMerge(context: Context, uri: Uri) = viewModelScope.launch {
+        runCatching {
+            val text = withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: error(c.appContext.getString(R.string.err_open_file))
+            }
+            BackupMerger(c.db).merge(BackupCodec.decode(text))
+        }.onSuccess { r -> message = c.appContext.getString(R.string.msg_merged, r.entries, r.products, r.blocks, r.batches, r.weather) }
+            .onFailure { message = c.appContext.getString(R.string.msg_import_failed, it.message ?: "") }
+    }
+
     fun confirmImport() = viewModelScope.launch {
         val data = pendingImport ?: return@launch
         pendingImport = null
@@ -124,7 +138,12 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    pickedLocation: Pair<Double, Double>? = null,
+    onPickedConsumed: () -> Unit = {},
+    onPickOnMap: (Double?, Double?) -> Unit = { _, _ -> },
+) {
     val vm = appViewModel { SettingsViewModel(it) }
     val settings by vm.settings.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -139,9 +158,16 @@ fun SettingsScreen(onBack: () -> Unit) {
     var endMonth by remember(settings.seasonEndMonth) { mutableStateOf(settings.seasonEndMonth.toString()) }
     var water by remember(settings.defaultWaterLha) { mutableStateOf(settings.defaultWaterLha.input()) }
     var currency by remember(settings.currency) { mutableStateOf(settings.currency) }
+    var targetNm by remember(settings.targetSugarNm) { mutableStateOf(settings.targetSugarNm.input()) }
     var lat by remember(settings.latitude) { mutableStateOf(settings.latitude.input()) }
     var lon by remember(settings.longitude) { mutableStateOf(settings.longitude.input()) }
     val noLocationMsg = stringResource(R.string.msg_no_location)
+    LaunchedEffect(pickedLocation) {
+        pickedLocation?.let { (la, lo) ->
+            lat = String.format(java.util.Locale.US, "%.5f", la); lon = String.format(java.util.Locale.US, "%.5f", lo)
+            onPickedConsumed()
+        }
+    }
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -158,6 +184,9 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { vm.readImport(context, it) }
+    }
+    val mergeLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { vm.importMerge(context, it) }
     }
     val productsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { vm.importProducts(context, it) }
@@ -203,13 +232,19 @@ fun SettingsScreen(onBack: () -> Unit) {
                 NumberField(lat, { lat = it }, stringResource(R.string.latitude), Modifier.weight(1f))
                 NumberField(lon, { lon = it }, stringResource(R.string.longitude), Modifier.weight(1f))
             }
-            OutlinedButton(onClick = { locationPermission.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.MyLocation, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.use_current_location))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onPickOnMap(lat.toDoubleLenient(), lon.toDoubleLenient()) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Map, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.pick_on_map))
+                }
+                OutlinedButton(onClick = { locationPermission.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.MyLocation, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.use_current_location))
+                }
             }
 
             SectionTitle(stringResource(R.string.defaults))
             NumberField(water, { water = it }, stringResource(R.string.spray_water_volume), suffix = "l/ha")
             AppTextField(currency, { currency = it }, stringResource(R.string.currency))
+            NumberField(targetNm, { targetNm = it }, stringResource(R.string.forecast_target), suffix = "°NM")
             val errSeasonDates = stringResource(R.string.err_season_dates)
             val savedMessage = stringResource(R.string.msg_settings_saved)
             Button(
@@ -227,6 +262,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                             currency = currency.trim().ifBlank { it.currency },
                             latitude = lat.toDoubleLenient(),
                             longitude = lon.toDoubleLenient(),
+                            targetSugarNm = targetNm.toDoubleLenient() ?: it.targetSugarNm,
                         )
                     }
                     vm.message = savedMessage
@@ -247,6 +283,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                 onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
                 modifier = Modifier.fillMaxWidth(),
             ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.import_backup)) }
+            Text(stringResource(R.string.backup_merge_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            OutlinedButton(
+                onClick = { mergeLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.import_backup_merge)) }
 
             SectionTitle(stringResource(R.string.product_catalog))
             Text(

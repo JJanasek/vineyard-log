@@ -26,6 +26,8 @@ data class Settings(
     /** Vineyard coordinates for weather fetches; null until set. */
     val latitude: Double? = null,
     val longitude: Double? = null,
+    /** Harvest target used for the ripeness forecast, in °NM. */
+    val targetSugarNm: Double = 21.0,
 )
 
 class SettingsStore(private val context: Context) {
@@ -39,6 +41,7 @@ class SettingsStore(private val context: Context) {
         val CURRENCY = stringPreferencesKey("currency")
         val LAT = doublePreferencesKey("latitude")
         val LON = doublePreferencesKey("longitude")
+        val TARGET_NM = doublePreferencesKey("target_sugar_nm")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -53,6 +56,7 @@ class SettingsStore(private val context: Context) {
             currency = p[Keys.CURRENCY] ?: d.currency,
             latitude = p[Keys.LAT],
             longitude = p[Keys.LON],
+            targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
         )
     }
 
@@ -69,6 +73,7 @@ class SettingsStore(private val context: Context) {
                 currency = p[Keys.CURRENCY] ?: d.currency,
                 latitude = p[Keys.LAT],
                 longitude = p[Keys.LON],
+                targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -80,6 +85,7 @@ class SettingsStore(private val context: Context) {
             p[Keys.CURRENCY] = next.currency
             next.latitude?.let { p[Keys.LAT] = it } ?: p.remove(Keys.LAT)
             next.longitude?.let { p[Keys.LON] = it } ?: p.remove(Keys.LON)
+            p[Keys.TARGET_NM] = next.targetSugarNm
         }
     }
 }

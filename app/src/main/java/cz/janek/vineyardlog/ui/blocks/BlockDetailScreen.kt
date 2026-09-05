@@ -59,6 +59,7 @@ import cz.janek.vineyardlog.ui.components.LineChart
 import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.ripenessKinds
 import cz.janek.vineyardlog.util.Gdd
+import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.util.dayOfYear
 import cz.janek.vineyardlog.util.formatDate
 import cz.janek.vineyardlog.util.formatDateShort
@@ -265,6 +266,18 @@ private fun SeasonCard(
             val latestSugar = yearMeasurements.filter { it.kind in setOf(MeasurementKind.BRIX, MeasurementKind.NM, MeasurementKind.OECHSLE) }.maxByOrNull { it.date }
             if (latestSugar != null) {
                 KeyValueRow(stringResource(R.string.latest_kind, latestSugar.kind.label), "${latestSugar.value.fmt()} ${latestSugar.kind.unit} (${formatDate(latestSugar.date)})")
+                val trend = WineMath.sugarTrend(yearMeasurements.filter { it.kind == latestSugar.kind })
+                if (trend != null && trend.perDay > 0) {
+                    val targetNm = settings.targetSugarNm
+                    val target = when (trend.kind) { MeasurementKind.BRIX -> targetNm * WineMath.BX_PER_NM; MeasurementKind.OECHSLE -> targetNm * WineMath.OE_PER_NM; else -> targetNm }
+                    val days = WineMath.daysTo(trend, target)
+                    if (days != null && days < 120) {
+                        Text(
+                            stringResource(R.string.forecast_harvest_at, target.fmt(1), trend.kind.unit, formatDate(trend.lastDate + days), trend.perDay.fmt(2)),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
             }
         }
     }

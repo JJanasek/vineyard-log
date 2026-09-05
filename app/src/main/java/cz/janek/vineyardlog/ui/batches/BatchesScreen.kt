@@ -13,10 +13,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,12 +45,19 @@ class BatchesViewModel(c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun BatchesScreen(onOpenBatch: (Long) -> Unit, onNewBatch: () -> Unit) {
+fun BatchesScreen(onOpenBatch: (Long) -> Unit, onNewBatch: () -> Unit, onOpenCalculators: () -> Unit = {}) {
     val vm = appViewModel { BatchesViewModel(it) }
     val batches by vm.batches.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_cellar)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tab_cellar)) },
+                actions = {
+                    IconButton(onClick = onOpenCalculators) { Icon(Icons.Default.Calculate, contentDescription = stringResource(R.string.calculators)) }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onNewBatch) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_batch)) }
         },

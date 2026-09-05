@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  html, body, #map { height: 100%; margin: 0; padding: 0; }
+  .leaflet-container { background: #e8e4d8; }
+</style>
+<!--LEAFLET_CSS-->
+</head>
+<body>
+<div id="map"></div>
+<!--LEAFLET_JS-->
+<script>
+  var start = window.__start || {};
+  var lat = parseFloat(start.lat); var lon = parseFloat(start.lon);
+  var hasStart = !isNaN(lat) && !isNaN(lon);
+  if (!hasStart) { lat = 49.0; lon = 17.4; }
+  var map = L.map('map', { zoomControl: true }).setView([lat, lon], hasStart ? 14 : 8);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  var marker = null;
+  function place(ll) {
+    if (marker) { marker.setLatLng(ll); } else {
+      marker = L.circleMarker(ll, { radius: 10, color: '#3E5A2B', weight: 3, fillColor: '#A3D68A', fillOpacity: 0.9 }).addTo(map);
+    }
+    if (window.Android && Android.onPick) Android.onPick(ll.lat, ll.lng);
+  }
+  if (hasStart) place(L.latLng(lat, lon));
+  map.on('click', function (e) { place(e.latlng); });
+</script>
+</body>
+</html>

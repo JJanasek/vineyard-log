@@ -57,6 +57,7 @@ import cz.janek.vineyardlog.ui.components.LineChart
 import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.sugarKinds
 import cz.janek.vineyardlog.util.formatDate
+import cz.janek.vineyardlog.util.WineMath
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -171,6 +172,24 @@ fun BatchDetailScreen(
                             }
                         val dayFmt = stringResource(R.string.day_n)
                         LineChart(series = series, xLabel = { dayFmt.format(it.toInt()) })
+
+                        val trend = WineMath.sugarTrend(measurements)
+                        SectionTitle(stringResource(R.string.forecast_ferment))
+                        if (trend == null) {
+                            Text(stringResource(R.string.forecast_need_more), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            val dryTarget = if (trend.kind == MeasurementKind.SG) 0.993 else 0.0
+                            val lastReading = "${trend.lastValue.fmt(1)} ${trend.kind.unit}".trim()
+                            val stillSugar = if (trend.kind == MeasurementKind.SG) trend.lastValue > 1.0 else trend.lastValue > 2.0
+                            val days = WineMath.daysTo(trend, dryTarget)
+                            when {
+                                stillSugar && trend.perDay >= -1e-6 && trend.points >= 2 ->
+                                    Text(stringResource(R.string.forecast_stuck, 3, lastReading), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                                days != null && stillSugar ->
+                                    Text(stringResource(R.string.forecast_dry_in, days, formatDate(trend.lastDate + days)), style = MaterialTheme.typography.bodyMedium)
+                                else -> Text(lastReading, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
 
                         val latest = measurements.groupBy { it.kind }.mapValues { (_, l) -> l.maxBy { it.date } }
                         if (latest.isNotEmpty()) {

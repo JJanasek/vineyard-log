@@ -24,6 +24,9 @@ enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageV
 object Routes {
     const val SETTINGS = "settings"
     const val PLAN = "plan"
+    const val CALCULATORS = "calculators"
+    const val MAP_PICKER = "mapPicker?lat={lat}&lon={lon}"
+    fun mapPicker(lat: Double?, lon: Double?) = "mapPicker?lat=${lat ?: ""}&lon=${lon ?: ""}"
     const val GUIDE = "guide"
     const val GUIDE_ENTRY = "guide/{key}"
     fun guide(key: String) = "guide/$key"

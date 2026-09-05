@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,11 +32,13 @@ import cz.janek.vineyardlog.ui.entry.EntryDetailScreen
 import cz.janek.vineyardlog.ui.entry.EntryEditScreen
 import cz.janek.vineyardlog.ui.guide.GuideDetailScreen
 import cz.janek.vineyardlog.ui.guide.GuideScreen
+import cz.janek.vineyardlog.ui.map.MapPickerScreen
 import cz.janek.vineyardlog.ui.plan.SeasonPlanScreen
 import cz.janek.vineyardlog.ui.products.ProductEditScreen
 import cz.janek.vineyardlog.ui.products.ProductsScreen
 import cz.janek.vineyardlog.ui.settings.SettingsScreen
 import cz.janek.vineyardlog.ui.timeline.TimelineScreen
+import cz.janek.vineyardlog.ui.tools.CalculatorsScreen
 import cz.janek.vineyardlog.ui.weather.WeatherScreen
 
 private fun Long.orNull(): Long? = if (this < 0) null else this
@@ -93,6 +96,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                 BatchesScreen(
                     onOpenBatch = { navController.navigate(Routes.batch(it)) },
                     onNewBatch = { navController.navigate(Routes.batchEdit()) },
+                    onOpenCalculators = { navController.navigate(Routes.CALCULATORS) },
                 )
             }
             composable(Tab.WEATHER.route) {
@@ -104,9 +108,34 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                     onNewProduct = { navController.navigate(Routes.productEdit()) },
                 )
             }
-            composable(Routes.SETTINGS) {
-                SettingsScreen(onBack = { navController.popBackStack() })
+            composable(Routes.SETTINGS) { entry ->
+                val picked by entry.savedStateHandle.getStateFlow<DoubleArray?>("pickedLocation", null).collectAsState()
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    pickedLocation = picked?.let { it[0] to it[1] },
+                    onPickedConsumed = { entry.savedStateHandle["pickedLocation"] = null },
+                    onPickOnMap = { lat, lon -> navController.navigate(Routes.mapPicker(lat, lon)) },
+                )
             }
+            composable(
+                Routes.MAP_PICKER,
+                arguments = listOf(
+                    navArgument("lat") { type = NavType.StringType; defaultValue = "" },
+                    navArgument("lon") { type = NavType.StringType; defaultValue = "" },
+                ),
+            ) { entry ->
+                val lat = entry.arguments?.getString("lat")?.toDoubleOrNull()
+                val lon = entry.arguments?.getString("lon")?.toDoubleOrNull()
+                MapPickerScreen(
+                    initialLat = lat, initialLon = lon,
+                    onPicked = { la, lo ->
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedLocation", doubleArrayOf(la, lo))
+                        navController.popBackStack()
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.CALCULATORS) { CalculatorsScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.PLAN) {
                 SeasonPlanScreen(
                     onBack = { navController.popBackStack() },
