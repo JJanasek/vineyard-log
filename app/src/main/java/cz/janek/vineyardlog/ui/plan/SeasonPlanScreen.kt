@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -149,7 +151,12 @@ fun SeasonPlanScreen(onBack: () -> Unit, onLogTask: (SeasonTask) -> Unit) {
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Checkbox(checked = d != null, onCheckedChange = { vm.toggle(task, it) })
-                            Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .toggleable(value = d != null, role = Role.Checkbox, onValueChange = { vm.toggle(task, it) })
+                                    .padding(vertical = 6.dp),
+                            ) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(
                                         task.title,
