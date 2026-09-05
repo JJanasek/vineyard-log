@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-  html, body, #map { height: 100%; margin: 0; padding: 0; }
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  #map { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
   .leaflet-container { background: #e8e4d8; }
 </style>
 <!--LEAFLET_CSS-->
@@ -30,6 +31,9 @@
   }
   if (hasStart) place(L.latLng(lat, lon));
   map.on('click', function (e) { place(e.latlng); });
+  window.addEventListener('resize', function () { map.invalidateSize(); });
+  setTimeout(function () { map.invalidateSize(); }, 300);
+  setTimeout(function () { map.invalidateSize(); }, 1500);
 </script>
 </body>
 </html>

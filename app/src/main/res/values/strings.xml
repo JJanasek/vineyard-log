@@ -298,7 +298,7 @@
     <string name="calc_sugar_value">Sugar</string>
     <string name="calc_unit">Unit</string>
     <string name="calc_equiv">≈ %1$s °NM · %2$s °Bx · %3$s °Oe · potential alcohol %4$s %% vol</string>
-    <string name="calc_sugar_note">Approximate conversions (°Bx ≈ °NM × 1.025, °Oe ≈ °NM × 4.25, 1 °NM ≈ 0.6 %% vol). Your must meter or lab result wins.</string>
+    <string name="calc_sugar_note">Approximate conversions (°Bx ≈ °NM × 1.025, °Oe ≈ °NM × 4.25, 1 °NM ≈ 0.6 % vol). Your must meter or lab result wins.</string>
     <string name="calc_chapt">Chaptalization (doslazení)</string>
     <string name="calc_current">Current sugar</string>
     <string name="calc_target">Target sugar</string>
@@ -311,7 +311,7 @@
     <string name="calc_free_so2">Free SO₂ now</string>
     <string name="calc_target_molecular">Target molecular SO₂</string>
     <string name="calc_so2_result">Need %1$s mg/L free SO₂ (add %2$s mg/L) → %3$s g KMS for %4$s L, or %5$s mL of 10 %% solution</string>
-    <string name="calc_so2_note">Molecular SO₂ = free SO₂ / (1 + 10^(pH − 1.81)). 0.5 mg/L is the usual target for dry whites, 0.8 mg/L for extra protection. KMS ≈ 57 %% SO₂.</string>
+    <string name="calc_so2_note">Molecular SO₂ = free SO₂ / (1 + 10^(pH − 1.81)). 0.5 mg/L is the usual target for dry whites, 0.8 mg/L for extra protection. KMS ≈ 57 % SO₂.</string>
     <string name="calc_acid">Acid adjustment</string>
     <string name="calc_ta_now">TA now</string>
     <string name="calc_ta_target">TA target</string>
@@ -323,7 +323,7 @@
     <string name="calc_pot_alc">Potential alcohol</string>
     <string name="calc_yan_result">Target ≈ %1$s mg/L YAN → deficit %2$s mg/L → about %3$s g/hl DAP (or organic nutrient per label, about 2–3× that)</string>
     <string name="calc_yan_ok">YAN is sufficient for this potential alcohol.</string>
-    <string name="calc_yan_note">Targets: ~200 mg/L up to 12.5 %% vol, ~250 for 13–14 %%, ~300 above. 1 g/hl DAP ≈ 2.1 mg/L YAN; EU cap 100 g/hl DAP. Split additions: a third at pitching, the rest at 1/3 sugar depletion.</string>
+    <string name="calc_yan_note">Targets: ~200 mg/L up to 12.5 % vol, ~250 for 13–14 %, ~300 above. 1 g/hl DAP ≈ 2.1 mg/L YAN; EU cap 100 g/hl DAP. Split additions: a third at pitching, the rest at 1/3 sugar depletion.</string>
     <string name="forecast_ferment">Fermentation forecast</string>
     <string name="forecast_dry_in">At the current pace dry in about %1$d days (%2$s)</string>
     <string name="forecast_stuck">No sugar drop in the last %1$d days at %2$s – check temperature and nutrition (possible stuck fermentation).</string>

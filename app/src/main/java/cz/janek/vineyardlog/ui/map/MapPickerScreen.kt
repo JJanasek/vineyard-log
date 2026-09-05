@@ -1,7 +1,11 @@
 package cz.janek.vineyardlog.ui.map
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.view.ViewGroup
+import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
@@ -55,10 +59,23 @@ fun MapPickerScreen(initialLat: Double?, initialLon: Double?, onPicked: (Double,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 factory = { ctx ->
                     WebView(ctx).apply {
+                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.userAgentString = "VineyardLog/0.1 (personal use; Android WebView)"
-                        webViewClient = WebViewClient()
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView, url: String?) {
+                                view.postDelayed({ view.evaluateJavascript("if (window.map) { map.invalidateSize(); }", null) }, 600)
+                                view.evaluateJavascript(
+                                    "(function(){var m=document.getElementById('map');return (typeof L)+' map='+(m?m.offsetWidth+'x'+m.offsetHeight:'none')+' tiles='+document.querySelectorAll('img.leaflet-tile').length;})()"
+                                ) { Log.d("VineyardMap", "page ready: $it") }
+                            }
+                        }
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                                Log.d("VineyardMap", "console ${m.messageLevel()}: ${m.message()} (${m.sourceId()}:${m.lineNumber()})"); return true
+                            }
+                        }
                         addJavascriptInterface(object {
                             @JavascriptInterface
                             fun onPick(lat: Double, lon: Double) { post { picked = lat to lon } }

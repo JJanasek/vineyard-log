@@ -298,7 +298,7 @@
     <string name="calc_sugar_value">Cukernatost</string>
     <string name="calc_unit">Jednotka</string>
     <string name="calc_equiv">≈ %1$s °NM · %2$s °Bx · %3$s °Oe · potenciální alkohol %4$s %% obj.</string>
-    <string name="calc_sugar_note">Přibližné převody (°Bx ≈ °NM × 1,025, °Oe ≈ °NM × 4,25, 1 °NM ≈ 0,6 %% obj.). Moštoměr nebo laboratoř mají přednost.</string>
+    <string name="calc_sugar_note">Přibližné převody (°Bx ≈ °NM × 1,025, °Oe ≈ °NM × 4,25, 1 °NM ≈ 0,6 % obj.). Moštoměr nebo laboratoř mají přednost.</string>
     <string name="calc_chapt">Doslazení</string>
     <string name="calc_current">Aktuální cukernatost</string>
     <string name="calc_target">Cílová cukernatost</string>
@@ -311,7 +311,7 @@
     <string name="calc_free_so2">Volný SO₂ nyní</string>
     <string name="calc_target_molecular">Cílový molekulární SO₂</string>
     <string name="calc_so2_result">Potřeba %1$s mg/l volného SO₂ (přidat %2$s mg/l) → %3$s g pyrosiřičitanu na %4$s l, nebo %5$s ml 10%% roztoku</string>
-    <string name="calc_so2_note">Molekulární SO₂ = volný SO₂ / (1 + 10^(pH − 1,81)). Obvyklý cíl 0,5 mg/l u suchých bílých, 0,8 mg/l pro větší ochranu. Pyrosiřičitan draselný ≈ 57 %% SO₂.</string>
+    <string name="calc_so2_note">Molekulární SO₂ = volný SO₂ / (1 + 10^(pH − 1,81)). Obvyklý cíl 0,5 mg/l u suchých bílých, 0,8 mg/l pro větší ochranu. Pyrosiřičitan draselný ≈ 57 % SO₂.</string>
     <string name="calc_acid">Úprava kyselin</string>
     <string name="calc_ta_now">Kyseliny nyní</string>
     <string name="calc_ta_target">Cílové kyseliny</string>
@@ -323,7 +323,7 @@
     <string name="calc_pot_alc">Potenciální alkohol</string>
     <string name="calc_yan_result">Cíl ≈ %1$s mg/l YAN → chybí %2$s mg/l → zhruba %3$s g/hl DAP (nebo organická výživa dle etikety, asi 2–3× tolik)</string>
     <string name="calc_yan_ok">YAN pro tento potenciální alkohol stačí.</string>
-    <string name="calc_yan_note">Cíle: ~200 mg/l do 12,5 %% obj., ~250 pro 13–14 %%, ~300 nad. 1 g/hl DAP ≈ 2,1 mg/l YAN; limit EU 100 g/hl DAP. Dávku rozdělit: třetina při zakvášení, zbytek po prokvašení třetiny cukru.</string>
+    <string name="calc_yan_note">Cíle: ~200 mg/l do 12,5 % obj., ~250 pro 13–14 %, ~300 nad. 1 g/hl DAP ≈ 2,1 mg/l YAN; limit EU 100 g/hl DAP. Dávku rozdělit: třetina při zakvášení, zbytek po prokvašení třetiny cukru.</string>
     <string name="forecast_ferment">Odhad průběhu kvašení</string>
     <string name="forecast_dry_in">Při současném tempu dokvašeno asi za %1$d dní (%2$s)</string>
     <string name="forecast_stuck">Cukr za posledních %1$d dní neklesl (na %2$s) – zkontrolujte teplotu a výživu (možné zastavené kvašení).</string>
