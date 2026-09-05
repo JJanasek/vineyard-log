@@ -102,6 +102,8 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
 
     var message by mutableStateOf<String?>(null)
     var fetching by mutableStateOf(false)
+    /** Short download status while a large ČHMÚ file streams in. */
+    var progress by mutableStateOf<String?>(null)
         private set
     var forecast by mutableStateOf<List<WeatherDay>>(emptyList())
         private set
@@ -128,7 +130,7 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
         viewModelScope.launch {
             fetching = true
             runCatching {
-                val fetched = Chmi.fetchYear(s.chmiRainWsi, s.chmiTempWsi, year)
+                val fetched = Chmi.fetchYear(s.chmiRainWsi, s.chmiTempWsi, year) { progress = it }
                 val from = LocalDate.of(year, 1, 1).toEpochDay(); val to = LocalDate.of(year, 12, 31).toEpochDay()
                 val existing = c.weatherDao.listRange(from, to).associateBy { it.date }
                 var kept = 0
@@ -146,7 +148,7 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
                 c.weatherDao.upsertAll(rows)
                 c.appContext.getString(R.string.msg_chmi_fetched, rows.size, s.chmiRainName.ifBlank { "–" }, s.chmiTempName.ifBlank { "–" }, kept)
             }.onSuccess { message = it }.onFailure { message = c.appContext.getString(R.string.msg_chmi_failed, it.message ?: it.javaClass.simpleName) }
-            fetching = false
+            fetching = false; progress = null
         }
     }
 
@@ -189,7 +191,8 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
     var editing by remember { mutableStateOf<WeatherDay?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
-    val years = remember(all) { (all.map { yearOf(it.date) } + LocalDate.now().year).distinct().sortedDescending() }
+    // Always offer this and last year so a fresh install can fetch last season before it has any rows.
+    val years = remember(all) { (all.map { yearOf(it.date) } + LocalDate.now().year + (LocalDate.now().year - 1)).distinct().sortedDescending() }
     val yearDays = remember(all, year) { all.filter { yearOf(it.date) == year } }
     val summary = remember(all, year, settings) { Gdd.summary(all, year, settings) }
     val snackbar = remember { SnackbarHostState() }
@@ -284,6 +287,9 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}) {
                                 Icon(Icons.Default.Sensors, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.fetch_chmi))
                             }
                             if (vm.fetching) CircularProgressIndicator(Modifier.size(22.dp))
+                        }
+                        vm.progress?.let {
+                            Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         SectionTitle(stringResource(R.string.cumulative_gdd))
                         LineChart(
