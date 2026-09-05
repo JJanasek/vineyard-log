@@ -3,6 +3,8 @@
 
     <!-- Only used when you explicitly fetch a product page or weather data. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Only to fill in the vineyard coordinates in Settings on request. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".VineyardApp"

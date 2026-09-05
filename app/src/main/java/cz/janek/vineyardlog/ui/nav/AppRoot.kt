@@ -31,6 +31,7 @@ import cz.janek.vineyardlog.ui.entry.EntryDetailScreen
 import cz.janek.vineyardlog.ui.entry.EntryEditScreen
 import cz.janek.vineyardlog.ui.guide.GuideDetailScreen
 import cz.janek.vineyardlog.ui.guide.GuideScreen
+import cz.janek.vineyardlog.ui.plan.SeasonPlanScreen
 import cz.janek.vineyardlog.ui.products.ProductEditScreen
 import cz.janek.vineyardlog.ui.products.ProductsScreen
 import cz.janek.vineyardlog.ui.settings.SettingsScreen
@@ -85,6 +86,7 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
                     onOpenBlock = { navController.navigate(Routes.block(it)) },
                     onNewBlock = { navController.navigate(Routes.blockEdit()) },
                     onOpenGuide = { navController.navigate(Routes.GUIDE) },
+                    onOpenPlan = { navController.navigate(Routes.PLAN) },
                 )
             }
             composable(Tab.CELLAR.route) {
@@ -104,6 +106,14 @@ fun AppRoot(sharedUrl: String? = null, onSharedUrlConsumed: () -> Unit = {}) {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.PLAN) {
+                SeasonPlanScreen(
+                    onBack = { navController.popBackStack() },
+                    onLogTask = { task ->
+                        navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = task.entryType, title = task.title))
+                    },
+                )
             }
             composable(Routes.GUIDE) {
                 GuideScreen(onOpen = { navController.navigate(Routes.guide(it)) }, onBack = { navController.popBackStack() })

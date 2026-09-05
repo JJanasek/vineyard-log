@@ -13,9 +13,9 @@ Minimum Android 8.0 (API 26). UI in English and Czech (follows the phone languag
 | Tab | Contents |
 | --- | --- |
 | **Log** | One timeline of all entries, filterable by year and vineyard/cellar. |
-| **Vineyard** | Blocks (parcels): variety, area, vines, rootstock. A field guide (diseases, pests, deficiencies, frost/hail/sunburn) with photos. Per block and season: spray/fertiliser counts, phenology dates with GDD at that date, ripening curve (sugar/TA/pH), earliest harvest date from the pre-harvest interval (PHI) of the sprays used, harvest kg. |
+| **Vineyard** | Blocks (parcels): variety, area, vines, rootstock. A season checklist with per-year tick-offs and a field guide (diseases, pests, deficiencies, frost/hail/sunburn) with photos. Per block and season: spray/fertiliser counts, phenology dates with GDD at that date, ripening curve (sugar/TA/pH), earliest harvest date from the pre-harvest interval (PHI) of the sprays used, harvest kg. |
 | **Cellar** | Batches (wine lots): vintage, style, status, vessel, yeast, source blocks. Fermentation curve (sugar + temperature by day), latest readings, SO₂ additions, cellar log. |
-| **Weather** | Daily min/max, rain, humidity, frost/hail flags. Season GDD (configurable base and season window), cumulative GDD chart, season comparison table. |
+| **Weather** | Daily min/max, rain, humidity, frost/hail flags, typed by hand or fetched from Open-Meteo for your coordinates. Season GDD (configurable base and season window), cumulative GDD chart, season comparison table. |
 | **Products** | Your catalog of sprays, fertilisers, yeasts, nutrients, enzymes... with supplier (Lipera, Vinařský dům, other), label dose range, PHI, purpose and product URL. Entries pick products from here so doses are pre-filled. |
 
 Entry types cover: spray, fertilisation, canopy work, soil work, phenology stage, scouting,
@@ -102,8 +102,8 @@ tools/            lipera_catalog_to_json.py – desktop helper for the official 
 
 - ~~**Czech UI**~~ – done: all UI strings are resources (`values` / `values-cs`); Settings → Language switches between system default, English and Czech.
 - ~~**Photos and a field guide**~~ – done: entries take photos from the gallery or camera (stored downscaled in app storage, not in the JSON backup); *Vineyard → book icon* opens a bilingual field guide with 20 diseases, pests, deficiencies and disorders, 14 of them with Wikimedia Commons photos (credits in `app/src/main/assets/guide/CREDITS.md`). Each guide page can start a scouting entry.
-- **Weather without typing** – pull daily min/max/rain for the vineyard's coordinates from Open-Meteo (in progress); hardware options are compared in [docs/weather-stations-and-probes.md](docs/weather-stations-and-probes.md) (Ecowitt is the pragmatic pick, iSpindel/Tilt for must density); a weather CSV importer is the cheap next step.
-- **Season checklist** – a yearly to-do template (pruning, tying, shoot thinning, first spray at 10 cm shoots, leaf pulling, netting, harvest prep) with per-year tick-offs, optionally tied to phenology stages.
+- ~~**Weather without typing**~~ – done for the data part: set the vineyard coordinates in Settings and *Weather → Fetch from Open-Meteo* fills the selected year with daily min/max, rain and humidity (typed days are never overwritten; fetched rows show a cloud icon). Hardware options are compared in [docs/weather-stations-and-probes.md](docs/weather-stations-and-probes.md) (Ecowitt is the pragmatic pick, iSpindel/Tilt for must density); a weather CSV importer is the cheap next step.
+- ~~**Season checklist**~~ – done: *Vineyard → checklist icon* opens the season plan, seeded with a Moravian vineyard year (23 tasks with month windows, some tied to phenology stages); tick tasks off per year, add your own, and log a task straight into an entry of the matching type. The Vineyard tab shows how many tasks are open this month.
 - **Vendor catalog import** – one-off import of the enology / plant-protection ranges from Lipera and Vinařský dům (both Shoptet shops with public sitemaps) into the product table, refreshed manually a few times a year.
 - **Diagnostics** – cross-vintage views: GDD vs harvest sugar, spray count vs disease incidence, YAN vs fermentation length, per-block spray cost and seasonal Cu/S totals.
 

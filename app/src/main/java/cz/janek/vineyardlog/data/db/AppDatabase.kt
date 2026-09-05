@@ -13,6 +13,7 @@ import cz.janek.vineyardlog.data.dao.EntryDao
 import cz.janek.vineyardlog.data.dao.MeasurementDao
 import cz.janek.vineyardlog.data.dao.PhotoDao
 import cz.janek.vineyardlog.data.dao.ProductDao
+import cz.janek.vineyardlog.data.dao.TaskDao
 import cz.janek.vineyardlog.data.dao.WeatherDao
 import cz.janek.vineyardlog.data.model.Batch
 import cz.janek.vineyardlog.data.model.BatchSource
@@ -22,6 +23,8 @@ import cz.janek.vineyardlog.data.model.Measurement
 import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
+import cz.janek.vineyardlog.data.model.SeasonTask
+import cz.janek.vineyardlog.data.model.TaskDone
 import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.seed.SeedData
 import kotlinx.coroutines.CoroutineScope
@@ -31,11 +34,11 @@ import kotlinx.coroutines.launch
     entities = [
         Block::class, Product::class, Batch::class, BatchSource::class,
         LogEntry::class, ProductUsage::class, Measurement::class, WeatherDay::class,
-        Photo::class,
+        Photo::class, SeasonTask::class, TaskDone::class,
     ],
-    version = 2,
+    version = 4,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun blockDao(): BlockDao
@@ -46,6 +49,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
     abstract fun backupDao(): BackupDao
     abstract fun photoDao(): PhotoDao
+    abstract fun taskDao(): TaskDao
 
     companion object {
         const val NAME = "vineyard_log.db"
@@ -59,6 +63,9 @@ abstract class AppDatabase : RoomDatabase() {
                         scope.launch {
                             if (instance.productDao().count() == 0) {
                                 instance.productDao().insertAll(SeedData.products())
+                            }
+                            if (instance.taskDao().count() == 0) {
+                                instance.taskDao().insertTasks(SeedData.tasks(czech = java.util.Locale.getDefault().language == "cs"))
                             }
                         }
                     }

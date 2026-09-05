@@ -17,6 +17,9 @@ interface WeatherDao {
     @Query("SELECT * FROM weather_days WHERE date = :date")
     suspend fun get(date: Long): WeatherDay?
 
+    @Query("SELECT * FROM weather_days WHERE date BETWEEN :from AND :to")
+    suspend fun listRange(from: Long, to: Long): List<WeatherDay>
+
     @Upsert
     suspend fun upsert(day: WeatherDay)
 

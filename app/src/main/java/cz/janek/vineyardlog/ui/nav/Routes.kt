@@ -23,6 +23,7 @@ enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageV
 
 object Routes {
     const val SETTINGS = "settings"
+    const val PLAN = "plan"
     const val GUIDE = "guide"
     const val GUIDE_ENTRY = "guide/{key}"
     fun guide(key: String) = "guide/$key"

@@ -3,6 +3,7 @@ package cz.janek.vineyardlog.ui.settings
 import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
 import android.content.Context
+import android.location.LocationManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -137,6 +139,19 @@ fun SettingsScreen(onBack: () -> Unit) {
     var endMonth by remember(settings.seasonEndMonth) { mutableStateOf(settings.seasonEndMonth.toString()) }
     var water by remember(settings.defaultWaterLha) { mutableStateOf(settings.defaultWaterLha.input()) }
     var currency by remember(settings.currency) { mutableStateOf(settings.currency) }
+    var lat by remember(settings.latitude) { mutableStateOf(settings.latitude.input()) }
+    var lon by remember(settings.longitude) { mutableStateOf(settings.longitude.input()) }
+    val noLocationMsg = stringResource(R.string.msg_no_location)
+    val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val loc = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER)
+                .mapNotNull { p -> runCatching { @Suppress("MissingPermission") lm.getLastKnownLocation(p) }.getOrNull() }
+                .maxByOrNull { it.time }
+            if (loc != null) { lat = String.format(java.util.Locale.US, "%.5f", loc.latitude); lon = String.format(java.util.Locale.US, "%.5f", loc.longitude) }
+            else vm.message = noLocationMsg
+        }
+    }
 
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         uri?.let { vm.export(context, it) }
@@ -182,6 +197,16 @@ fun SettingsScreen(onBack: () -> Unit) {
                 NumberField(endDay, { endDay = it }, stringResource(R.string.season_end_day), Modifier.weight(1f), integer = true)
                 NumberField(endMonth, { endMonth = it }, stringResource(R.string.month), Modifier.weight(1f), integer = true)
             }
+            SectionTitle(stringResource(R.string.vineyard_location))
+            Text(stringResource(R.string.location_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                NumberField(lat, { lat = it }, stringResource(R.string.latitude), Modifier.weight(1f))
+                NumberField(lon, { lon = it }, stringResource(R.string.longitude), Modifier.weight(1f))
+            }
+            OutlinedButton(onClick = { locationPermission.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION) }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.MyLocation, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.use_current_location))
+            }
+
             SectionTitle(stringResource(R.string.defaults))
             NumberField(water, { water = it }, stringResource(R.string.spray_water_volume), suffix = "l/ha")
             AppTextField(currency, { currency = it }, stringResource(R.string.currency))
@@ -200,6 +225,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                             seasonStartDay = sd, seasonStartMonth = sm, seasonEndDay = ed, seasonEndMonth = em,
                             defaultWaterLha = water.toDoubleLenient() ?: it.defaultWaterLha,
                             currency = currency.trim().ifBlank { it.currency },
+                            latitude = lat.toDoubleLenient(),
+                            longitude = lon.toDoubleLenient(),
                         )
                     }
                     vm.message = savedMessage

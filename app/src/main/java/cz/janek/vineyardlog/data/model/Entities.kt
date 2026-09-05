@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.data.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -192,6 +193,8 @@ data class WeatherDay(
     val frost: Boolean = false,
     val hail: Boolean = false,
     val note: String = "",
+    /** "" = typed by hand, "open-meteo" = fetched; fetched rows may be refreshed, typed ones are kept. */
+    @ColumnInfo(defaultValue = "") val source: String = "",
 )
 
 /** A photo attached to an entry; the JPEG lives in the app's private files/photos directory. */
@@ -207,6 +210,35 @@ data class Photo(
     val fileName: String,
     val caption: String = "",
     val createdAt: Long = System.currentTimeMillis(),
+)
+
+/** A recurring vineyard-year task with a month window; ticked off per year in [TaskDone]. */
+@Serializable
+@Entity(tableName = "tasks")
+data class SeasonTask(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val monthFrom: Int,
+    val monthTo: Int,
+    val stage: PhenologyStage? = null,
+    /** Entry type to pre-select when logging this task, or null. */
+    val entryType: EntryType? = null,
+    val notes: String = "",
+    val sortOrder: Int = 0,
+    val archived: Boolean = false,
+)
+
+@Serializable
+@Entity(
+    tableName = "task_done",
+    primaryKeys = ["taskId", "year"],
+    foreignKeys = [ForeignKey(entity = SeasonTask::class, parentColumns = ["id"], childColumns = ["taskId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index("taskId")],
+)
+data class TaskDone(
+    val taskId: Long,
+    val year: Int,
+    val doneDate: Long,
 )
 
 // ---- Relations (read models) ----

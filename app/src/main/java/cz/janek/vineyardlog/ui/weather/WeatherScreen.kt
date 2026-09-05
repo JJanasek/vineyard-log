@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -38,6 +41,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +61,7 @@ import cz.janek.vineyardlog.AppContainer
 import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.data.settings.Settings
+import cz.janek.vineyardlog.data.web.OpenMeteo
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.ChartSeries
@@ -78,8 +89,41 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
     val settings = c.settings.settings.stateIn(viewModelScope, started, Settings())
     val year = MutableStateFlow(LocalDate.now().year)
 
+    var message by mutableStateOf<String?>(null)
+    var fetching by mutableStateOf(false)
+        private set
+
     fun save(day: WeatherDay) = viewModelScope.launch { c.weatherDao.upsert(day) }
     fun delete(date: Long) = viewModelScope.launch { c.weatherDao.delete(date) }
+
+    /** Fill the selected year from Open-Meteo; typed days are never overwritten. */
+    fun fetchOpenMeteo(year: Int) {
+        val s = settings.value
+        val lat = s.latitude; val lon = s.longitude
+        if (lat == null || lon == null) { message = c.appContext.getString(R.string.msg_set_coordinates); return }
+        viewModelScope.launch {
+            fetching = true
+            runCatching {
+                val from = LocalDate.of(year, 1, 1)
+                val to = LocalDate.of(year, 12, 31)
+                val fetched = OpenMeteo.fetchDaily(lat, lon, from, to)
+                val existing = c.weatherDao.listRange(from.toEpochDay(), to.toEpochDay()).associateBy { it.date }
+                var added = 0; var updated = 0; var kept = 0
+                val toWrite = fetched.mapNotNull { day ->
+                    val old = existing[day.date]
+                    when {
+                        old == null -> { added++; day }
+                        old.source == OpenMeteo.SOURCE -> { updated++; day.copy(hail = old.hail, note = old.note, frost = day.frost || old.frost) }
+                        else -> { kept++; null }
+                    }
+                }
+                c.weatherDao.upsertAll(toWrite)
+                c.appContext.getString(R.string.msg_weather_fetched, fetched.size, added, updated, kept)
+            }.onSuccess { message = it }
+                .onFailure { message = c.appContext.getString(R.string.msg_weather_failed, it.message ?: it.javaClass.simpleName) }
+            fetching = false
+        }
+    }
 }
 
 @Composable
@@ -94,10 +138,13 @@ fun WeatherScreen() {
     val years = remember(all) { (all.map { yearOf(it.date) } + LocalDate.now().year).distinct().sortedDescending() }
     val yearDays = remember(all, year) { all.filter { yearOf(it.date) == year } }
     val summary = remember(all, year, settings) { Gdd.summary(all, year, settings) }
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(vm.message) { vm.message?.let { snackbar.showSnackbar(it); vm.message = null } }
     val cumulative = remember(all, year, settings) { Gdd.cumulative(all, year, settings) }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_weather)) }) },
+        snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 val next = (all.maxOfOrNull { it.date }?.plus(1) ?: todayEpochDay()).coerceAtMost(todayEpochDay())
@@ -131,6 +178,12 @@ fun WeatherScreen() {
                                 stringResource(R.string.extremes, summary.tMinAbs?.fmt() ?: "–", summary.tMaxAbs?.fmt() ?: "–"),
                                 style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp),
                             )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                            OutlinedButton(onClick = { vm.fetchOpenMeteo(year) }, enabled = !vm.fetching) {
+                                Icon(Icons.Default.CloudDownload, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.fetch_open_meteo))
+                            }
+                            if (vm.fetching) CircularProgressIndicator(Modifier.size(22.dp))
                         }
                         SectionTitle(stringResource(R.string.cumulative_gdd))
                         LineChart(
@@ -171,6 +224,12 @@ fun WeatherScreen() {
                     )
                 }
             }
+            if (yearDays.any { it.source == OpenMeteo.SOURCE }) {
+                item {
+                    Text(stringResource(R.string.open_meteo_credit), Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             items(yearDays.sortedByDescending { it.date }, key = { it.date }) { d ->
                 ListItem(
                     headlineContent = { Text(formatDate(d.date)) },
@@ -186,6 +245,7 @@ fun WeatherScreen() {
                     },
                     trailingContent = {
                         Row {
+                            if (d.source == OpenMeteo.SOURCE) Icon(Icons.Default.Cloud, contentDescription = stringResource(R.string.source_open_meteo), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             if (d.frost) Icon(Icons.Default.AcUnit, contentDescription = stringResource(R.string.frost), tint = MaterialTheme.colorScheme.primary)
                             if (d.hail) Icon(Icons.Default.Warning, contentDescription = stringResource(R.string.hail), tint = MaterialTheme.colorScheme.error)
                         }

@@ -23,6 +23,9 @@ data class Settings(
     /** Default spray water volume, l/ha. */
     val defaultWaterLha: Double = 400.0,
     val currency: String = "Kč",
+    /** Vineyard coordinates for weather fetches; null until set. */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 class SettingsStore(private val context: Context) {
@@ -34,6 +37,8 @@ class SettingsStore(private val context: Context) {
         val SEASON_END_DAY = intPreferencesKey("season_end_day")
         val WATER_LHA = doublePreferencesKey("default_water_lha")
         val CURRENCY = stringPreferencesKey("currency")
+        val LAT = doublePreferencesKey("latitude")
+        val LON = doublePreferencesKey("longitude")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -46,6 +51,8 @@ class SettingsStore(private val context: Context) {
             seasonEndDay = p[Keys.SEASON_END_DAY] ?: d.seasonEndDay,
             defaultWaterLha = p[Keys.WATER_LHA] ?: d.defaultWaterLha,
             currency = p[Keys.CURRENCY] ?: d.currency,
+            latitude = p[Keys.LAT],
+            longitude = p[Keys.LON],
         )
     }
 
@@ -60,6 +67,8 @@ class SettingsStore(private val context: Context) {
                 seasonEndDay = p[Keys.SEASON_END_DAY] ?: d.seasonEndDay,
                 defaultWaterLha = p[Keys.WATER_LHA] ?: d.defaultWaterLha,
                 currency = p[Keys.CURRENCY] ?: d.currency,
+                latitude = p[Keys.LAT],
+                longitude = p[Keys.LON],
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -69,6 +78,8 @@ class SettingsStore(private val context: Context) {
             p[Keys.SEASON_END_DAY] = next.seasonEndDay
             p[Keys.WATER_LHA] = next.defaultWaterLha
             p[Keys.CURRENCY] = next.currency
+            next.latitude?.let { p[Keys.LAT] = it } ?: p.remove(Keys.LAT)
+            next.longitude?.let { p[Keys.LON] = it } ?: p.remove(Keys.LON)
         }
     }
 }

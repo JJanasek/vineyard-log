@@ -25,6 +25,7 @@ class AppContainer(context: Context) {
     val weatherDao get() = db.weatherDao()
     val backupDao get() = db.backupDao()
     val photoDao get() = db.photoDao()
+    val taskDao get() = db.taskDao()
 }
 
 class VineyardApp : Application() {
