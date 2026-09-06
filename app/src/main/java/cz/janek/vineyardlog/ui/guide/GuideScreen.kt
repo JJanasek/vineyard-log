@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import cz.janek.vineyardlog.R
 import cz.janek.vineyardlog.data.guide.GuideCredits
+import cz.janek.vineyardlog.data.guide.GuideExtra
 import cz.janek.vineyardlog.data.guide.GuideData
 import cz.janek.vineyardlog.data.guide.GuideEntry
 import cz.janek.vineyardlog.data.guide.GuideKind
@@ -134,6 +135,7 @@ fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (S
                     )
                 }
             }
+            ExtraPhotos(entry.key)
             Column(Modifier.padding(horizontal = 16.dp)) {
                 Text(entry.latin, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 SectionTitle(stringResource(R.string.symptoms))
@@ -154,5 +156,22 @@ fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (S
                 Text(stringResource(R.string.guide_disclaimer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+    }
+}
+
+/** Device-only photos from assets/guide-extra (see GuideExtra), shown with their credit line. */
+@Composable
+fun ExtraPhotos(key: String) {
+    val context = LocalContext.current
+    val extras = remember(key) { GuideExtra.forKey(context, key) }
+    if (extras.isEmpty()) return
+    SectionTitle(stringResource(R.string.extra_photos))
+    extras.forEach { e ->
+        AssetImage("${GuideExtra.DIR}/${e.file}", Modifier.fillMaxWidth().aspectRatio(4f / 3f), contentDescription = e.caption)
+        Text(
+            listOf(e.caption, e.credit).filter { it.isNotBlank() }.joinToString(" · "),
+            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
     }
 }

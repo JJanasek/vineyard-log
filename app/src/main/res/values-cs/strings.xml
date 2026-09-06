@@ -577,4 +577,5 @@
     <string name="bs_plan_ref">Postřikový plán BS 2025 (na litr vody):</string>
     <string name="bs_plan_link">Postřikový plán BS 2025 (web)</string>
     <string name="bs_plan_notes">Z plánu BS 2025: do každého tank mixu přidat síru (Kumulus, Solfernus); v ekologickém pěstování max. 4 kg Cu/ha/rok celkem; nemíchat koncentráty – každý přípravek vpravit do nádrže zvlášť a promíchat; fosetyl-Al ne s SC přípravky, sírou ani amonným dusíkem; Karathane New při zjevném padlí v jakékoli fázi (0,05 %, max. 4× za sezónu); Vínofit na regeneraci po mrazu, suchu nebo kroupách.</string>
+    <string name="extra_photos">Fotky navíc v tomto zařízení</string>
 </resources>

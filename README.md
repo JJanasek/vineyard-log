@@ -96,6 +96,10 @@ scrape them. Two lighter ways are built in:
   (merge)*. Existing names are left untouched. The parser is heuristic; expect to fix a few
   categories and doses by hand. Keep the JSON to yourself, it is the vendor's content.
 
+### Device-only extra photos
+
+Material you may keep for yourself but not redistribute (for example the photo sheet of the BS vinařské potřeby spray-plan leaflet) goes into `app/src/main/assets/guide-extra/` with a `credits-extra.json`; the folder is git-ignored and the guide and growth-stage pages show the photos with their credit line. `tools/bs_leaflet_tiles.py <leaflet.pdf>` cuts the 2025 leaflet's page 1 into 30 topic photos (diseases, pests, N/P/K/Mg/S/Fe deficiencies) and writes that folder. Ask BS before publishing a build that contains them.
+
 ## Project layout
 
 ```

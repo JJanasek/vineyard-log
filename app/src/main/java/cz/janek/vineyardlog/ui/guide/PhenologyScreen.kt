@@ -70,6 +70,7 @@ fun PhenologyScreen(onBack: () -> Unit, onLogStage: (PhenologyStage) -> Unit, on
                                     Text("${c.author} · ${c.license} · Wikimedia Commons", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
+                            ExtraPhotos("stage:${s.stage.name}")
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TextButton(onClick = { onLogStage(s.stage) }) { Text(stringResource(R.string.log_stage)) }
                                 if (s.sprayWindow != null) TextButton(onClick = onOpenSprays) { Text(stringResource(R.string.spray_program)) }
