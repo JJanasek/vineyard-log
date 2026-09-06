@@ -2,6 +2,11 @@ package cz.janek.vineyardlog.ui.entry
 
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Checkbox
+import androidx.compose.ui.platform.LocalConfiguration
+import cz.janek.vineyardlog.util.toLocalDate
+import cz.janek.vineyardlog.util.TankMix
 import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -156,6 +161,8 @@ class EntryEditViewModel(
     val batches = c.batchDao.observeAll().stateIn(viewModelScope, started, emptyList())
     val products = c.productDao.observeAll().stateIn(viewModelScope, started, emptyList())
     val settings = c.settings.settings.stateIn(viewModelScope, started, Settings())
+    /** All entries, for the previous-spray rotation check. */
+    val entries = c.entryDao.observeAll().stateIn(viewModelScope, started, emptyList())
 
     init {
         if (entryId != null) {
@@ -514,6 +521,52 @@ fun EntryEditScreen(
             }
             OutlinedButton(onClick = { vm.addUsage() }) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_product))
+            }
+            if (vm.type == EntryType.SPRAY) {
+                val chosen = vm.usages.mapNotNull { u -> products.firstOrNull { it.id == u.productId } }
+                val czech = LocalConfiguration.current.locales[0]?.language == "cs"
+                val notes = remember(chosen, vm.date) { TankMix.check(chosen, vm.date.toLocalDate().monthValue) }
+                val allEntries by vm.entries.collectAsStateWithLifecycle()
+                val previous = remember(allEntries, vm.date, vm.blockId, entryId) {
+                    allEntries.filter { it.entry.type == EntryType.SPRAY && it.entry.id != (entryId ?: -1L) && it.entry.date < vm.date && it.entry.date >= vm.date - 35 && (vm.blockId == null || it.entry.blockId == null || it.entry.blockId == vm.blockId) }
+                        .maxByOrNull { it.entry.date }
+                }
+                val repeated = remember(chosen, previous) { previous?.let { TankMix.repeatedActives(chosen, it.usages.mapNotNull { u -> u.product }) }.orEmpty() }
+                if (notes.isNotEmpty() || repeated.isNotEmpty()) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(stringResource(R.string.mix_check), style = MaterialTheme.typography.titleSmall)
+                            notes.forEach { n ->
+                                Text(n.text.get(czech), style = MaterialTheme.typography.bodySmall, color = if (n.level == TankMix.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            if (repeated.isNotEmpty() && previous != null) {
+                                Text(stringResource(R.string.rotation_warn, formatDate(previous.entry.date), repeated.joinToString(", ")), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (vm.type == EntryType.RIPENESS) {
+                val items = listOf(R.string.sp_item1, R.string.sp_item2, R.string.sp_item3, R.string.sp_item4)
+                val checked = remember { mutableStateListOf(false, false, false, false) }
+                val prefix = stringResource(R.string.sp_note_prefix)
+                val labels = items.map { stringResource(it) }
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text(stringResource(R.string.sampling_protocol), style = MaterialTheme.typography.titleSmall)
+                        labels.forEachIndexed { i, label ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = checked[i], onCheckedChange = { checked[i] = it })
+                                Text(label, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                        TextButton(onClick = {
+                            val done = labels.filterIndexed { i, _ -> checked[i] }
+                            if (done.isNotEmpty()) vm.notes = (vm.notes.trim() + "\n" + prefix + done.joinToString("; ")).trim()
+                        }) { Text(stringResource(R.string.sp_insert)) }
+                    }
+                }
             }
 
             // ---- measurements ----

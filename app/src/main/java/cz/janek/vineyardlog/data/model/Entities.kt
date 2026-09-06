@@ -41,6 +41,8 @@ data class Product(
     val doseUnit: String = "",
     /** Pre-harvest interval in days (ochranná lhůta), sprays only. */
     val phiDays: Int? = null,
+    /** Grams of metallic copper per kg (or litre) of product, for the organic 4 kg Cu/ha/year budget. */
+    val copperGPerKg: Double? = null,
     /** What it is for: targets, purpose. */
     val purpose: String = "",
     val url: String = "",

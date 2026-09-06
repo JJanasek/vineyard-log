@@ -21,6 +21,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cz.janek.vineyardlog.R
+import kotlinx.coroutines.launch
+import cz.janek.vineyardlog.util.todayEpochDay
+import cz.janek.vineyardlog.ui.components.DateField
+import cz.janek.vineyardlog.data.model.Repeat
+import cz.janek.vineyardlog.data.model.Reminder
+import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.BatchStatus
+import cz.janek.vineyardlog.appContainer
+import androidx.compose.material3.Button
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import cz.janek.vineyardlog.data.model.MeasurementKind
 import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.ui.components.BackTopBar
@@ -37,7 +50,7 @@ fun CalculatorsScreen(onBack: () -> Unit) {
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SugarCard(); ChaptalizationCard(); So2Card(); AcidCard(); YanCard()
+            SugarCard(); ChaptalizationCard(); So2Card(); AcidCard(); YanCard(); YeastNutritionCard()
         }
     }
 }
@@ -157,6 +170,54 @@ private fun YanCard() {
             val target = WineMath.yanTarget(a); val deficit = target - y
             if (deficit > 0) Result(stringResource(R.string.calc_yan_result, target.fmt(0), deficit.fmt(0), (deficit / 2.1).coerceAtMost(100.0).fmt(0)))
             else Result(stringResource(R.string.calc_yan_ok))
+        }
+    }
+}
+
+@Composable
+private fun YeastNutritionCard() {
+    val container = LocalContext.current.appContainer
+    val scope = rememberCoroutineScope()
+    var volume by rememberSaveable { mutableStateOf("80") }
+    var nm by rememberSaveable { mutableStateOf("21") }
+    var start by rememberSaveable { mutableStateOf(todayEpochDay()) }
+    var batchId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var done by remember { mutableStateOf<String?>(null) }
+    val batches by container.batchDao.observeAll().collectAsState(initial = emptyList())
+    val open = batches.filter { !it.archived && it.status in setOf(BatchStatus.PLANNED, BatchStatus.MUST, BatchStatus.FERMENTING) }
+    CalcCard(stringResource(R.string.calc_yeast_nutrition), stringResource(R.string.calc_yeast_note)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            NumberField(volume, { volume = it }, stringResource(R.string.calc_volume), Modifier.weight(1f), suffix = "L")
+            NumberField(nm, { nm = it }, stringResource(R.string.calc_sugar_value), Modifier.weight(1f), suffix = "°NM")
+        }
+        val v = volume.toDoubleLenient(); val sugar = nm.toDoubleLenient()
+        if (v != null && v > 0 && sugar != null) {
+            val alc = WineMath.potentialAlcohol(sugar)
+            val hl = v / 100.0
+            val d2 = 15.0; val d3 = if (alc > 13.5) 30.0 else 25.0
+            Result(stringResource(R.string.calc_yn_result, WineMath.yanTarget(alc).fmt(0), alc.fmt(1)))
+            Text(stringResource(R.string.calc_yn_step1, (20.0 * hl).fmt(0)), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.calc_yn_step2, (d2 * hl).fmt(0), d2.fmt(0)), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.calc_yn_step3, (d3 * hl).fmt(0), d3.fmt(0)), style = MaterialTheme.typography.bodyMedium)
+            if (open.isNotEmpty()) {
+                DropdownField(stringResource(R.string.calc_yn_batch), open, open.firstOrNull { it.id == batchId }, { "${it.name} (${it.vintage})" }, { batchId = it.id })
+                DateField(start, { start = it }, stringResource(R.string.calc_yn_start))
+                val chosen = open.firstOrNull { it.id == batchId }
+                val s1 = stringResource(R.string.calc_yn_step1, (20.0 * hl).fmt(0)); val s2 = stringResource(R.string.calc_yn_step2, (d2 * hl).fmt(0), d2.fmt(0)); val s3 = stringResource(R.string.calc_yn_step3, (d3 * hl).fmt(0), d3.fmt(0))
+                val createdMsg = stringResource(R.string.calc_yn_created, chosen?.name ?: "")
+                Button(onClick = {
+                    val b = chosen ?: return@Button
+                    scope.launch {
+                        listOf(Triple(0, 10, s1), Triple(3, 18, s2), Triple(7, 18, s3)).forEach { (day, hour, text) ->
+                            val r = Reminder(title = text.substringBefore(":"), repeat = Repeat.ONCE, hour = hour, minute = 0, startDate = start + day, endDate = start + day, entryType = EntryType.NUTRIENT, batchId = b.id, notes = text, auto = true)
+                            val id = container.reminderDao.upsert(r)
+                            container.reminders.schedule(r.copy(id = id))
+                        }
+                        done = createdMsg
+                    }
+                }, enabled = chosen != null) { Text(stringResource(R.string.calc_yn_create)) }
+                done?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
+            }
         }
     }
 }

@@ -242,6 +242,7 @@ fun SettingsScreen(
     var autoPlan by remember(settings.autoPlan) { mutableStateOf(settings.autoPlan) }
     var autoFerm by remember(settings.autoFermentation) { mutableStateOf(settings.autoFermentation) }
     var autoSampling by remember(settings.autoSampling) { mutableStateOf(settings.autoSampling) }
+    var autoFrost by remember(settings.autoFrost) { mutableStateOf(settings.autoFrost) }
     var lat by remember(settings.latitude) { mutableStateOf(settings.latitude.input()) }
     var lon by remember(settings.longitude) { mutableStateOf(settings.longitude.input()) }
     val noLocationMsg = stringResource(R.string.msg_no_location)
@@ -330,6 +331,7 @@ fun SettingsScreen(
                 Triple(R.string.auto_plan, autoPlan) { v: Boolean -> autoPlan = v },
                 Triple(R.string.auto_fermentation, autoFerm) { v: Boolean -> autoFerm = v },
                 Triple(R.string.auto_sampling, autoSampling) { v: Boolean -> autoSampling = v },
+                Triple(R.string.auto_frost, autoFrost) { v: Boolean -> autoFrost = v },
             ).forEach { (res, value, set) ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Switch(checked = value, onCheckedChange = set)
@@ -416,7 +418,7 @@ fun SettingsScreen(
                             areaUnit = areaUnit,
                             sprayerVolumeL = sprayerL.toDoubleLenient() ?: it.sprayerVolumeL,
                             phiReminders = phiRem,
-                            autoRisk = autoRisk, autoPlan = autoPlan, autoFermentation = autoFerm, autoSampling = autoSampling,
+                            autoRisk = autoRisk, autoPlan = autoPlan, autoFermentation = autoFerm, autoSampling = autoSampling, autoFrost = autoFrost,
                         )
                     }
                     vm.message = savedMessage

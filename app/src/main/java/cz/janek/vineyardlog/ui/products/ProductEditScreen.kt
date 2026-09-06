@@ -63,6 +63,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
     var doseMax by mutableStateOf("")
     var doseUnit by mutableStateOf("")
     var phiDays by mutableStateOf("")
+    var copperGPerKg by mutableStateOf("")
     var purpose by mutableStateOf("")
     var url by mutableStateOf("")
     var packageSize by mutableStateOf("")
@@ -84,7 +85,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
         if (id != null) viewModelScope.launch {
             c.productDao.get(id)?.let { p ->
                 name = p.name; supplier = p.supplier; category = p.category; activeIngredient = p.activeIngredient
-                doseMin = p.doseMin.input(); doseMax = p.doseMax.input(); doseUnit = p.doseUnit; phiDays = p.phiDays.input()
+                doseMin = p.doseMin.input(); doseMax = p.doseMax.input(); doseUnit = p.doseUnit; phiDays = p.phiDays.input(); copperGPerKg = p.copperGPerKg.input()
                 purpose = p.purpose; url = p.url; packageSize = p.packageSize; price = p.price.input(); notes = p.notes
                 favorite = p.favorite; archived = p.archived
             }
@@ -133,6 +134,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
             doseMax = doseMax.toDoubleLenient(),
             doseUnit = doseUnit.trim(),
             phiDays = phiDays.toIntLenient(),
+            copperGPerKg = copperGPerKg.toDoubleLenient(),
             purpose = purpose.trim(),
             url = url.trim(),
             packageSize = packageSize.trim(),
@@ -194,6 +196,10 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? 
             NumberField(
                 vm.phiDays, { vm.phiDays = it }, stringResource(R.string.phi_label), suffix = stringResource(R.string.days_unit), integer = true,
                 supportingText = stringResource(R.string.phi_support),
+            )
+            NumberField(
+                vm.copperGPerKg, { vm.copperGPerKg = it }, stringResource(R.string.copper_label), suffix = "g/kg",
+                supportingText = stringResource(R.string.copper_support),
             )
             AppTextField(vm.purpose, { vm.purpose = it }, stringResource(R.string.purpose_target), placeholder = stringResource(R.string.purpose_hint), singleLine = false)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {

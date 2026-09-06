@@ -49,6 +49,7 @@ data class Settings(
     val autoPlan: Boolean = true,
     val autoFermentation: Boolean = true,
     val autoSampling: Boolean = true,
+    val autoFrost: Boolean = true,
     /** True once the first-run quick start was closed. */
     val quickStartDone: Boolean = false,
 ) {
@@ -83,6 +84,7 @@ class SettingsStore(private val context: Context) {
         val AUTO_FERM = booleanPreferencesKey("auto_fermentation")
         val AUTO_SAMPLING = booleanPreferencesKey("auto_sampling")
         val QUICK_START_DONE = booleanPreferencesKey("quick_start_done")
+        val AUTO_FROST = booleanPreferencesKey("auto_frost")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -108,6 +110,7 @@ class SettingsStore(private val context: Context) {
             autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
             autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
             quickStartDone = p[Keys.QUICK_START_DONE] ?: false,
+            autoFrost = p[Keys.AUTO_FROST] ?: d.autoFrost,
         )
     }
 
@@ -135,6 +138,7 @@ class SettingsStore(private val context: Context) {
             autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
             autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
             quickStartDone = p[Keys.QUICK_START_DONE] ?: false,
+            autoFrost = p[Keys.AUTO_FROST] ?: d.autoFrost,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -157,6 +161,7 @@ class SettingsStore(private val context: Context) {
             p[Keys.AUTO_RISK] = next.autoRisk; p[Keys.AUTO_PLAN] = next.autoPlan
             p[Keys.AUTO_FERM] = next.autoFermentation; p[Keys.AUTO_SAMPLING] = next.autoSampling
             p[Keys.QUICK_START_DONE] = next.quickStartDone
+            p[Keys.AUTO_FROST] = next.autoFrost
         }
     }
 }

@@ -40,6 +40,7 @@ object AutoChecks {
     private const val ID_PLAN = 9002
     private const val ID_FERM = 9100
     private const val ID_SAMPLING = 9200
+    private const val ID_FROST = 9300
 
     /** Runs every enabled check; returns one line per alert posted (for the "run now" button). */
     suspend fun run(c: AppContainer): List<String> {
@@ -51,6 +52,7 @@ object AutoChecks {
         if (s.autoPlan) runCatching { checkPlan(c, prefs) }.getOrNull()?.let(out::add)
         if (s.autoFermentation) runCatching { checkFermentation(c, prefs, today) }.getOrNull()?.let(out::addAll)
         if (s.autoSampling) runCatching { checkSampling(c, s, prefs, today) }.getOrNull()?.let(out::addAll)
+        if (s.autoFrost) runCatching { checkFrost(c, s, prefs, today) }.getOrNull()?.let(out::addAll)
         prefs.edit().putLong("last_run", System.currentTimeMillis()).apply()
         return out
     }
@@ -109,6 +111,27 @@ object AutoChecks {
         val text = ctx.getString(R.string.alert_risk_text, names, formatDateShort(risk.date))
         c.reminders.alert(ID_RISK, title, text, Tab.OVERVIEW.route)
         return "$title: $names"
+    }
+
+    /** Spring frost: forecast nights at or below 1 °C in the next two days between 20 March and 31 May, once per night. */
+    private suspend fun checkFrost(c: AppContainer, s: Settings, prefs: android.content.SharedPreferences, today: Long): List<String> {
+        val lat = s.latitude ?: return emptyList(); val lon = s.longitude ?: return emptyList()
+        val now = LocalDate.now()
+        val from = LocalDate.of(now.year, 3, 20); val to = LocalDate.of(now.year, 5, 31)
+        if (now.isBefore(from) || now.isAfter(to)) return emptyList()
+        val ctx = c.appContext
+        val out = ArrayList<String>()
+        val forecast = OpenMeteo.fetchForecast(lat, lon, days = 3)
+        forecast.filter { it.date in (today + 1)..(today + 2) }.forEach { d ->
+            val t = d.tMin ?: return@forEach
+            if (t > 1.0) return@forEach
+            if (prefs.getLong("frost_${d.date}", 0L) > 0L) return@forEach
+            prefs.edit().putLong("frost_${d.date}", today).apply()
+            val title = ctx.getString(R.string.alert_frost_title, formatDate(d.date))
+            c.reminders.alert(ID_FROST + (d.date % 100).toInt(), title, ctx.getString(R.string.alert_frost_text, t.fmt(1)), Routes.guide("frost"))
+            out += title
+        }
+        return out
     }
 
     /** Once a month: plan tasks whose window starts (or ends) this month and are not ticked off. */
