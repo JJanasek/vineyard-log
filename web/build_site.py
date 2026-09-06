@@ -106,6 +106,10 @@ if os.path.exists(out):
     shutil.rmtree(out)
 os.makedirs(out)
 shutil.copytree(os.path.join(ROOT, 'web', 'site', 'static'), os.path.join(out, 'static'))
+# custom domain for GitHub Pages: a one-line web/site/CNAME (e.g. vineyardlog.cz) is copied to the site root
+cname = os.path.join(ROOT, 'web', 'site', 'CNAME')
+if os.path.exists(cname):
+    shutil.copy(cname, os.path.join(out, 'CNAME'))
 shutil.copytree(os.path.join(ROOT, 'web', 'site', 'img'), os.path.join(out, 'img'))
 os.makedirs(os.path.join(out, 'img', 'guide'))
 for fn in os.listdir(os.path.join(ROOT, 'app', 'src', 'main', 'assets', 'guide')):
