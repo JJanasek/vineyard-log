@@ -10,6 +10,9 @@
 <body>
 <header><div class="bar">
   <a class="brand" href="{{ root }}{{ lang }}/">🍇 Vineyard Log</a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+  <label for="nav-toggle" class="nav-btn" aria-label="Menu">☰ <span>{{ t.menu }}</span></label>
+  <div class="lang-switch" title="{{ t.switch }}"><a class="{% if lang=='cs' %}on{% endif %}" href="{{ root }}cs/{{ self_path }}" lang="cs">CS</a><a class="{% if lang=='en' %}on{% endif %}" href="{{ root }}en/{{ self_path }}" lang="en">EN</a></div>
   <nav>
     <a href="{{ root }}{{ lang }}/" {% if page=='index' %}class="active"{% endif %}>{{ t.home }}</a>
     <a href="{{ root }}{{ lang }}/guide/" {% if page=='guide' %}class="active"{% endif %}>{{ t.guide }}</a>
@@ -18,10 +21,9 @@
     <a href="{{ root }}{{ lang }}/spray.html" {% if page=='spray' %}class="active"{% endif %}>{{ t.spray }}</a>
     <a href="{{ root }}{{ lang }}/cellar.html" {% if page=='cellar' %}class="active"{% endif %}>{{ t.cellar }}</a>
     <a href="{{ root }}{{ lang }}/docs/" {% if page=='docs' %}class="active"{% endif %}>{{ t.docs }}</a>
-    <a href="{{ root }}viewer/?lang={{ lang }}">{{ t.viewer }}</a>
-    <a href="{{ root }}{{ lang }}/download.html" {% if page=='download' %}class="active"{% endif %}>{{ t.download }}</a>
+    <a class="hl" href="{{ root }}viewer/?lang={{ lang }}">{{ t.viewer }}</a>
+    <a class="hl" href="{{ root }}{{ lang }}/download.html" {% if page=='download' %}class="active"{% endif %}>{{ t.download }}</a>
   </nav>
-  <div class="lang-switch" title="{{ t.switch }}"><a class="{% if lang=='cs' %}on{% endif %}" href="{{ root }}cs/{{ self_path }}" lang="cs">CS</a><a class="{% if lang=='en' %}on{% endif %}" href="{{ root }}en/{{ self_path }}" lang="en">EN</a></div>
 </div></header>
 <main>
 {% block content %}{% endblock %}
