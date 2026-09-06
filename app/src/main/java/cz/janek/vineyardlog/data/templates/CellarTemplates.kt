@@ -102,8 +102,8 @@ object CellarTemplates {
             "Frankovka, Zweigelt, Portugal jako červené: kvašení na slupkách, lisování, jablečno-mléčná fermentace, delší zrání."),
         listOf(
             s(0, EntryType.MUST_PREP, "Destemming, crushing, sulfite", "Odzrnění, pomletí, síření",
-                "Destem and crush, sulfite 20–30 mg/l, colour enzyme (e.g. Rapidase Ex Color), measure °NM and acids, chaptalize if needed.",
-                "Odzrnit a pomlít, sířit 20–30 mg/l, enzym na barvu (např. Rapidase Ex Color), změřit °NM a kyseliny, případně doslazení."),
+                "Destem and crush, sulfite 20–30 mg/l (or an SO₂ + ascorbic + tannin blend such as Assotan 10 g/hl), colour enzyme 3 g/hl (e.g. Rapidase Ex Color, Enzym Color Plus), optional oak alternative 1 g/l; measure °NM and acids, chaptalize if needed.",
+                "Odzrnit a pomlít, sířit 20–30 mg/l (nebo směs SO₂ + askorbová + tanin, např. Assotan 10 g/hl), enzym na barvu 3 g/hl (např. Rapidase Ex Color, Enzym Color Plus), volitelně dubová alternativa 1 g/l; změřit °NM a kyseliny, případně doslazení."),
             s(0, EntryType.YEAST_PITCH, "Yeast pitch", "Zakvašení",
                 "Red-wine strain 20–30 g/hl, mash at 20–25 °C.", "Kmen pro červená 20–30 g/hl, rmut 20–25 °C."),
             s(3, EntryType.NUTRIENT, "Yeast nutrient", "Výživa kvasinek",
@@ -115,8 +115,8 @@ object CellarTemplates {
                 "After fermentation (°NM 0–2) or by taste and colour; press gently, keep press wine apart.",
                 "Po prokvašení (°NM 0–2) nebo podle chuti a barvy; lisovat jemně, lisové víno zvlášť."),
             s(10, EntryType.MLF, "Malolactic fermentation", "Jablečno-mléčná fermentace",
-                "No sulfite; bacteria or spontaneous, 18–22 °C, vessel full. Follow malic acid (test / paper chromatography).",
-                "Nesířit; bakterie nebo spontánně, 18–22 °C, nádoba plná. Sledovat kyselinu jablečnou (test / papírová chromatografie)."),
+                "No sulfite; bacteria (e.g. Viniflora Oenos, added once alcoholic fermentation is under way) or spontaneous, 18–22 °C, vessel full. Follow malic acid (test / paper chromatography). A fruit tannin 3 g/hl after fermentation rounds Modrý Portugal.",
+                "Nesířit; bakterie (např. Viniflora Oenos, přidat po rozjetí alkoholového kvašení) nebo spontánně, 18–22 °C, nádoba plná. Sledovat kyselinu jablečnou (test / papírová chromatografie). Ovocný tanin 3 g/hl po dokvašení Modrý Portugal zakulatí."),
             s(45, EntryType.ANALYSIS, "MLF check", "Kontrola JMF",
                 "Malic acid under 0.3 g/l → MLF done.", "Kyselina jablečná pod 0,3 g/l → JMF hotová."),
             s(50, EntryType.SULFITING, "Sulfite after MLF", "Zasíření po JMF",
@@ -129,7 +129,44 @@ object CellarTemplates {
         ),
     )
 
-    val all = listOf(aromaticWhite, rose, red)
+    /** Aromatic white the way the BS vinařské potřeby technology sheets (Pálava, Sauvignon) lay it out. */
+    val aromaticWhiteBs = CellarTemplate(
+        "white_bs", Bi("Aromatic white – BS protocol (Pálava, Sauvignon)", "Aromatické bílé – protokol BS (Pálava, Sauvignon)"), WineStyle.WHITE,
+        Bi("Antioxidant tannin on the grapes, aroma enzyme, protein fining of the must, three-step yeast nutrition; Sauvignon 'green' at 19–20 °NM or 'tropical' above 20 °NM with thiol protection.",
+            "Antioxidační tanin na hrozny, aromatický enzym, bílkovinné čiření moštu, výživa kvasinek ve třech krocích; Sauvignon „zelený“ při 19–20 °NM nebo „tropický“ nad 20 °NM s ochranou thiolů."),
+        listOf(
+            s(0, EntryType.MUST_PREP, "Grapes: antioxidant + aroma enzyme", "Hrozny: antioxidant + aromatický enzym",
+                "On the grapes / mash: SO₂ + ascorbic acid + gallic tannin blend (e.g. Assotan 20 g/hl = 2 g per 10 l) and an aroma enzyme (e.g. Enzym Arom MP 2 g/hl). Short skin contact for Pálava, none or a few hours for Sauvignon.",
+                "Na hrozny / rmut: směs SO₂ + kyselina askorbová + galotanin (např. Assotan 20 g/hl = 2 g na 10 l) a aromatický enzym (např. Enzym Arom MP 2 g/hl). Krátká macerace u Pálavy, u Sauvignonu žádná nebo pár hodin."),
+            s(0, EntryType.MUST_PREP, "Must: protein fining + settling enzyme", "Mošt: bílkovinné čiření + enzym na odkalení",
+                "Pea or potato protein (e.g. Plantis L 70 ml/hl or Plantis PQ 5 g/hl) or must gelatine (80–100 ml/hl) to strip harsh tannins, settling enzyme 1–2 ml/hl (e.g. Enzym RS / EZ Filter). Settle cold 12–24 h, rack off the lees.",
+                "Hrachový nebo bramborový protein (např. Plantis L 70 ml/hl nebo Plantis PQ 5 g/hl) nebo moštová želatina (80–100 ml/hl) proti hrubým tříslovinám, enzym na odkalení 1–2 ml/hl (např. Enzym RS / EZ Filter). Odkalit v chladu 12–24 h, stáhnout z kalu."),
+            s(1, EntryType.ADDITION, "Chaptalization to target", "Doslazení na cíl",
+                "Only if below the target; kg sugar = Δ°NM × 1.2 × hl.", "Jen pokud je pod cílem; kg cukru = Δ°NM × 1,2 × hl."),
+            s(1, EntryType.YEAST_PITCH, "Yeast + first nutrient (+ thiol protection)", "Zakvašení + první výživa (+ ochrana thiolů)",
+                "Aromatic strain 20 g/hl (BS: Q4 for the green Sauvignon style, Q9 for tropical, ES 123 for Pálava). First nutrient at pitching (e.g. Nutriferm Arom Plus 20 g/hl). Tropical Sauvignon: thiol-protecting yeast derivative before fermentation (e.g. Prolie FT 30 g/hl) and a citrus tannin 3–5 g/hl. Ferment at 15–18 °C.",
+                "Aromatický kmen 20 g/hl (BS: Q4 pro zelený styl Sauvignonu, Q9 pro tropický, ES 123 pro Pálavu). První výživa při zakvašení (např. Nutriferm Arom Plus 20 g/hl). Tropický Sauvignon: derivát kvasinek chránící thioly před kvašením (např. Prolie FT 30 g/hl) a citrusový tanin 3–5 g/hl. Kvasit při 15–18 °C."),
+            s(4, EntryType.NUTRIENT, "Second nutrient (mid-fermentation)", "Druhá výživa (v průběhu kvašení)",
+                "When about a third of the sugar is gone: complex nutrient 10–20 g/hl (e.g. Nutriferm Advance / Vit).",
+                "Když je pryč zhruba třetina cukru: komplexní výživa 10–20 g/hl (např. Nutriferm Advance / Vit)."),
+            s(8, EntryType.NUTRIENT, "Third nutrient (last third)", "Třetí výživa (poslední třetina)",
+                "Last third of fermentation: 20–30 g/hl of a nutrient against stuck fermentation (e.g. Nutriferm No Stop).",
+                "Poslední třetina kvašení: 20–30 g/hl výživy proti zaseknutí (např. Nutriferm No Stop)."),
+            s(1, EntryType.FERMENTATION_CHECK, "Fermentation check", "Kontrola kvašení",
+                "Temperature 15–18 °C, °NM or density, smell (H₂S → aerate / nutrient).", "Teplota 15–18 °C, °NM nebo hustota, čich (H₂S → provzdušnit / výživa).", untilDay = 18, hour = 19),
+            s(21, EntryType.ANALYSIS, "End of fermentation check", "Dokvašení – kontrola",
+                "Density below 0.995 / °NM around 0 and stable for 3 days; residual sugar, alcohol.", "Hustota pod 0,995 / °NM kolem 0 a stabilní 3 dny; zbytkový cukr, alkohol."),
+            s(28, EntryType.SULFITING, "Sulfite after fermentation", "Zasíření po dokvašení",
+                "No MLF: 30–40 mg/l free SO₂ by pH, top up, keep on fine lees in the cold.", "Bez JMF: 30–40 mg/l volného SO₂ podle pH, dolít, nechat na jemných kalech v chladu."),
+            s(45, EntryType.RACKING, "First racking", "První stáčení", "Off the gross lees, check free SO₂, top up.", "Z hrubých kalů, zkontrolovat volný SO₂, dolít."),
+            s(90, EntryType.FINING, "Fining and stabilisation", "Čiření a stabilizace",
+                "Protein heat test, bentonite by the test; cold stabilisation for tartrates.", "Test na bílkoviny, bentonit podle testu; chlad na vinný kámen."),
+            s(110, EntryType.RACKING, "Second racking", "Druhé stáčení", "Off the fining lees, check SO₂ and acids.", "Z čiřicích kalů, zkontrolovat SO₂ a kyseliny."),
+            s(160, EntryType.BOTTLING, "Bottling", "Lahvování", "Free SO₂ 30–35 mg/l, brilliantly clear wine.", "Volný SO₂ 30–35 mg/l, jiskrně čisté víno."),
+        ),
+    )
+
+    val all = listOf(aromaticWhite, aromaticWhiteBs, rose, red)
 
     fun forStyle(style: WineStyle): CellarTemplate = all.firstOrNull { it.style == style } ?: aromaticWhite
 }

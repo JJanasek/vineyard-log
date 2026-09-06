@@ -482,7 +482,7 @@
     <string name="rs_short">ZC g/l</string>
     <string name="soil_title">Rozbory půdy (poslední za trať)</string>
     <string name="om_short">humus %</string>
-    <string name="soil_units_hint">N, P, K, Mg v mg/kg; humus = organická hmota.</string>
+    <string name="soil_units_hint">N, P, K, Mg v mg/kg; humus = organická hmota. Orientační hodnoty pro vinici (BS laboratoř): pH 6,5–7,5, humus 2–3 %, K:Mg zhruba 2:1; vzorkovat zvlášť 0–30 a 30–60 cm, 1–1,5 kg z více míst.</string>
     <string name="days_since_start">dnů od začátku šarže</string>
     <string name="sprays_marker">postřiky</string>
     <string name="target_nm_line">Cíl: %1$s</string>
@@ -572,4 +572,9 @@
     <string name="curve_b">Křivka B</string>
     <string name="alert_steberla">Šteberla: kumulativní srážky %1$s mm od 1. 5. jsou nad křivkou B (%2$s mm) – kalamitní pásmo plísně révové, držet keře kryté podle přírůstků.</string>
     <string name="steberla_over">Prognóza skončila 30. 7. (zaměkání raných odrůd); zobrazená hodnota je konečná.</string>
+    <string name="bs_preharvest">Předsběrové analýzy BS (web)</string>
+    <string name="bs_preharvest_hint">Týdenní °NM, kyseliny, pH a YAN hlavních odrůd po regionech z BS laboratoře – srovnání pro tvoje vlastní měření.</string>
+    <string name="bs_plan_ref">Postřikový plán BS 2025 (na litr vody):</string>
+    <string name="bs_plan_link">Postřikový plán BS 2025 (web)</string>
+    <string name="bs_plan_notes">Z plánu BS 2025: do každého tank mixu přidat síru (Kumulus, Solfernus); v ekologickém pěstování max. 4 kg Cu/ha/rok celkem; nemíchat koncentráty – každý přípravek vpravit do nádrže zvlášť a promíchat; fosetyl-Al ne s SC přípravky, sírou ani amonným dusíkem; Karathane New při zjevném padlí v jakékoli fázi (0,05 %, max. 4× za sezónu); Vínofit na regeneraci po mrazu, suchu nebo kroupách.</string>
 </resources>

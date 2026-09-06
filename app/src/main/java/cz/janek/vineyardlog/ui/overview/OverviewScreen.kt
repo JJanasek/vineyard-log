@@ -31,6 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import android.content.Intent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -314,6 +317,10 @@ fun OverviewScreen(
                             "${b.name}: ${(Varieties.find(b.variety)?.targetNm ?: settings.targetSugarNm).fmt(1)} °NM"
                         }
                         if (targets.isNotEmpty()) Text(stringResource(R.string.target_nm_line, targets.joinToString(" · ")), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        val context = LocalContext.current
+                        TextButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.vinarskepotreby.cz/clanky/detail/predsberova-analyza-2026.htm"))) } }) {
+                            Text(stringResource(R.string.bs_preharvest))
+                        }
                     }
                 }
                 val acids = vineyardYear.filter { it.kind == MeasurementKind.TA || it.kind == MeasurementKind.PH }

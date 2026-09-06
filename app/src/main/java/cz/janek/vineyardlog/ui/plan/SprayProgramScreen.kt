@@ -113,7 +113,9 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(stringResource(R.string.external_sources), style = MaterialTheme.typography.titleMedium)
                         Text(stringResource(R.string.sources_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.bs_plan_notes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { open("https://www.vinarskepotreby.cz/clanky/detail/postrikovy-plan-vinice-2025.htm") }) { Text(stringResource(R.string.bs_plan_link)) }
                             TextButton(onClick = { open("https://www.vinarskepotreby.cz/clanky") }) { Text(stringResource(R.string.bs_weekly_report)) }
                             TextButton(onClick = { open("http://amet.cz/steberla.htm") }) { Text(stringResource(R.string.amet_map)) }
                         }
@@ -147,6 +149,12 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (mine.isNotEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                        if (w.bs2025.isNotEmpty()) {
+                            Text(stringResource(R.string.bs_plan_ref), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                            w.bs2025.forEach { line ->
+                                Text(line.get(czech), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                         if (inWindow.isNotEmpty()) {
                             Text(

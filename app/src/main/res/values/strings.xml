@@ -482,7 +482,7 @@
     <string name="rs_short">RS g/l</string>
     <string name="soil_title">Soil analyses (latest per block)</string>
     <string name="om_short">OM %</string>
-    <string name="soil_units_hint">N, P, K, Mg in mg/kg; OM = organic matter.</string>
+    <string name="soil_units_hint">N, P, K, Mg in mg/kg; OM = organic matter. Vineyard references (BS laboratory): pH 6.5–7.5, humus 2–3 %, K:Mg about 2:1; sample 0–30 and 30–60 cm separately, 1–1.5 kg from several spots.</string>
     <string name="days_since_start">days since the start of the batch</string>
     <string name="sprays_marker">sprays</string>
     <string name="target_nm_line">Target: %1$s</string>
@@ -572,4 +572,9 @@
     <string name="curve_b">Curve B</string>
     <string name="alert_steberla">Šteberla: cumulative rain %1$s mm since 1 May is above curve B (%2$s mm) – calamitous downy-mildew zone, keep the vine covered as it grows.</string>
     <string name="steberla_over">Forecast period ended on 30 July (berry softening of early varieties); the value shown is the final one.</string>
+    <string name="bs_preharvest">BS pre-harvest analyses (web)</string>
+    <string name="bs_preharvest_hint">Weekly °NM, acids, pH and YAN of the main varieties by region from the BS laboratory – a reference for your own readings.</string>
+    <string name="bs_plan_ref">BS spray plan 2025 (per litre of water):</string>
+    <string name="bs_plan_link">BS spray plan 2025 (web)</string>
+    <string name="bs_plan_notes">From the BS 2025 plan: add sulphur (Kumulus, Solfernus) to every tank mix; in organic growing copper must stay under 4 kg Cu/ha/year in total; never mix concentrates – add each product to the tank separately and stir; fosetyl-Al not with SC products, sulphur or ammonium nitrogen; Karathane New at visible powdery mildew in any stage (0.05 %, max 4× a season); Vínofit for regeneration after frost, drought or hail.</string>
 </resources>
