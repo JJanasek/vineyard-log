@@ -560,4 +560,15 @@
     <string name="bs_weekly_report">BS weekly situation report (web)</string>
     <string name="amet_map">Šteberla map, amet.cz (web)</string>
     <string name="sources_hint">Weekly infection-pressure ratings per station (Šteberla for downy mildew, Kast for powdery mildew, botrytis), product traffic light with PHI and a 7-day outlook, published by BS vinařské potřeby; amet.cz maps the Šteberla severity for South Moravia.</string>
+    <string name="steberla_title">Downy mildew by Šteberla %1$d (approximate curves)</string>
+    <string name="steberla_status">Since 1 May %1$s mm · curve A %2$s mm · curve B %3$s mm · %4$d rain days</string>
+    <string name="zone_non">Non-calamitous zone: treat after flowering and once more 10–14 days later.</string>
+    <string name="zone_sporadic">Sporadic-calamitous zone: treat before flowering for 14 days and twice after flowering at 10–14 day intervals.</string>
+    <string name="zone_calamitous">Calamitous zone: treat regularly every 5–14 days until veraison.</string>
+    <string name="steberla_note">Curves reconstructed from the published description (SHMÚ / Ackermann): A about 110 mm by the end of June, B through 180–220 mm during June. Zone boundaries are approximate until the original graph is entered in Steberla.kt.</string>
+    <string name="steberla_before">Šteberla evaluation starts on 15 May.</string>
+    <string name="cum_rain">Cumulative rain</string>
+    <string name="curve_a">Curve A</string>
+    <string name="curve_b">Curve B</string>
+    <string name="alert_steberla">Šteberla: cumulative rain %1$s mm since 1 May is above curve B (%2$s mm) – calamitous downy-mildew zone, keep a 5–14 day interval.</string>
 </resources>

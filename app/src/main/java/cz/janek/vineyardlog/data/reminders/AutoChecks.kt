@@ -18,6 +18,7 @@ import cz.janek.vineyardlog.data.web.OpenMeteo
 import cz.janek.vineyardlog.ui.nav.Routes
 import cz.janek.vineyardlog.ui.nav.Tab
 import cz.janek.vineyardlog.util.DiseaseRisk
+import cz.janek.vineyardlog.util.Steberla
 import cz.janek.vineyardlog.util.RiskLevel
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.util.formatDate
@@ -86,6 +87,14 @@ object AutoChecks {
             .minOfOrNull { it.entry.date }
         val shootsOut = budBreak?.plus(15) ?: LocalDate.of(year, 5, 1).toEpochDay()
         val risk = DiseaseRisk.summarize(recent, forecast, shootsOut) ?: return null
+        // Šteberla zone from the season's rain (approximate curves); say it at most once a week
+        val may1 = LocalDate.of(year, 5, 1).toEpochDay()
+        val seasonRain = c.weatherDao.listRange(may1, today)
+        val st = Steberla.evaluate(seasonRain, year, today)
+        if (st != null && st.zone == Steberla.Zone.CALAMITOUS && prefs.getLong("steberla", 0L) < today - 7) {
+            prefs.edit().putLong("steberla", today).apply()
+            c.reminders.alert(ID_RISK + 1, ctx.getString(R.string.alert_risk_title), ctx.getString(R.string.alert_steberla, st.cumulativeMm.fmt(0), st.b.fmt(0)), Tab.OVERVIEW.route)
+        }
         val high = listOfNotNull(
             if (risk.peronospora == RiskLevel.HIGH) "peronospora" to ctx.getString(R.string.d_peronospora) else null,
             if (risk.oidium == RiskLevel.HIGH) "oidium" to ctx.getString(R.string.d_oidium) else null,

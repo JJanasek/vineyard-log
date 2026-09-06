@@ -10,7 +10,14 @@ Every week in season a 7-page PDF (see `/clanky/detail/ochrana-revy-vinne-NN-tyd
 
 Rainfall is summed from 1 May; from 15 May the weekly cumulative total is plotted into a prognostic graph with two curves. Below curve A: non-calamitous occurrence, treatment signalled after flowering and once more 10–14 days later. Between A and B: sporadic-calamitous, treatment before flowering for two weeks and twice after flowering at 10–14 days. Above B: calamitous, regular treatment every 5–14 days until berry softening. amet.cz publishes South-Moravian maps of the resulting severity (0–100 non-calamitous, 101–200 sporadic-calamitous, above 200 calamitous). Oospores need a temperature sum of about 160 °C above 8 °C to break dormancy, and the 3×10 rule (≥10 °C, ≥10 mm in 24–48 h, shoots ≥10 cm) marks the primary infection.
 
-**Not implemented as a zone**, because the A/B curve values are not published anywhere we could find (the bulletins only reference the graph). The Overview shows the model's input – cumulative rain since 1 May and the last 7 days – next to the risk card, and the app keeps its own 3-10 primary-infection and secondary-window indicators. If someone has the curve values, `DiseaseRisk` is the place to add the zone.
+**Implemented as an approximation** (`util/Steberla.kt`, 6 September 2026). The original graphs are in SHMÚ / VÚVV methodologies from the 1970s–80s and in Ackermann's integrated-protection handbooks (Mendel University, Lednice), not online. The curves in the app are reconstructed from the published description: two sigmoid curves over decades from 1 May to the end of August, A passing about 110 mm at the end of June, B rising through 180–220 mm during June, both flattening in July–August. Anchor points (days since 1 May → mm):
+
+| day | 0 | 14 (15.5.) | 31 (1.6.) | 45 (15.6.) | 60 (30.6.) | 75 (15.7.) | 91 (31.7.) | 106 (15.8.) | 122 (31.8.) |
+|---|---|---|---|---|---|---|---|---|---|
+| A | 5 | 20 | 45 | 75 | 110 | 140 | 165 | 185 | 200 |
+| B | 15 | 40 | 90 | 180 | 220 | 250 | 275 | 295 | 315 |
+
+The Overview draws the cumulative rain of the season against both curves, names the zone and the treatment regime that goes with it, and the daily check alerts once a week while the curve is in the calamitous zone. Treat the boundaries as indicative until someone types the original values into the two tables – nothing else needs to change. The app keeps its own 3-10 primary-infection and secondary-window indicators next to it.
 
 ## Kast / OiDiag (powdery mildew, Geisenheim)
 

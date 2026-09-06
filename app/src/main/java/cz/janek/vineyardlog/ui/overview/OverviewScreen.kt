@@ -64,6 +64,7 @@ import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.ui.sugarKinds
 import cz.janek.vineyardlog.util.DiseaseRisk
 import cz.janek.vineyardlog.util.Gdd
+import cz.janek.vineyardlog.util.Steberla
 import cz.janek.vineyardlog.util.RiskLevel
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.util.dayOfYear
@@ -199,16 +200,6 @@ fun OverviewScreen(
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                         )
                     }
-                    val may1 = LocalDate.of(thisYear, 5, 1).toEpochDay()
-                    val today = todayEpochDay()
-                    if (today >= may1) {
-                        val since = weather.filter { it.date in may1..today }.sumOf { it.rainMm ?: 0.0 }
-                        val week = weather.filter { it.date in (today - 6)..today }.sumOf { it.rainMm ?: 0.0 }
-                        Text(
-                            stringResource(R.string.steberla_line, since.fmt(0), week.fmt(0)), Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                 }
                 item {
                     Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
@@ -238,6 +229,36 @@ fun OverviewScreen(
 
             // ---- vineyard ----
             item { SectionTitle(stringResource(R.string.tab_vineyard), Modifier.padding(horizontal = 16.dp)) }
+            item {
+                val at = if (year == thisYear) todayEpochDay() else LocalDate.of(year, 8, 31).toEpochDay()
+                val st = remember(yearWeather, year) { Steberla.evaluate(yearWeather, year, at) }
+                ChartCard(stringResource(R.string.steberla_title, year)) {
+                    if (st == null) {
+                        Text(stringResource(R.string.steberla_before), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        val may1 = LocalDate.of(year, 5, 1).toEpochDay()
+                        val curveDays = (0..Steberla.LAST_DAY step 2).toList()
+                        LineChart(
+                            series = listOf(
+                                ChartSeries(stringResource(R.string.cum_rain), Color(0xFF212121), st.series.map { (d, mm) -> dayOfYear(d).toFloat() to mm.toFloat() }),
+                                ChartSeries(stringResource(R.string.curve_a), Color(0xFFF9A825), curveDays.map { dayOfYear(may1 + it).toFloat() to Steberla.a(it).toFloat() }),
+                                ChartSeries(stringResource(R.string.curve_b), Color(0xFFC62828), curveDays.map { dayOfYear(may1 + it).toFloat() to Steberla.b(it).toFloat() }),
+                            ),
+                            sharedScale = true, dots = false, height = 170, xLabel = xDay,
+                        )
+                        Text(
+                            stringResource(R.string.steberla_status, st.cumulativeMm.fmt(0), st.a.fmt(0), st.b.fmt(0), st.daysWithRain),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            stringResource(when (st.zone) { Steberla.Zone.NON_CALAMITOUS -> R.string.zone_non; Steberla.Zone.SPORADIC -> R.string.zone_sporadic; Steberla.Zone.CALAMITOUS -> R.string.zone_calamitous }),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = when (st.zone) { Steberla.Zone.NON_CALAMITOUS -> MaterialTheme.colorScheme.primary; Steberla.Zone.SPORADIC -> Color(0xFFB26A00); Steberla.Zone.CALAMITOUS -> MaterialTheme.colorScheme.error },
+                        )
+                    }
+                    Text(stringResource(R.string.steberla_note), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             item {
                 val tMax = yearWeather.mapNotNull { d -> d.tMax?.let { dayOfYear(d.date).toFloat() to it.toFloat() } }
                 val tMin = yearWeather.mapNotNull { d -> d.tMin?.let { dayOfYear(d.date).toFloat() to it.toFloat() } }
