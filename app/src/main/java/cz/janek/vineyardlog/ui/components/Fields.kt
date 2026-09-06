@@ -4,6 +4,7 @@ import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,11 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import cz.janek.vineyardlog.util.formatTime
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -151,5 +157,43 @@ fun <T> DropdownField(
                 )
             }
         }
+    }
+}
+
+/** Optional time of day (minutes from midnight) with a Material time picker; the clear icon empties it. */
+@Composable
+fun TimeField(
+    minutes: Int?,
+    onChange: (Int?) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String = stringResource(R.string.time),
+) {
+    var open by remember { mutableStateOf(false) }
+    Box(modifier = modifier) {
+        OutlinedTextField(
+            value = minutes?.let { formatTime(it) } ?: "",
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(label) },
+            trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Box(Modifier.matchParentSize().clickable { open = true })
+    }
+    if (open) {
+        val now = java.time.LocalTime.now()
+        val state = rememberTimePickerState(initialHour = minutes?.div(60) ?: now.hour, initialMinute = minutes?.rem(60) ?: now.minute, is24Hour = true)
+        AlertDialog(
+            onDismissRequest = { open = false },
+            confirmButton = { TextButton(onClick = { onChange(state.hour * 60 + state.minute); open = false }) { Text(stringResource(R.string.ok)) } },
+            dismissButton = {
+                Row {
+                    if (minutes != null) TextButton(onClick = { onChange(null); open = false }) { Text(stringResource(R.string.clear)) }
+                    TextButton(onClick = { open = false }) { Text(stringResource(R.string.cancel)) }
+                }
+            },
+            text = { TimePicker(state = state) },
+        )
     }
 }

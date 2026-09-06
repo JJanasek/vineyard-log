@@ -59,6 +59,7 @@ import cz.janek.vineyardlog.ui.components.KeyValueRow
 import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.measurementText
 import cz.janek.vineyardlog.util.formatDate
+import cz.janek.vineyardlog.util.formatTime
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -111,7 +112,7 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
         ) {
             DomainBadge(e.domain)
             if (e.title.isNotBlank()) Text(e.title, style = MaterialTheme.typography.headlineSmall)
-            KeyValueRow(stringResource(R.string.date), formatDate(e.date))
+            KeyValueRow(stringResource(R.string.date), formatDate(e.date) + (e.timeMinutes?.let { " " + formatTime(it) } ?: ""))
             KeyValueRow(stringResource(R.string.type), e.type.label)
             e.blockId?.let { KeyValueRow(stringResource(R.string.block), blockNames[it] ?: "#$it") }
             e.batchId?.let { KeyValueRow(stringResource(R.string.batch), batchNames[it] ?: "#$it") }

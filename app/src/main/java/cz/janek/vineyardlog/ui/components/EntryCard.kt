@@ -29,6 +29,7 @@ import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.ui.measurementText
 import cz.janek.vineyardlog.ui.usageText
 import cz.janek.vineyardlog.util.formatDate
+import cz.janek.vineyardlog.util.formatTime
 
 @Composable
 fun DomainBadge(domain: Domain) {
@@ -60,7 +61,7 @@ fun EntryCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    formatDate(e.date),
+                    formatDate(e.date) + (e.timeMinutes?.let { " " + formatTime(it) } ?: ""),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

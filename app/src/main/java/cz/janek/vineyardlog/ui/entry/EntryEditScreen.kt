@@ -89,6 +89,10 @@ import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
 import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.DateField
+import cz.janek.vineyardlog.ui.components.TimeField
+import cz.janek.vineyardlog.ui.components.ProductPickerField
+import cz.janek.vineyardlog.util.tempAt
+import cz.janek.vineyardlog.util.formatTime
 import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.components.StagePicker
@@ -137,6 +141,7 @@ class EntryEditViewModel(
     var domain by mutableStateOf(initialDomain)
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
     var date by mutableStateOf(todayEpochDay())
+    var timeMinutes by mutableStateOf<Int?>(null)
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
@@ -182,7 +187,7 @@ class EntryEditViewModel(
             viewModelScope.launch {
                 c.entryDao.get(entryId)?.let { d ->
                     val e = d.entry
-                    domain = e.domain; type = e.type; date = e.date
+                    domain = e.domain; type = e.type; date = e.date; timeMinutes = e.timeMinutes
                     blockId = e.blockId; batchId = e.batchId
                     title = e.title; notes = e.notes; stage = e.phenologyStage
                     waterLha = e.waterLPerHa.input(); sprayVolume = e.sprayVolumeL.input(); quantity = e.quantity.input(); quantityUnit = e.quantityUnit
@@ -219,6 +224,9 @@ class EntryEditViewModel(
     }
 
     private fun applyTypeDefaults(t: EntryType) {
+        if (t == EntryType.SPRAY || t == EntryType.FERTILIZATION) {
+            if (timeMinutes == null && date == todayEpochDay()) java.time.LocalTime.now().let { timeMinutes = it.hour * 60 + (it.minute / 5) * 5 }
+        }
         if (t == EntryType.HARVEST && quantityUnit.isBlank()) quantityUnit = "kg"
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
         if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
@@ -281,6 +289,7 @@ class EntryEditViewModel(
         val entry = LogEntry(
             id = entryId ?: 0,
             date = date,
+            timeMinutes = timeMinutes,
             domain = domain,
             type = type,
             blockId = if (domain == Domain.VINEYARD) blockId else null,
@@ -398,7 +407,12 @@ fun EntryEditScreen(
                 labelOf = { it.label },
                 onSelect = { vm.changeType(it) },
             )
-            DateField(epochDay = vm.date, onChange = { vm.date = it })
+            if (vm.type == EntryType.SPRAY || vm.type == EntryType.FERTILIZATION || vm.type == EntryType.WEATHER_EVENT) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DateField(epochDay = vm.date, onChange = { vm.date = it }, modifier = Modifier.weight(1.6f))
+                    TimeField(minutes = vm.timeMinutes, onChange = { vm.timeMinutes = it }, modifier = Modifier.weight(1f))
+                }
+            } else DateField(epochDay = vm.date, onChange = { vm.date = it })
 
             if (vm.domain == Domain.VINEYARD) {
                 val active = blocks.filter { !it.archived || it.id == vm.blockId }
@@ -452,16 +466,28 @@ fun EntryEditScreen(
                     LaunchedEffect(vm.date) { vm.loadDayWeather() }
                     val chosenCond = vm.usages.mapNotNull { u -> products.firstOrNull { it.id == u.productId } }
                     val typedT = vm.tempC.toDoubleLenient()
-                    val weatherT = vm.dayWeather?.tMax
+                    val day = vm.dayWeather
+                    // hourly value at the entry time when Open-Meteo hourly data is there, else the day's maximum
+                    val hourlyT = vm.timeMinutes?.let { m -> day?.tempAt(m) }
+                    val weatherT = hourlyT ?: day?.tMax
                     val t = typedT ?: weatherT
                     val wind = vm.windKmh.toDoubleLenient()
                     val condNotes = remember(chosenCond, t, wind) { TankMix.conditions(chosenCond, t, wind) }
+                    if (weatherT != null && typedT == null) {
+                        TextButton(onClick = {
+                            vm.tempC = weatherT.fmt(0)
+                            if (vm.humidityPct.isBlank()) day?.humidityPct?.let { vm.humidityPct = it.fmt(0) }
+                        }) { Text(stringResource(R.string.fill_from_weather) + " (" + weatherT.fmt(0) + " °C)") }
+                    }
                     if (condNotes.isNotEmpty()) {
                         val czechCond = LocalConfiguration.current.locales[0]?.language == "cs"
                         Card(Modifier.fillMaxWidth()) {
                             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(stringResource(R.string.cond_check), style = MaterialTheme.typography.titleSmall)
-                                if (typedT == null && weatherT != null) Text(stringResource(R.string.cond_from_weather, weatherT.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (typedT == null && weatherT != null) Text(
+                                    if (hourlyT != null) stringResource(R.string.cond_from_hourly, weatherT.fmt(0), formatTime(vm.timeMinutes ?: 0)) else stringResource(R.string.cond_from_weather, weatherT.fmt(0)),
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                                 condNotes.forEach { n ->
                                     Text(n.text.get(czechCond), style = MaterialTheme.typography.bodySmall, color = if (n.level == TankMix.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
@@ -722,11 +748,9 @@ private fun UsageRowEditor(
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                DropdownField(
-                    label = stringResource(R.string.product),
-                    options = products,
+                ProductPickerField(
+                    products = products,
                     selected = product,
-                    labelOf = { it.name },
                     onSelect = { p ->
                         onChange(
                             row.copy(

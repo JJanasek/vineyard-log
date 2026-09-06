@@ -136,6 +136,8 @@ data class LogEntry(
     /** Generic amount for the entry: harvest kg, racked litres, bottles... */
     val quantity: Double? = null,
     val quantityUnit: String = "",
+    /** Time of day in minutes from midnight (sprays: picks the hourly temperature from the weather table). */
+    val timeMinutes: Int? = null,
     /** Conditions at the time of the operation (matters for sprays). */
     val tempC: Double? = null,
     val windKmh: Double? = null,
@@ -211,6 +213,8 @@ data class WeatherDay(
     val warmHours: Int? = null,
     /** Hours above 35 °C. */
     val hotHours: Int? = null,
+    /** 24 hourly temperatures (°C, comma separated, blank = missing) from Open-Meteo, hour 0 first. */
+    @ColumnInfo(defaultValue = "") val tHourly: String = "",
 )
 
 /** A photo attached to an entry; the JPEG lives in the app's private files/photos directory. */
@@ -304,7 +308,8 @@ data class BatchWithSources(
 fun Double.fmt(maxDecimals: Int = 2): String {
     if (this == Math.rint(this) && kotlin.math.abs(this) < 1e12) return this.toLong().toString()
     val s = String.format(java.util.Locale.US, "%.${maxDecimals}f", this)
-    return s.trimEnd('0').trimEnd('.')
+    // only strip decimal zeros: "20" (from 20.3 with 0 decimals) must stay "20", not become "2"
+    return if ('.' in s) s.trimEnd('0').trimEnd('.') else s
 }
 
 /** How often a [Reminder] fires. */

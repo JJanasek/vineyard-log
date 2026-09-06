@@ -580,6 +580,10 @@
     <string name="extra_photos">Extra photos on this device</string>
     <string name="copper_label">Copper content</string>
     <string name="copper_support">Grams of metallic Cu per kg or litre (label: e.g. 500 g/kg for Kuprikol 50). Used for the 4 kg Cu/ha/year organic budget; parsed from the active ingredient when empty.</string>
+    <string name="cond_from_hourly">No temperature typed – using %1$s °C from the weather table at %2$s.</string>
+    <string name="fill_from_weather">Fill from weather</string>
+    <string name="search_product">Search product…</string>
+    <string name="no_products_match">Nothing matches.</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

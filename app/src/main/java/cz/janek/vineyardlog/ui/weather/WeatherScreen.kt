@@ -195,7 +195,8 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
                     when {
                         old == null -> { added++; day }
                         old.source == OpenMeteo.SOURCE -> { updated++; day.copy(hail = old.hail, note = old.note, frost = day.frost || old.frost) }
-                        else -> { kept++; null }
+                        // measured or typed values win; the hourly indicators and the hourly temperature profile only exist in Open-Meteo
+                        else -> { kept++; old.copy(wetHours = day.wetHours ?: old.wetHours, warmHours = day.warmHours ?: old.warmHours, hotHours = day.hotHours ?: old.hotHours, tHourly = day.tHourly.ifBlank { old.tHourly }) }
                     }
                 }
                 c.weatherDao.upsertAll(toWrite)

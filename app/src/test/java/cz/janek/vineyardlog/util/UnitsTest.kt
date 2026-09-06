@@ -3,6 +3,7 @@ package cz.janek.vineyardlog.util
 import cz.janek.vineyardlog.data.settings.Settings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import cz.janek.vineyardlog.data.model.fmt
 import org.junit.Test
 
 class UnitsTest {
@@ -30,5 +31,14 @@ class UnitsTest {
     @Test fun quantityFallsBackToTheOriginal() {
         assertEquals("400 g/a", Units.quantity(40.0, "kg/ha", ares))
         assertEquals("12 kg", Units.quantity(12.0, "kg", ares))
+    }
+
+    @Test fun fmtKeepsIntegerZeros() {
+        assertEquals("20", 20.3.fmt(0))
+        assertEquals("140", 140.4.fmt(0))
+        assertEquals("100", 100.0.fmt())
+        assertEquals("2.5", 2.5.fmt())
+        assertEquals("3", 3.0.fmt(1))
+        assertEquals("0", 0.04.fmt(1))
     }
 }

@@ -71,9 +71,8 @@ object AutoChecks {
             when {
                 old == null -> day
                 old.source == OpenMeteo.SOURCE -> day.copy(hail = old.hail, note = old.note, frost = day.frost || old.frost)
-                // measured rows keep their values, only the hourly indicators for the risk models are refreshed
-                old.source == Chmi.SOURCE -> old.copy(wetHours = day.wetHours ?: old.wetHours, warmHours = day.warmHours ?: old.warmHours, hotHours = day.hotHours ?: old.hotHours)
-                else -> null
+                // measured or typed rows keep their values, only the hourly indicators and the hourly temperature profile are refreshed
+                else -> old.copy(wetHours = day.wetHours ?: old.wetHours, warmHours = day.warmHours ?: old.warmHours, hotHours = day.hotHours ?: old.hotHours, tHourly = day.tHourly.ifBlank { old.tHourly })
             }
         }
         if (toWrite.isNotEmpty()) c.weatherDao.upsertAll(toWrite)

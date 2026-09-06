@@ -1,6 +1,7 @@
 package cz.janek.vineyardlog.data.web
 
 import cz.janek.vineyardlog.data.model.WeatherDay
+import cz.janek.vineyardlog.util.HourlyTemp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -75,6 +76,7 @@ object OpenMeteo {
                     rainMm = rain?.optDoubleOrNull(i), humidityPct = rh?.optDoubleOrNull(i),
                     frost = (lo ?: 99.0) <= 0.0, source = SOURCE,
                     wetHours = agg?.wet, warmHours = agg?.warm, hotHours = agg?.hot,
+                    tHourly = agg?.let { HourlyTemp.format(it.temps.toList()) }.orEmpty(),
                 )
             }
         } finally {
@@ -82,7 +84,7 @@ object OpenMeteo {
         }
     }
 
-    private class Agg(var wet: Int = 0, var warm: Int = 0, var hot: Int = 0, var any: Boolean = false)
+    private class Agg(var wet: Int = 0, var warm: Int = 0, var hot: Int = 0, var any: Boolean = false) { val temps = arrayOfNulls<Double>(24) }
 
     /** Per local date: hours with RH ≥ 90 % or rain > 0, hours in 21–30 °C, hours > 35 °C. */
     private fun aggregateHourly(hourly: JSONObject?): Map<String, Agg> {
@@ -96,6 +98,7 @@ object OpenMeteo {
             val temp = t?.optDoubleOrNull(i); val hum = rh?.optDoubleOrNull(i); val rain = pr?.optDoubleOrNull(i)
             if (temp == null && hum == null) continue
             agg.any = true
+            time.getString(i).substringAfter('T', "").take(2).toIntOrNull()?.let { h -> if (h in 0..23) agg.temps[h] = temp }
             if ((hum ?: 0.0) >= 90.0 || (rain ?: 0.0) > 0.0) agg.wet++
             if (temp != null && temp >= 21.0 && temp <= 30.0) agg.warm++
             if (temp != null && temp > 35.0) agg.hot++

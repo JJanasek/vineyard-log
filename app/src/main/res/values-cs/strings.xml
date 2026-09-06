@@ -580,6 +580,10 @@
     <string name="extra_photos">Fotky navíc v tomto zařízení</string>
     <string name="copper_label">Obsah mědi</string>
     <string name="copper_support">Gramy kovové Cu na kg nebo litr (etiketa: např. 500 g/kg u Kuprikolu 50). Pro eko limit 4 kg Cu/ha/rok; když je prázdné, zkusí se vyčíst z účinné látky.</string>
+    <string name="cond_from_hourly">Teplota nevyplněna – beru %1$s °C z tabulky počasí v %2$s.</string>
+    <string name="fill_from_weather">Doplnit z počasí</string>
+    <string name="search_product">Hledat přípravek…</string>
+    <string name="no_products_match">Nic neodpovídá.</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

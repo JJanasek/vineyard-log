@@ -15,6 +15,9 @@ fun formatDateShort(epochDay: Long): String = epochDay.toLocalDate().format(shor
 
 fun yearOf(epochDay: Long): Int = epochDay.toLocalDate().year
 
+/** Minutes from midnight as "7:05" / "14:30". */
+fun formatTime(minutes: Int): String = "%d:%02d".format(minutes / 60, minutes % 60)
+
 fun formatDateTime(epochMillis: Long): String =
     java.time.Instant.ofEpochMilli(epochMillis).atZone(java.time.ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("d. M. yyyy HH:mm"))
