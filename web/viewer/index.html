@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vineyard Log · backup viewer</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍇</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <a class="brand" href="../">🍇 Vineyard Log</a>
+  <span id="title" class="title">Backup viewer</span>
+  <label class="file"><input type="file" id="file" accept=".json,application/json"><span id="lbl-open">Open backup</span></label>
+  <button id="btn-download" class="ghost" hidden>Download</button>
+  <button id="btn-lang" class="ghost">EN</button>
+</header>
+<div id="error" class="error" hidden></div>
+<main>
+  <section id="welcome">
+    <h1 id="w-title">Your vineyard log, in the browser</h1>
+    <p id="w-text">Open the JSON backup the app writes to your synced folder (vineyard-log-latest.json) or exports from Settings. Everything runs in this browser; nothing is uploaded anywhere.</p>
+    <div id="drop" class="drop"><span id="w-drop">Drop the backup file here</span></div>
+  </section>
+  <nav id="tabs" hidden></nav>
+  <section id="view"></section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

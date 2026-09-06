@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.tagline }}</h1>
+<p>{{ t.intro }}</p>
+<p><a class="btn" href="download.html">{{ t.get_app }}</a> <a class="btn secondary" href="{{ root }}viewer/?lang={{ lang }}">{{ t.open_viewer }}</a></p>
+<div class="shots">
+  <img src="{{ root }}img/overview.png" alt="Overview"><img src="{{ root }}img/steberla.png" alt="Šteberla"><img src="{{ root }}img/stage-picker.png" alt="Stage picker"><img src="{{ root }}img/phenology.png" alt="Phenology"><img src="{{ root }}img/spray.png" alt="Spray programme"><img src="{{ root }}img/reminders.png" alt="Reminders">
+</div>
+<h2>{{ t.what }}</h2>
+<div class="grid">
+{% for f in t.features %}<div class="card"><h3>{{ f[0] }}</h3><p class="muted">{{ f[1] }}</p></div>{% endfor %}
+</div>
+<h2>{{ t.how_it_works }}</h2>
+<p>{{ t.how_text }}</p>
+{% endblock %}

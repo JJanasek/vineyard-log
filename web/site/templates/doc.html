@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block content %}
+<p><a href="./">← {{ t.docs }}</a></p>
+<div class="md" id="md"></div>
+<script type="text/markdown" id="src">{{ body }}</script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>document.getElementById('md').innerHTML = marked.parse(document.getElementById('src').textContent);</script>
+{% endblock %}

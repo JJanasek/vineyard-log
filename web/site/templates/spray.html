@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.spray }}</h1>
+<p class="muted">{{ t.spray_intro }}</p>
+{% for w in windows %}
+<div class="card" style="margin-bottom:1rem">
+<h2 style="margin-top:0">{{ w.name[lang] }} · BBCH {{ w.bbch }}</h2>
+<div class="muted">{{ w.timing[lang] }}</div>
+<p>{% for tk in w.targets %}<span class="pill">{{ targets[tk][lang] }}</span>{% endfor %}</p>
+<p>{{ w.advice[lang] }}</p>
+{% if w.bs2025 %}<p class="muted"><b>{{ t.bs_plan }}</b></p><ul class="muted">{% for l in w.bs2025 %}<li>{{ l[lang] }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endfor %}
+<p class="muted">{{ t.spray_sources }} <a href="https://www.vinarskepotreby.cz/clanky/detail/postrikovy-plan-vinice-2025.htm">BS vinařské potřeby</a>.</p>
+{% endblock %}

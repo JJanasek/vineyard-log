@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block content %}
+<p><a href="./">← {{ t.guide }}</a></p>
+<h1>{{ e.name[lang] }} <span class="muted"><i>{{ e.latin }}</i></span></h1>
+{% for img in e.images %}<img class="photo" src="{{ root }}img/guide/{{ img }}" alt="{{ e.name[lang] }}">
+{% set c = credits.get(img[:-4]) %}{% if c %}<div class="credit">{{ t.photo }}: {{ c.author }}, {{ c.license }} · <a href="{{ c.source }}">Wikimedia Commons</a></div>{% endif %}{% endfor %}
+<h2>{{ t.symptoms }}</h2><p>{{ e.symptoms[lang] }}</p>
+<h2>{{ t.conditions }}</h2><p>{{ e.conditions[lang] }}</p>
+<h2>{{ t.action }}</h2><p>{{ e.action[lang] }}</p>
+{% if e.links %}<h2>{{ t.bs_articles }}</h2><ul>{% for l in e.links %}<li><a href="{{ l.url }}">{{ l.title }}</a></li>{% endfor %}</ul>{% endif %}
+{% endblock %}

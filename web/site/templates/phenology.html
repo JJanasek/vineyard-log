@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.phenology }}</h1>
+<p class="muted">{{ t.phenology_intro }}</p>
+{% for s in stages %}
+<div class="card" style="margin-bottom:1rem">
+<h2 style="margin-top:0">{{ s.labelText }} · BBCH {{ s.bbch }}</h2>
+<div class="muted">{{ s.timing[lang] }}</div>
+{% for img in s.images %}<img class="photo" style="max-width:420px" src="{{ root }}img/guide/{{ img }}" alt="">{% set c = credits.get(img[:-4]) %}{% if c %}<div class="credit">{{ t.photo }}: {{ c.author }}, {{ c.license }} · <a href="{{ c.source }}">Commons</a></div>{% endif %}{% endfor %}
+<p><b>{{ t.what_you_see }}:</b> {{ s.look[lang] }}</p>
+<p><b>{{ t.what_to_do }}:</b> {{ s.todo[lang] }}</p>
+</div>
+{% endfor %}
+{% endblock %}

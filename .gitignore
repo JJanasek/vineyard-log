@@ -18,3 +18,4 @@
 /vinarskydum-products.json
 # device-only photos you may use privately but not redistribute (see tools/bs_leaflet_tiles.py)
 /app/src/main/assets/guide-extra/
+/web/dist/

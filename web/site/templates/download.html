@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.download }}</h1>
+<p>{{ t.dl_text }}</p>
+<p><a class="btn" href="https://github.com/JJanasek/vineyard-log/releases/latest">{{ t.dl_release }}</a> <a class="btn secondary" href="https://github.com/JJanasek/vineyard-log/actions/workflows/android.yml">{{ t.dl_ci }}</a></p>
+<div class="warn">{{ t.dl_note }}</div>
+<h2>F-Droid</h2>
+<p>{{ t.fdroid }}</p>
+<h2>{{ t.build_yourself }}</h2>
+<pre>git clone https://github.com/JJanasek/vineyard-log.git
+cd vineyard-log
+./gradlew assembleDebug   # app/build/outputs/apk/debug/app-debug.apk</pre>
+{% endblock %}

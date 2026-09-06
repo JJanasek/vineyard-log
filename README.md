@@ -100,6 +100,12 @@ scrape them. Two lighter ways are built in:
 
 Material you may keep for yourself but not redistribute (for example the photo sheet of the BS vinařské potřeby spray-plan leaflet) goes into `app/src/main/assets/guide-extra/` with a `credits-extra.json`; the folder is git-ignored and the guide and growth-stage pages show the photos with their credit line. `tools/bs_leaflet_tiles.py <leaflet.pdf>` cuts the 2025 leaflet's page 1 into 30 topic photos (diseases, pests, N/P/K/Mg/S/Fe deficiencies) and writes that folder. Ask BS before publishing a build that contains them.
 
+## Website and backup viewer
+
+`web/` holds a static site generated from the same content the app ships with, deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to `main` (enable *Settings → Pages → Source: GitHub Actions* once): field guide with the Commons photos, growth stages, variety catalogue, spray programme, cellar protocols, the docs, screenshots and download links, in Czech and English. `web/viewer/` is a backup viewer that runs entirely in the browser: drop the JSON backup the app writes to your synced folder and get the Overview (risk, Šteberla, season weather, GDD by vintage, ripening and fermentation charts, harvest table), the log with filters, blocks with PHI / copper / NPK, batches, weather and products; you can add simple entries and download the modified backup for *Import backup → merge* in the app. Nothing is uploaded anywhere.
+
+Build locally: `./gradlew testDebugUnitTest --tests '*ContentExportTest'` (writes `app/build/site-content`), then `python3 web/build_site.py` (needs `jinja2`) and open `web/dist/index.html`. Tagging `v*` runs `.github/workflows/release.yml`, which attaches the APK to a GitHub release; the site links to the latest release. F-Droid: planned once release signing is reproducible.
+
 ## Project layout
 
 ```

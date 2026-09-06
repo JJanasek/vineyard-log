@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }} · Vineyard Log</title>
+<link rel="stylesheet" href="{{ root }}static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍇</text></svg>">
+</head>
+<body>
+<header><div class="bar">
+  <a class="brand" href="{{ root }}{{ lang }}/">🍇 Vineyard Log</a>
+  <nav>
+    <a href="{{ root }}{{ lang }}/" {% if page=='index' %}class="active"{% endif %}>{{ t.home }}</a>
+    <a href="{{ root }}{{ lang }}/guide/" {% if page=='guide' %}class="active"{% endif %}>{{ t.guide }}</a>
+    <a href="{{ root }}{{ lang }}/phenology.html" {% if page=='phenology' %}class="active"{% endif %}>{{ t.phenology }}</a>
+    <a href="{{ root }}{{ lang }}/varieties.html" {% if page=='varieties' %}class="active"{% endif %}>{{ t.varieties }}</a>
+    <a href="{{ root }}{{ lang }}/spray.html" {% if page=='spray' %}class="active"{% endif %}>{{ t.spray }}</a>
+    <a href="{{ root }}{{ lang }}/cellar.html" {% if page=='cellar' %}class="active"{% endif %}>{{ t.cellar }}</a>
+    <a href="{{ root }}{{ lang }}/docs/" {% if page=='docs' %}class="active"{% endif %}>{{ t.docs }}</a>
+    <a href="{{ root }}viewer/?lang={{ lang }}">{{ t.viewer }}</a>
+    <a href="{{ root }}{{ lang }}/download.html" {% if page=='download' %}class="active"{% endif %}>{{ t.download }}</a>
+    <a href="{{ root }}{{ other_lang }}/{{ self_path }}">{{ t.switch }}</a>
+  </nav>
+</div></header>
+<main>
+{% block content %}{% endblock %}
+</main>
+<footer>{{ t.footer }} · <a href="https://github.com/JJanasek/vineyard-log">GitHub</a> · {{ t.built }} {{ built }}</footer>
+</body>
+</html>

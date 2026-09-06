@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.docs }}</h1>
+<ul>{% for d in docs %}<li><a href="{{ d.slug }}.html">{{ d.title }}</a></li>{% endfor %}</ul>
+{% endblock %}
