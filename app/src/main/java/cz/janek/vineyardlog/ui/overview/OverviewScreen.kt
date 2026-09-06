@@ -230,7 +230,7 @@ fun OverviewScreen(
             // ---- vineyard ----
             item { SectionTitle(stringResource(R.string.tab_vineyard), Modifier.padding(horizontal = 16.dp)) }
             item {
-                val at = if (year == thisYear) todayEpochDay() else LocalDate.of(year, 8, 31).toEpochDay()
+                val at = if (year == thisYear) todayEpochDay() else LocalDate.of(year, 7, 30).toEpochDay()
                 val st = remember(yearWeather, year) { Steberla.evaluate(yearWeather, year, at) }
                 ChartCard(stringResource(R.string.steberla_title, year)) {
                     if (st == null) {
@@ -250,6 +250,7 @@ fun OverviewScreen(
                             stringResource(R.string.steberla_status, st.cumulativeMm.fmt(0), st.a.fmt(0), st.b.fmt(0), st.daysWithRain),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        if (st.periodOver) Text(stringResource(R.string.steberla_over), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
                             stringResource(when (st.zone) { Steberla.Zone.NON_CALAMITOUS -> R.string.zone_non; Steberla.Zone.SPORADIC -> R.string.zone_sporadic; Steberla.Zone.CALAMITOUS -> R.string.zone_calamitous }),
                             style = MaterialTheme.typography.bodyMedium,

@@ -4,39 +4,31 @@ import cz.janek.vineyardlog.data.model.WeatherDay
 import java.time.LocalDate
 
 /**
- * Šteberla's short-term downy-mildew prognosis (SHMÚ Bratislava): rainfall is summed from 1 May and the
- * cumulative curve is compared with two sigmoid boundary curves. Below A = non-calamitous occurrence,
- * between A and B = sporadic-calamitous, above B = calamitous. The original graphs live in SHMÚ/VÚVV
- * methodologies and in Ackermann's integrated-protection handbooks; the anchors below are a
- * reconstruction from the published description (A about 100–120 mm by the end of June, B rising
- * through 180–220 mm during June, both flattening in July–August). Replace [curveA]/[curveB] with the
- * literature values when you have them – everything else keys off these two tables.
+ * Šteberla's agrometeorological downy-mildew prognosis.
+ * Source: P. Šteberla, A. Vančová, G. Valuš, V. Zeman (SHMÚ): Agrometeorologická predpoveď peronospóry viniča,
+ * Meteorologické zprávy 35 (1982), pp. 150–153. Data: Malokarpatská vineyard region (Bratislava), 1951–1975.
+ *
+ * Rain is summed from 1 May in weekly intervals (week 1 ends 7 May, week 2 ends 14 May, …). Two second-degree
+ * regression curves split the graph: A = maxima of cumulative rain in years without a calamitous occurrence,
+ * B = minima of cumulative rain in calamitous years. Below A: non-calamitous occurrence; between A and B:
+ * sporadic-calamitous; above B: calamitous. The paper uses the graph from 14 May (rain 1–14 May) to 30 July,
+ * when berry softening of early varieties makes the forecast moot.
  */
 object Steberla {
     enum class Zone { NON_CALAMITOUS, SPORADIC, CALAMITOUS }
 
-    /** Anchor points as (days since 1 May → cumulative mm); linear interpolation between them, flat beyond. */
-    val curveA: List<Pair<Int, Double>> = listOf(
-        0 to 5.0, 14 to 20.0, 31 to 45.0, 45 to 75.0, 60 to 110.0, 75 to 140.0, 91 to 165.0, 106 to 185.0, 122 to 200.0,
-    )
-    val curveB: List<Pair<Int, Double>> = listOf(
-        0 to 15.0, 14 to 40.0, 31 to 90.0, 45 to 180.0, 60 to 220.0, 75 to 250.0, 91 to 275.0, 106 to 295.0, 122 to 315.0,
-    )
+    /** First day the graph is used (14 May = 13 days after 1 May) and the last (30 July). */
+    const val FIRST_DAY = 13
+    const val LAST_DAY = 90
 
-    /** Evaluation window: from 15 May (first weekly plot) to 31 August (berry softening). */
-    const val FIRST_DAY = 14
-    const val LAST_DAY = 122
+    /** Week index of the paper for a day counted from 1 May (day 13 = 14 May → x = 2). */
+    fun week(daysSinceMay1: Int): Double = (daysSinceMay1 + 1) / 7.0
 
-    fun a(daysSinceMay1: Int) = interpolate(curveA, daysSinceMay1)
-    fun b(daysSinceMay1: Int) = interpolate(curveB, daysSinceMay1)
+    /** Curve A: y = −37.529410 + 24.536249·x − 0.380418·x² (r = 0.99). */
+    fun a(daysSinceMay1: Int): Double = week(daysSinceMay1).let { x -> (-37.529410 + 24.536249 * x - 0.380418 * x * x).coerceAtLeast(0.0) }
 
-    private fun interpolate(curve: List<Pair<Int, Double>>, day: Int): Double {
-        if (day <= curve.first().first) return curve.first().second
-        if (day >= curve.last().first) return curve.last().second
-        val i = curve.indexOfFirst { it.first >= day }
-        val (x0, y0) = curve[i - 1]; val (x1, y1) = curve[i]
-        return y0 + (y1 - y0) * (day - x0) / (x1 - x0).toDouble()
-    }
+    /** Curve B: y = −1.073529 + 18.625645·x + 0.650154·x² (r = 0.97). */
+    fun b(daysSinceMay1: Int): Double = week(daysSinceMay1).let { x -> (-1.073529 + 18.625645 * x + 0.650154 * x * x).coerceAtLeast(0.0) }
 
     fun zone(cumulativeMm: Double, daysSinceMay1: Int): Zone = when {
         cumulativeMm > b(daysSinceMay1) -> Zone.CALAMITOUS
@@ -55,11 +47,13 @@ object Steberla {
         val series: List<Pair<Long, Double>>,
         /** Days with a rain value inside the window, to show how complete the data is. */
         val daysWithRain: Int,
+        /** True when [date] was clamped to 30 July because the forecast period is over. */
+        val periodOver: Boolean,
     )
 
     /**
-     * Cumulative rain of [year] from 1 May up to [at] (clamped to 31 August) against the curves.
-     * Null before 15 May or when there is no rain data at all in the window.
+     * Cumulative rain of [year] from 1 May up to [at] (clamped to 30 July) against the curves.
+     * Null before 14 May or when there is no rain data at all in the window.
      */
     fun evaluate(days: List<WeatherDay>, year: Int, at: Long): Result? {
         val may1 = LocalDate.of(year, 5, 1).toEpochDay()
@@ -75,6 +69,6 @@ object Steberla {
             sum += byDate[date]?.rainMm ?: 0.0
             date to sum
         }
-        return Result(end, d, sum, a(d), b(d), zone(sum, d), series, withRain)
+        return Result(end, d, sum, a(d), b(d), zone(sum, d), series, withRain, periodOver = at > may1 + LAST_DAY)
     }
 }

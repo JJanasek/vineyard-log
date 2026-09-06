@@ -560,15 +560,16 @@
     <string name="bs_weekly_report">Situační zpráva BS vinařské potřeby (web)</string>
     <string name="amet_map">Mapa Šteberla, amet.cz (web)</string>
     <string name="sources_hint">Týdenní hodnocení infekčního tlaku po stanicích (Šteberla pro plíseň révovou, Kast pro padlí, plíseň šedá), semafor přípravků s ochrannou lhůtou a výhled počasí na 7 dní vydává BS vinařské potřeby; amet.cz mapuje závažnost podle Šteberly pro jižní Moravu.</string>
-    <string name="steberla_title">Plíseň révová podle Šteberly %1$d (přibližné křivky)</string>
+    <string name="steberla_title">Plíseň révová podle Šteberly %1$d</string>
     <string name="steberla_status">Od 1. 5. %1$s mm · křivka A %2$s mm · křivka B %3$s mm · %4$d dní se srážkami</string>
-    <string name="zone_non">Nekalamitní pásmo: ošetřit po odkvětu a znovu za 10–14 dní.</string>
-    <string name="zone_sporadic">Sporadicko-kalamitní pásmo: ošetřovat před květem po dobu 14 dní a dvakrát po odkvětu v intervalu 10–14 dní.</string>
-    <string name="zone_calamitous">Kalamitní pásmo: ošetřovat pravidelně každých 5–14 dní až do zaměkání.</string>
-    <string name="steberla_note">Křivky jsou rekonstruované z publikovaného popisu (SHMÚ / Ackermann): A zhruba 110 mm ke konci června, B přes 180–220 mm během června. Hranice pásem jsou přibližné, dokud se do Steberla.kt nezadá původní graf.</string>
-    <string name="steberla_before">Hodnocení podle Šteberly začíná 15. 5.</string>
+    <string name="zone_non">Nekalamitní pásmo: jen základní postřiky – před květem, po odkvětu a před zaměkáním raných odrůd.</string>
+    <string name="zone_sporadic">Sporadicko-kalamitní pásmo: základní postřiky a podle uvážení další.</string>
+    <string name="zone_calamitous">Kalamitní pásmo: ihned začít s ochranou a stříkat pravidelně podle přírůstků, aby nové výhony, listy, květenství a hrozny zůstaly kryté.</string>
+    <string name="steberla_note">Šteberla, Vančová, Valuš, Zeman: Agrometeorologická predpoveď peronospóry viniča, Meteorologické zprávy 35/1982 (SHMÚ, Malokarpatská oblast 1951–1975). A = maxima nekalamitních let, B = minima kalamitních let, týdenní úhrny od 1. 5.; použití od 14. 5. do 30. 7.</string>
+    <string name="steberla_before">Hodnocení podle Šteberly začíná 14. 5. (srážky 1.–14. 5.).</string>
     <string name="cum_rain">Kumulativní srážky</string>
     <string name="curve_a">Křivka A</string>
     <string name="curve_b">Křivka B</string>
-    <string name="alert_steberla">Šteberla: kumulativní srážky %1$s mm od 1. 5. jsou nad křivkou B (%2$s mm) – kalamitní pásmo plísně révové, držet interval 5–14 dní.</string>
+    <string name="alert_steberla">Šteberla: kumulativní srážky %1$s mm od 1. 5. jsou nad křivkou B (%2$s mm) – kalamitní pásmo plísně révové, držet keře kryté podle přírůstků.</string>
+    <string name="steberla_over">Prognóza skončila 30. 7. (zaměkání raných odrůd); zobrazená hodnota je konečná.</string>
 </resources>

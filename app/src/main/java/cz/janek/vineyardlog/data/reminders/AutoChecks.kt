@@ -91,7 +91,7 @@ object AutoChecks {
         val may1 = LocalDate.of(year, 5, 1).toEpochDay()
         val seasonRain = c.weatherDao.listRange(may1, today)
         val st = Steberla.evaluate(seasonRain, year, today)
-        if (st != null && st.zone == Steberla.Zone.CALAMITOUS && prefs.getLong("steberla", 0L) < today - 7) {
+        if (st != null && !st.periodOver && st.zone == Steberla.Zone.CALAMITOUS && prefs.getLong("steberla", 0L) < today - 7) {
             prefs.edit().putLong("steberla", today).apply()
             c.reminders.alert(ID_RISK + 1, ctx.getString(R.string.alert_risk_title), ctx.getString(R.string.alert_steberla, st.cumulativeMm.fmt(0), st.b.fmt(0)), Tab.OVERVIEW.route)
         }
