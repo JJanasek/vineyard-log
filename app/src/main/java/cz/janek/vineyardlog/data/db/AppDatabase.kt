@@ -6,6 +6,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import cz.janek.vineyardlog.data.dao.AttachmentDao
 import cz.janek.vineyardlog.data.dao.BackupDao
 import cz.janek.vineyardlog.data.dao.BatchDao
 import cz.janek.vineyardlog.data.dao.BlockDao
@@ -16,6 +17,7 @@ import cz.janek.vineyardlog.data.dao.ProductDao
 import cz.janek.vineyardlog.data.dao.ReminderDao
 import cz.janek.vineyardlog.data.dao.TaskDao
 import cz.janek.vineyardlog.data.dao.WeatherDao
+import cz.janek.vineyardlog.data.model.Attachment
 import cz.janek.vineyardlog.data.model.Batch
 import cz.janek.vineyardlog.data.model.BatchSource
 import cz.janek.vineyardlog.data.model.Block
@@ -36,15 +38,15 @@ import kotlinx.coroutines.launch
     entities = [
         Block::class, Product::class, Batch::class, BatchSource::class,
         LogEntry::class, ProductUsage::class, Measurement::class, WeatherDay::class,
-        Photo::class, SeasonTask::class, TaskDone::class, Reminder::class,
+        Photo::class, SeasonTask::class, TaskDone::class, Reminder::class, Attachment::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6), AutoMigration(from = 6, to = 7),
-        AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 7, to = 8), AutoMigration(from = 8, to = 9),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -58,6 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun photoDao(): PhotoDao
     abstract fun taskDao(): TaskDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun attachmentDao(): AttachmentDao
 
     companion object {
         const val NAME = "vineyard_log.db"

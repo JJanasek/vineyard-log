@@ -1,6 +1,8 @@
 package cz.janek.vineyardlog.ui.weather
 
 import cz.janek.vineyardlog.R
+import androidx.compose.material.icons.filled.WaterDrop
+import cz.janek.vineyardlog.data.model.WEATHER_SOURCE_GAUGE
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
@@ -122,6 +124,28 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
     }
 
     fun save(day: WeatherDay) = viewModelScope.launch { c.weatherDao.upsert(day) }
+
+    /**
+     * Rain-gauge total for a period: spread over the days of the period in proportion to the fetched rain
+     * (evenly when there is none), typed days untouched and subtracted first; the days are marked "gauge".
+     */
+    fun applyGauge(from: Long, to: Long, mm: Double) = viewModelScope.launch {
+        if (to < from) return@launch
+        val days = c.weatherDao.listRange(from, to).associateBy { it.date }
+        val range = (from..to).toList()
+        val typedRain = range.mapNotNull { days[it] }.filter { it.source.isBlank() }.sumOf { it.rainMm ?: 0.0 }
+        val remaining = (mm - typedRain).coerceAtLeast(0.0)
+        val targets = range.filter { days[it]?.source?.isBlank() != true }
+        if (targets.isEmpty()) { message = c.appContext.getString(R.string.msg_gauge_nothing); return@launch }
+        val modelSum = targets.sumOf { days[it]?.rainMm ?: 0.0 }
+        val rows = targets.map { d ->
+            val base = days[d] ?: WeatherDay(date = d)
+            val share = if (modelSum > 0) (base.rainMm ?: 0.0) / modelSum else 1.0 / targets.size
+            base.copy(rainMm = remaining * share, source = WEATHER_SOURCE_GAUGE)
+        }
+        c.weatherDao.upsertAll(rows)
+        message = c.appContext.getString(R.string.msg_gauge_applied, rows.size, mm.fmt(1))
+    }
     fun delete(date: Long) = viewModelScope.launch { c.weatherDao.delete(date) }
 
     /** Measured days from the chosen ČHMÚ stations; typed days are kept, hourly aggregates from Open-Meteo rows are preserved. */
@@ -139,7 +163,7 @@ class WeatherViewModel(private val c: AppContainer) : ViewModel() {
                     val old = existing[d.date]
                     when {
                         old == null -> d
-                        old.source.isBlank() -> { kept++; null }
+                        old.source.isBlank() || old.source == WEATHER_SOURCE_GAUGE -> { kept++; null }
                         else -> old.copy(
                             tMin = d.tMin ?: old.tMin, tMax = d.tMax ?: old.tMax, rainMm = d.rainMm ?: old.rainMm,
                             humidityPct = d.humidityPct ?: old.humidityPct, frost = old.frost || d.frost, source = Chmi.SOURCE,
@@ -191,6 +215,7 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}, onBack: (() -> Unit)? = null
     val year by vm.year.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<WeatherDay?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    var gaugeDialog by remember { mutableStateOf(false) }
 
     // Always offer this and last year so a fresh install can fetch last season before it has any rows.
     val years = remember(all) { (all.map { yearOf(it.date) } + LocalDate.now().year + (LocalDate.now().year - 1)).distinct().sortedDescending() }
@@ -265,6 +290,9 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}, onBack: (() -> Unit)? = null
                             OutlinedButton(onClick = { vm.fetchChmi(year) }, enabled = !vm.fetching) {
                                 Icon(Icons.Default.Sensors, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.fetch_chmi))
                             }
+                            OutlinedButton(onClick = { gaugeDialog = true }) {
+                                Icon(Icons.Default.WaterDrop, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.rain_gauge))
+                            }
                             if (vm.fetching) CircularProgressIndicator(Modifier.size(22.dp))
                         }
                         vm.progress?.let {
@@ -338,6 +366,7 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}, onBack: (() -> Unit)? = null
                         Row {
                             if (d.source == OpenMeteo.SOURCE) Icon(Icons.Default.Cloud, contentDescription = stringResource(R.string.source_open_meteo), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             if (d.source == Chmi.SOURCE) Icon(Icons.Default.Sensors, contentDescription = stringResource(R.string.source_chmi), tint = MaterialTheme.colorScheme.primary)
+                            if (d.source == WEATHER_SOURCE_GAUGE) Icon(Icons.Default.WaterDrop, contentDescription = stringResource(R.string.source_gauge), tint = MaterialTheme.colorScheme.primary)
                             if (d.frost) Icon(Icons.Default.AcUnit, contentDescription = stringResource(R.string.frost), tint = MaterialTheme.colorScheme.primary)
                             if (d.hail) Icon(Icons.Default.Warning, contentDescription = stringResource(R.string.hail), tint = MaterialTheme.colorScheme.error)
                         }
@@ -349,6 +378,9 @@ fun WeatherScreen(onOpenReminders: () -> Unit = {}, onBack: (() -> Unit)? = null
         }
     }
 
+    if (gaugeDialog) {
+        GaugeDialog(onApply = { from, to, mm -> vm.applyGauge(from, to, mm); gaugeDialog = false }, onDismiss = { gaugeDialog = false })
+    }
     if (showDialog) {
         WeatherDayDialog(
             initial = editing ?: WeatherDay(date = todayEpochDay()),
@@ -428,11 +460,12 @@ private fun WeatherDayDialog(
         confirmButton = {
             TextButton(onClick = {
                 onSave(
-                    WeatherDay(
+                    // a hand-edited day becomes a typed day: fetches never overwrite it; hourly indicators are kept for the risk models
+                    initial.copy(
                         date = date,
                         tMin = tMin.toDoubleLenient(), tMax = tMax.toDoubleLenient(),
                         rainMm = rain.toDoubleLenient(), humidityPct = rh.toDoubleLenient(),
-                        frost = frost, hail = hail, note = note.trim(),
+                        frost = frost, hail = hail, note = note.trim(), source = "",
                     )
                 )
             }) { Text(stringResource(R.string.save)) }
@@ -443,5 +476,30 @@ private fun WeatherDayDialog(
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
             }
         },
+    )
+}
+
+/** Rain-gauge total for a period (e.g. a week), spread over the days by the Weather view model. */
+@Composable
+private fun GaugeDialog(onApply: (Long, Long, Double) -> Unit, onDismiss: () -> Unit) {
+    var to by remember { mutableStateOf(todayEpochDay()) }
+    var from by remember { mutableStateOf(todayEpochDay() - 6) }
+    var mm by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.rain_gauge)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.rain_gauge_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DateField(from, { from = it }, stringResource(R.string.start_date))
+                DateField(to, { to = it }, stringResource(R.string.end_date))
+                NumberField(mm, { mm = it }, stringResource(R.string.rain), suffix = "mm")
+            }
+        },
+        confirmButton = {
+            val value = mm.toDoubleLenient()
+            TextButton(onClick = { value?.let { onApply(from, to, it) } }, enabled = value != null && to >= from) { Text(stringResource(R.string.apply)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

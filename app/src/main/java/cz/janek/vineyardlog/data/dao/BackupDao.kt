@@ -16,6 +16,7 @@ import cz.janek.vineyardlog.data.model.ProductUsage
 import cz.janek.vineyardlog.data.model.SeasonTask
 import cz.janek.vineyardlog.data.model.TaskDone
 import cz.janek.vineyardlog.data.model.Reminder
+import cz.janek.vineyardlog.data.model.Attachment
 import cz.janek.vineyardlog.data.model.WeatherDay
 
 /** Whole-database dump and restore for JSON backups. */
@@ -32,6 +33,8 @@ interface BackupDao {
     @Query("SELECT * FROM photos") suspend fun allPhotos(): List<Photo>
     @Query("SELECT * FROM tasks") suspend fun allTasks(): List<SeasonTask>
     @Query("SELECT * FROM reminders") suspend fun allReminders(): List<Reminder>
+    @Query("SELECT * FROM attachments") suspend fun allAttachments(): List<Attachment>
+    @Insert suspend fun insertAttachments(items: List<Attachment>)
     @Insert suspend fun insertReminders(rs: List<Reminder>)
     @Query("SELECT * FROM task_done") suspend fun allTaskDone(): List<TaskDone>
 
@@ -48,6 +51,7 @@ interface BackupDao {
     @Insert suspend fun insertTaskDone(items: List<TaskDone>)
 
     @Query("DELETE FROM photos") suspend fun clearPhotos()
+    @Query("DELETE FROM attachments") suspend fun clearAttachments()
     @Query("DELETE FROM task_done") suspend fun clearTaskDone()
     @Query("DELETE FROM tasks") suspend fun clearTasks()
     @Query("DELETE FROM reminders") suspend fun clearReminders()
@@ -74,12 +78,13 @@ interface BackupDao {
         tasks = allTasks(),
         taskDone = allTaskDone(),
         reminders = allReminders(),
+        attachments = allAttachments(),
     )
 
     /** Replace everything with the given backup, in FK-safe order. */
     @Transaction
     suspend fun replaceAll(data: BackupData) {
-        clearTaskDone(); clearTasks(); clearPhotos(); clearMeasurements(); clearUsages(); clearEntries(); clearBatchSources()
+        clearTaskDone(); clearTasks(); clearPhotos(); clearAttachments(); clearMeasurements(); clearUsages(); clearEntries(); clearBatchSources()
         clearBatches(); clearBlocks(); clearProducts(); clearWeather()
         insertBlocks(data.blocks)
         insertProducts(data.products)
@@ -90,6 +95,7 @@ interface BackupDao {
         insertMeasurements(data.measurements)
         insertWeather(data.weather)
         insertPhotos(data.photos)
+        insertAttachments(data.attachments)
         insertTasks(data.tasks)
         insertTaskDone(data.taskDone)
         clearReminders()

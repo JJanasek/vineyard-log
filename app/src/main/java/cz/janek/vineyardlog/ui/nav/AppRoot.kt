@@ -155,6 +155,7 @@ fun AppRoot(
                 composable(Routes.PHENOLOGY) {
                     PhenologyScreen(
                         onBack = { navController.popBackStack() },
+                        onOpenEntry = { navController.navigate(Routes.entry(it)) },
                         onLogStage = { st -> navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.PHENOLOGY, stage = st)) },
                         onOpenSprays = { navController.navigate(Routes.SPRAY_PROGRAM) },
                     )
@@ -234,8 +235,9 @@ fun AppRoot(
                         entryKey = key,
                         onBack = { navController.popBackStack() },
                         onLogObservation = { title ->
-                            navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.SCOUTING, title = title))
+                            navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.SCOUTING, title = title, guideKey = key))
                         },
+                        onOpenEntry = { navController.navigate(Routes.entry(it)) },
                     )
                 }
 
@@ -321,6 +323,7 @@ fun AppRoot(
                         navArgument("title") { type = NavType.StringType; defaultValue = "" },
                         navArgument("notes") { type = NavType.StringType; defaultValue = "" },
                         navArgument("stage") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("guideKey") { type = NavType.StringType; defaultValue = "" },
                     ),
                 ) { entry ->
                     val args = entry.arguments
@@ -338,6 +341,7 @@ fun AppRoot(
                         initialTitle = args?.getString("title")?.takeIf { it.isNotBlank() },
                         initialNotes = args?.getString("notes")?.takeIf { it.isNotBlank() },
                         initialStage = args?.getString("stage")?.takeIf { it.isNotBlank() }?.let { runCatching { PhenologyStage.valueOf(it) }.getOrNull() },
+                        initialGuideKey = args?.getString("guideKey")?.takeIf { it.isNotBlank() },
                         onDone = { navController.popBackStack() },
                     )
                 }

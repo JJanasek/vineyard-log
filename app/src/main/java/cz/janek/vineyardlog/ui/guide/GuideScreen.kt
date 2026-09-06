@@ -35,6 +35,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import cz.janek.vineyardlog.R
+import androidx.compose.foundation.clickable
+import cz.janek.vineyardlog.util.formatDate
+import androidx.compose.ui.layout.ContentScale
+import cz.janek.vineyardlog.ui.components.PhotoImage
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import cz.janek.vineyardlog.data.model.EntryWithDetails
+import cz.janek.vineyardlog.appContainer
 import android.net.Uri
 import android.content.Intent
 import androidx.compose.material3.TextButton
@@ -126,7 +135,7 @@ private fun GuideRow(e: GuideEntry, czech: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (String) -> Unit) {
+fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (String) -> Unit, onOpenEntry: (Long) -> Unit = {}) {
     val czech = isCzech()
     val entry = remember(entryKey) { GuideData.byKey(entryKey) }
     val context = LocalContext.current
@@ -153,6 +162,7 @@ fun GuideDetailScreen(entryKey: String, onBack: () -> Unit, onLogObservation: (S
                 }
             }
             ExtraPhotos(entry.key)
+            OwnPhotos(filter = { e -> e.entry.guideKey == entry.key || e.entry.title == entry.name.get(czech) }, onOpenEntry = onOpenEntry)
             GuideLinks.byKey[entry.key]?.let { links ->
                 SectionTitle(stringResource(R.string.bs_articles))
                 links.forEach { l ->
@@ -196,5 +206,26 @@ fun ExtraPhotos(key: String) {
             style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
+    }
+}
+
+/** Photos from the user's own entries matching [filter] (guide topic or growth stage), newest first, tap opens the entry. */
+@Composable
+fun OwnPhotos(filter: (EntryWithDetails) -> Boolean, onOpenEntry: (Long) -> Unit) {
+    val container = LocalContext.current.appContainer
+    val entries by container.entryDao.observeAll().collectAsState(initial = emptyList())
+    val matching = remember(entries) { entries.filter { it.photos.isNotEmpty() && filter(it) }.sortedByDescending { it.entry.date } }
+    if (matching.isEmpty()) return
+    SectionTitle(stringResource(R.string.your_photos))
+    Text(stringResource(R.string.your_photos_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp))
+    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        matching.forEach { e ->
+            items(e.photos, key = { it.id }) { photo ->
+                Column(Modifier.clickable { onOpenEntry(e.entry.id) }) {
+                    PhotoImage(file = container.photos.file(photo.fileName), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(110.dp).clip(RoundedCornerShape(10.dp)))
+                    Text(formatDate(e.entry.date), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
     }
 }

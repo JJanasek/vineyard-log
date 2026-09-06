@@ -62,6 +62,7 @@ import cz.janek.vineyardlog.util.Gdd
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.util.Phi
 import cz.janek.vineyardlog.util.Copper
+import cz.janek.vineyardlog.util.Nutrients
 import cz.janek.vineyardlog.data.varieties.Varieties
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.dayOfYear
@@ -254,6 +255,10 @@ private fun SeasonCard(
                 Stat(stringResource(R.string.canopy), canopy.toString())
                 Stat(stringResource(R.string.gdd), gddNow?.fmt(0) ?: "–")
                 Stat(stringResource(R.string.harvest), if (harvestKg > 0) "${harvestKg.fmt()} kg" else "–")
+            }
+            val npk = Nutrients.seasonKgPerHa(yearEntries, year, block)
+            if (npk.any) {
+                Text(stringResource(R.string.npk_season, npk.n.fmt(0), npk.p.fmt(0), npk.k.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             val cu = Copper.seasonKgPerHa(yearEntries, year, block)
             if (cu > 0) {

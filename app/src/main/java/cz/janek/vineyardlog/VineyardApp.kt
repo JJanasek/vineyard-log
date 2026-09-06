@@ -28,6 +28,8 @@ class AppContainer(context: Context) {
     val photoDao get() = db.photoDao()
     val taskDao get() = db.taskDao()
     val reminderDao get() = db.reminderDao()
+    val attachmentDao get() = db.attachmentDao()
+    val files = cz.janek.vineyardlog.data.photos.FileStore(appContext)
     val reminders by lazy { cz.janek.vineyardlog.data.reminders.ReminderScheduler(appContext, this) }
 }
 

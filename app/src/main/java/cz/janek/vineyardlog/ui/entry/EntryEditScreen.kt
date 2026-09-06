@@ -2,6 +2,9 @@ package cz.janek.vineyardlog.ui.entry
 
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
+import androidx.compose.material.icons.filled.AttachFile
+import cz.janek.vineyardlog.data.model.Attachment
+import cz.janek.vineyardlog.util.Nutrients
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Checkbox
 import androidx.compose.ui.platform.LocalConfiguration
@@ -110,6 +113,7 @@ data class UsageRow(
 )
 
 data class PhotoItem(val id: Long?, val fileName: String, val isNew: Boolean)
+data class AttachmentItem(val id: Long?, val fileName: String, val displayName: String, val mime: String, val isNew: Boolean)
 
 data class MeasRow(
     val kind: MeasurementKind,
@@ -127,6 +131,7 @@ class EntryEditViewModel(
     initialTitle: String? = null,
     initialNotes: String? = null,
     initialStage: PhenologyStage? = null,
+    private val initialGuideKey: String? = null,
 ) : ViewModel() {
     var domain by mutableStateOf(initialDomain)
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
@@ -155,6 +160,9 @@ class EntryEditViewModel(
         private set
     var error by mutableStateOf<String?>(null)
     private var createdAt: Long? = null
+    private var guideKey: String = initialGuideKey.orEmpty()
+    val attachments = mutableStateListOf<AttachmentItem>()
+    private val removedAttachments = mutableListOf<AttachmentItem>()
 
     private val started = SharingStarted.WhileSubscribed(5_000)
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, started, emptyList())
@@ -184,6 +192,8 @@ class EntryEditViewModel(
                     measurements.addAll(d.measurements.map { MeasRow(it.kind, it.value.input(), it.note) })
                     photos.clear()
                     photos.addAll(d.photos.map { PhotoItem(it.id, it.fileName, isNew = false) })
+                    attachments.addAll(d.attachments.map { AttachmentItem(it.id, it.fileName, it.displayName, it.mime, isNew = false) })
+                    guideKey = e.guideKey
                 }
                 loaded = true
             }
@@ -229,9 +239,21 @@ class EntryEditViewModel(
 
     fun newCaptureTarget() = c.photos.newCaptureTarget()
 
+    fun addAttachment(uri: android.net.Uri) = viewModelScope.launch {
+        runCatching { c.files.import(uri) }
+            .onSuccess { attachments.add(AttachmentItem(null, it.fileName, it.displayName, it.mime, isNew = true)) }
+            .onFailure { error = it.message ?: it.javaClass.simpleName }
+    }
+
+    fun removeAttachment(item: AttachmentItem) {
+        attachments.remove(item)
+        if (item.isNew) c.files.delete(item.fileName) else removedAttachments.add(item)
+    }
+
     override fun onCleared() {
         // Editing abandoned: drop files we imported but never attached to a saved entry.
         if (!saved) photos.filter { it.isNew }.forEach { c.photos.delete(it.fileName) }
+        if (!saved) attachments.filter { it.isNew }.forEach { c.files.delete(it.fileName) }
     }
 
     fun addUsage() = usages.add(UsageRow())
@@ -272,6 +294,7 @@ class EntryEditViewModel(
             laborHours = laborHours.toDoubleLenient(),
             cost = cost.toDoubleLenient(),
             createdAt = createdAt ?: System.currentTimeMillis(),
+            guideKey = guideKey,
         )
         val usageRows = usages.map {
             ProductUsage(
@@ -288,7 +311,7 @@ class EntryEditViewModel(
         }
         viewModelScope.launch {
             val id = c.entryDao.save(entry, usageRows, measRows)
-            if (type == EntryType.SPRAY && settings.value.phiReminders) {
+            if ((type == EntryType.SPRAY || type == EntryType.FERTILIZATION) && settings.value.phiReminders) {
                 val used = usageRows.mapNotNull { u -> products.value.firstOrNull { it.id == u.productId } }
                 val phi = used.mapNotNull { it.phiDays }.maxOrNull()
                 if (phi != null && date + phi >= todayEpochDay()) {
@@ -298,6 +321,8 @@ class EntryEditViewModel(
             }
             c.photoDao.insertAll(photos.filter { it.isNew }.map { Photo(entryId = id, fileName = it.fileName) })
             removedPhotos.forEach { r -> r.id?.let { c.photoDao.delete(it) }; c.photos.delete(r.fileName) }
+            c.attachmentDao.insertAll(attachments.filter { it.isNew }.map { Attachment(entryId = id, fileName = it.fileName, displayName = it.displayName, mime = it.mime) })
+            removedAttachments.forEach { r -> r.id?.let { c.attachmentDao.delete(it) }; c.files.delete(r.fileName) }
             saved = true
             onDone()
         }
@@ -315,9 +340,10 @@ fun EntryEditScreen(
     initialTitle: String? = null,
     initialNotes: String? = null,
     initialStage: PhenologyStage? = null,
+    initialGuideKey: String? = null,
 ) {
     val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}-${initialNotes?.hashCode() ?: 0}-${initialStage?.name ?: ""}") {
-        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle, initialNotes, initialStage)
+        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle, initialNotes, initialStage, initialGuideKey)
     }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val batches by vm.batches.collectAsStateWithLifecycle()
@@ -482,6 +508,21 @@ fun EntryEditScreen(
                 }) { Icon(Icons.Default.PhotoCamera, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.take_photo)) }
             }
 
+            // ---- attachments ----
+            SectionTitle(stringResource(R.string.attachments))
+            val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let { vm.addAttachment(it) } }
+            vm.attachments.forEach { a ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.AttachFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(a.displayName.ifBlank { a.fileName }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                    IconButton(onClick = { vm.removeAttachment(a) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_attachment)) }
+                }
+            }
+            OutlinedButton(onClick = { pickFile.launch(arrayOf("application/pdf", "image/*", "text/*", "application/*")) }) {
+                Icon(Icons.Default.AttachFile, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_attachment))
+            }
+            Text(stringResource(R.string.attachment_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
             // ---- products ----
             SectionTitle(stringResource(R.string.tab_products))
             val domainProducts = remember(products, vm.domain) {
@@ -522,6 +563,39 @@ fun EntryEditScreen(
             OutlinedButton(onClick = { vm.addUsage() }) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_product))
             }
+            if (vm.type == EntryType.SPRAY || vm.type == EntryType.FERTILIZATION) {
+                val chosenAll = vm.usages.mapNotNull { u -> products.firstOrNull { it.id == u.productId } }
+                val entriesAll by vm.entries.collectAsStateWithLifecycle()
+                val currentYear = vm.date.toLocalDate().year
+                val intervalWarnings = remember(chosenAll, entriesAll, vm.blockId, vm.date) {
+                    chosenAll.mapNotNull { p ->
+                        val n = p.intervalYears ?: return@mapNotNull null
+                        val last = Nutrients.lastUseYear(entriesAll, p.id, vm.blockId, vm.date, entryId) ?: return@mapNotNull null
+                        if (currentYear - last < n) Triple(p.name, last, n) else null
+                    }
+                }
+                if (vm.type == EntryType.FERTILIZATION) {
+                    val block = blocks.firstOrNull { it.id == vm.blockId }
+                    val mix = vm.usages.fold(Nutrients.Npk(0.0, 0.0, 0.0)) { acc, u ->
+                        val p = products.firstOrNull { it.id == u.productId } ?: return@fold acc
+                        val pct = Nutrients.percent(p) ?: return@fold acc
+                        val unit = u.doseUnit.trim().lowercase().replace(" ", "")
+                        val kg = u.dose.toDoubleLenient()?.let { d -> when (unit) { "kg/ha", "l/ha" -> d; "g/ha", "ml/ha" -> d / 1000.0; else -> null } }
+                            ?: u.totalAmount.toDoubleLenient()?.let { t -> block?.areaHa?.takeIf { it > 0 }?.let { a -> when (u.totalUnit.trim().lowercase()) { "kg", "l" -> t / a; "g", "ml" -> t / 1000.0 / a; else -> null } } }
+                            ?: return@fold acc
+                        acc + Nutrients.Npk(kg * pct.n / 100, kg * pct.p / 100, kg * pct.k / 100)
+                    }
+                    if (intervalWarnings.isNotEmpty() || mix.any) {
+                        Card(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(stringResource(R.string.fert_check), style = MaterialTheme.typography.titleSmall)
+                                intervalWarnings.forEach { (name, last, n) -> Text(stringResource(R.string.interval_warn, name, last, n), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
+                                if (mix.any) Text(stringResource(R.string.npk_mix, mix.n.fmt(1), mix.p.fmt(1), mix.k.fmt(1)), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
+                val sprayIntervalWarnings = if (vm.type == EntryType.SPRAY) intervalWarnings else emptyList()
             if (vm.type == EntryType.SPRAY) {
                 val chosen = vm.usages.mapNotNull { u -> products.firstOrNull { it.id == u.productId } }
                 val czech = LocalConfiguration.current.locales[0]?.language == "cs"
@@ -532,10 +606,11 @@ fun EntryEditScreen(
                         .maxByOrNull { it.entry.date }
                 }
                 val repeated = remember(chosen, previous) { previous?.let { TankMix.repeatedActives(chosen, it.usages.mapNotNull { u -> u.product }) }.orEmpty() }
-                if (notes.isNotEmpty() || repeated.isNotEmpty()) {
+                if (notes.isNotEmpty() || repeated.isNotEmpty() || sprayIntervalWarnings.isNotEmpty()) {
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(stringResource(R.string.mix_check), style = MaterialTheme.typography.titleSmall)
+                            sprayIntervalWarnings.forEach { (name, last, n) -> Text(stringResource(R.string.interval_warn, name, last, n), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
                             notes.forEach { n ->
                                 Text(n.text.get(czech), style = MaterialTheme.typography.bodySmall, color = if (n.level == TankMix.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -545,6 +620,7 @@ fun EntryEditScreen(
                         }
                     }
                 }
+            }
             }
 
             if (vm.type == EntryType.RIPENESS) {

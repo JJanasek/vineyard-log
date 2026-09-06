@@ -605,4 +605,24 @@
     <string name="calc_yn_create">Create 3 reminders</string>
     <string name="calc_yn_created">Three nutrient reminders set for %1$s.</string>
     <string name="calc_yn_start">Pitching date</string>
+    <string name="rain_gauge">Rain gauge</string>
+    <string name="rain_gauge_hint">Total from your own rain gauge for a period, e.g. one week. It is spread over the days in proportion to the fetched rain (evenly when there is none); days you typed yourself stay as they are and the fetches never overwrite gauge days.</string>
+    <string name="msg_gauge_applied">Rain gauge: %1$d days updated to %2$s mm in total.</string>
+    <string name="msg_gauge_nothing">All days in the period are typed by hand; edit them directly.</string>
+    <string name="source_gauge">Rain gauge</string>
+    <string name="npk_label">NPK (%)</string>
+    <string name="interval_years_label">Interval (years)</string>
+    <string name="interval_support">Interval: apply at most once every N years on the same block (lime, manure, some fertilisers); the entry form warns when the last use is more recent. NPK: N-P₂O₅-K₂O percentages for the season balance.</string>
+    <string name="fert_check">Fertiliser check</string>
+    <string name="interval_warn">%1$s was applied on this block in %2$d; recommended at most once every %3$d years.</string>
+    <string name="npk_mix">This application: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="npk_season">Fertilised this season: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="attachments">Attachments</string>
+    <string name="add_attachment">Add file</string>
+    <string name="open_attachment">Open</string>
+    <string name="remove_attachment">Remove file</string>
+    <string name="attachment_hint">PDF lab reports, invoices, scans – kept in the app and in the folder backup zip.</string>
+    <string name="your_photos">Your photos</string>
+    <string name="your_photos_hint">From entries logged from this topic (guide → Log observation).</string>
+    <string name="no_viewer">No app on this phone can open this file type.</string>
 </resources>

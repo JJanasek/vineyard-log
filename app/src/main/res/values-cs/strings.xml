@@ -605,4 +605,24 @@
     <string name="calc_yn_create">Vytvořit 3 připomínky</string>
     <string name="calc_yn_created">Tři připomínky výživy nastaveny pro %1$s.</string>
     <string name="calc_yn_start">Datum zakvašení</string>
+    <string name="rain_gauge">Srážkoměr</string>
+    <string name="rain_gauge_hint">Úhrn z vlastního srážkoměru za období, třeba za týden. Rozpočítá se do dnů v poměru stažených srážek (rovnoměrně, když žádné nejsou); ručně zapsané dny zůstanou a stahování dny ze srážkoměru nikdy nepřepíše.</string>
+    <string name="msg_gauge_applied">Srážkoměr: %1$d dnů upraveno na celkem %2$s mm.</string>
+    <string name="msg_gauge_nothing">Všechny dny v období jsou zapsané ručně; uprav je přímo.</string>
+    <string name="source_gauge">Srážkoměr</string>
+    <string name="npk_label">NPK (%)</string>
+    <string name="interval_years_label">Interval (roky)</string>
+    <string name="interval_support">Interval: aplikovat nejvýš jednou za N let na stejné trati (vápnění, hnůj, některá hnojiva); formulář záznamu varuje, když je poslední použití novější. NPK: procenta N-P₂O₅-K₂O pro bilanci sezóny.</string>
+    <string name="fert_check">Kontrola hnojení</string>
+    <string name="interval_warn">%1$s bylo na této trati použito v roce %2$d; doporučeno nejvýš jednou za %3$d roky.</string>
+    <string name="npk_mix">Tato aplikace: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="npk_season">Letos pohnojeno: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="attachments">Přílohy</string>
+    <string name="add_attachment">Přidat soubor</string>
+    <string name="open_attachment">Otevřít</string>
+    <string name="remove_attachment">Odebrat soubor</string>
+    <string name="attachment_hint">PDF rozbory, faktury, skeny – uložené v aplikaci a v zipu zálohy do složky.</string>
+    <string name="your_photos">Tvoje fotky</string>
+    <string name="your_photos_hint">Ze záznamů zapsaných z tohoto hesla (atlas → Zapsat pozorování).</string>
+    <string name="no_viewer">Žádná aplikace v telefonu neumí tento typ souboru otevřít.</string>
 </resources>

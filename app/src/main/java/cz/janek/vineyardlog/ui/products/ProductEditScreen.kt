@@ -2,6 +2,7 @@ package cz.janek.vineyardlog.ui.products
 
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,6 +65,8 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
     var doseUnit by mutableStateOf("")
     var phiDays by mutableStateOf("")
     var copperGPerKg by mutableStateOf("")
+    var intervalYears by mutableStateOf("")
+    var npk by mutableStateOf("")
     var purpose by mutableStateOf("")
     var url by mutableStateOf("")
     var packageSize by mutableStateOf("")
@@ -85,7 +88,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
         if (id != null) viewModelScope.launch {
             c.productDao.get(id)?.let { p ->
                 name = p.name; supplier = p.supplier; category = p.category; activeIngredient = p.activeIngredient
-                doseMin = p.doseMin.input(); doseMax = p.doseMax.input(); doseUnit = p.doseUnit; phiDays = p.phiDays.input(); copperGPerKg = p.copperGPerKg.input()
+                doseMin = p.doseMin.input(); doseMax = p.doseMax.input(); doseUnit = p.doseUnit; phiDays = p.phiDays.input(); copperGPerKg = p.copperGPerKg.input(); intervalYears = p.intervalYears.input(); npk = p.npk
                 purpose = p.purpose; url = p.url; packageSize = p.packageSize; price = p.price.input(); notes = p.notes
                 favorite = p.favorite; archived = p.archived
             }
@@ -135,6 +138,8 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
             doseUnit = doseUnit.trim(),
             phiDays = phiDays.toIntLenient(),
             copperGPerKg = copperGPerKg.toDoubleLenient(),
+            intervalYears = intervalYears.toIntLenient(),
+            npk = npk.trim(),
             purpose = purpose.trim(),
             url = url.trim(),
             packageSize = packageSize.trim(),
@@ -201,6 +206,11 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? 
                 vm.copperGPerKg, { vm.copperGPerKg = it }, stringResource(R.string.copper_label), suffix = "g/kg",
                 supportingText = stringResource(R.string.copper_support),
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AppTextField(vm.npk, { vm.npk = it }, stringResource(R.string.npk_label), Modifier.weight(1f), placeholder = "12-6-18")
+                NumberField(vm.intervalYears, { vm.intervalYears = it }, stringResource(R.string.interval_years_label), Modifier.weight(1f), integer = true)
+            }
+            Text(stringResource(R.string.interval_support), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             AppTextField(vm.purpose, { vm.purpose = it }, stringResource(R.string.purpose_target), placeholder = stringResource(R.string.purpose_hint), singleLine = false)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 AppTextField(

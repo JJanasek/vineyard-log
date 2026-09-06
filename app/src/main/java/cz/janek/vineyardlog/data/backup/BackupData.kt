@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.data.backup
 
+import cz.janek.vineyardlog.data.model.Attachment
 import cz.janek.vineyardlog.data.model.Batch
 import cz.janek.vineyardlog.data.model.BatchSource
 import cz.janek.vineyardlog.data.model.Block
@@ -32,6 +33,7 @@ data class BackupData(
     val tasks: List<SeasonTask> = emptyList(),
     val taskDone: List<TaskDone> = emptyList(),
     val reminders: List<Reminder> = emptyList(),
+    val attachments: List<Attachment> = emptyList(),
 ) {
     val totalRows: Int
         get() = blocks.size + products.size + batches.size + batchSources.size +

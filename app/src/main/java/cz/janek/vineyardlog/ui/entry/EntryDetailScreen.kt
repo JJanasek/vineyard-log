@@ -2,6 +2,11 @@ package cz.janek.vineyardlog.ui.entry
 
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.ui.hobbyDose
 import cz.janek.vineyardlog.util.Units
@@ -67,9 +72,11 @@ class EntryDetailViewModel(private val c: AppContainer, private val id: Long) : 
     val settings = c.settings.settings.stateIn(viewModelScope, started, cz.janek.vineyardlog.data.settings.Settings())
 
     fun photoFile(p: cz.janek.vineyardlog.data.model.Photo) = c.photos.file(p.fileName)
+    fun attachmentUri(a: cz.janek.vineyardlog.data.model.Attachment) = c.files.shareUri(a.fileName)
 
     fun delete(onDone: () -> Unit) = viewModelScope.launch {
         entry.value?.photos?.forEach { c.photos.delete(it.fileName) }
+        entry.value?.attachments?.forEach { c.files.delete(it.fileName) }
         c.entryDao.deleteEntry(id)
         onDone()
     }
@@ -161,6 +168,21 @@ fun EntryDetailScreen(entryId: Long, onBack: () -> Unit, onEdit: () -> Unit, onD
             if (e.notes.isNotBlank()) {
                 SectionTitle(stringResource(R.string.notes))
                 Text(e.notes, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (d.attachments.isNotEmpty()) {
+                SectionTitle(stringResource(R.string.attachments))
+                val context = LocalContext.current
+                val noViewer = stringResource(R.string.no_viewer)
+                d.attachments.forEach { a ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().clickable {
+                        val intent = Intent(Intent.ACTION_VIEW).setDataAndType(vm.attachmentUri(a), a.mime.ifBlank { "*/*" }).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        runCatching { context.startActivity(intent) }.onFailure { android.widget.Toast.makeText(context, noViewer, android.widget.Toast.LENGTH_SHORT).show() }
+                    }) {
+                        Icon(Icons.Default.AttachFile, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(a.displayName.ifBlank { a.fileName }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.open_attachment), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
             if (d.photos.isNotEmpty()) {
                 SectionTitle(stringResource(R.string.photos))

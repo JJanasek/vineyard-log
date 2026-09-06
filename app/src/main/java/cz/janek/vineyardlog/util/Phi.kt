@@ -7,7 +7,7 @@ import cz.janek.vineyardlog.data.model.EntryWithDetails
 object Phi {
     /** Last day (inclusive) on which harvest is still blocked by a spray, or null when no spray carries a PHI. */
     fun earliestHarvest(entries: List<EntryWithDetails>): Long? = entries
-        .filter { it.entry.type == EntryType.SPRAY }
+        .filter { it.entry.type == EntryType.SPRAY || it.entry.type == EntryType.FERTILIZATION }
         .flatMap { e -> e.usages.mapNotNull { u -> u.product?.phiDays?.let { e.entry.date + it } } }
         .maxOrNull()
 

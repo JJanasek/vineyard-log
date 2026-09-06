@@ -43,6 +43,10 @@ data class Product(
     val phiDays: Int? = null,
     /** Grams of metallic copper per kg (or litre) of product, for the organic 4 kg Cu/ha/year budget. */
     val copperGPerKg: Double? = null,
+    /** Apply at most once every N years on the same block (lime, manure, some fertilisers); null = no limit. */
+    val intervalYears: Int? = null,
+    /** Fertiliser analysis as "N-P-K" percentages, e.g. "12-6-18"; parsed from the name when empty. */
+    @ColumnInfo(defaultValue = "") val npk: String = "",
     /** What it is for: targets, purpose. */
     val purpose: String = "",
     val url: String = "",
@@ -140,6 +144,8 @@ data class LogEntry(
     val laborHours: Double? = null,
     val cost: Double? = null,
     val createdAt: Long = System.currentTimeMillis(),
+    /** Field-guide topic this observation was logged from (own photos show up on that topic). */
+    @ColumnInfo(defaultValue = "") val guideKey: String = "",
 )
 
 /** A product applied within an entry, with its dose. */
@@ -222,6 +228,25 @@ data class Photo(
     val createdAt: Long = System.currentTimeMillis(),
 )
 
+/** A document attached to an entry (lab report, invoice, scan); the file lives in the app's attachments folder. */
+@Serializable
+@Entity(
+    tableName = "attachments",
+    foreignKeys = [ForeignKey(entity = LogEntry::class, parentColumns = ["id"], childColumns = ["entryId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index("entryId")],
+)
+data class Attachment(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val entryId: Long,
+    val fileName: String,
+    val displayName: String = "",
+    val mime: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+/** Manual rain-gauge calibration marker in [WeatherDay.source]; such days are kept by the fetches like typed ones. */
+const val WEATHER_SOURCE_GAUGE = "gauge"
+
 /** A recurring vineyard-year task with a month window; ticked off per year in [TaskDone]. */
 @Serializable
 @Entity(tableName = "tasks")
@@ -266,6 +291,8 @@ data class EntryWithDetails(
     val measurements: List<Measurement>,
     @Relation(parentColumn = "id", entityColumn = "entryId")
     val photos: List<Photo> = emptyList(),
+    @Relation(parentColumn = "id", entityColumn = "entryId")
+    val attachments: List<Attachment> = emptyList(),
 )
 
 data class BatchWithSources(

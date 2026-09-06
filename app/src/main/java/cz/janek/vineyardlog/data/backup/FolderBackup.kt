@@ -25,7 +25,7 @@ class FolderBackup(private val context: Context, private val c: AppContainer) {
             val resolver = context.contentResolver
             val jsonUri = findOrCreate(tree, "vineyard-log-latest.json", "application/json")
             resolver.openOutputStream(jsonUri, "wt")?.use { it.write(json.toByteArray()) } ?: error("cannot write json")
-            if (data.photos.isNotEmpty()) {
+            if (data.photos.isNotEmpty() || data.attachments.isNotEmpty()) {
                 val zipUri = findOrCreate(tree, "vineyard-log-photos.zip", "application/zip")
                 resolver.openOutputStream(zipUri, "wt")?.use { out ->
                     ZipOutputStream(BufferedOutputStream(out)).use { zip ->
@@ -33,6 +33,13 @@ class FolderBackup(private val context: Context, private val c: AppContainer) {
                             val f = c.photos.file(p.fileName)
                             if (!f.exists()) return@forEach
                             zip.putNextEntry(ZipEntry("photos/${p.fileName}"))
+                            FileInputStream(f).use { it.copyTo(zip) }
+                            zip.closeEntry()
+                        }
+                        data.attachments.forEach { a ->
+                            val f = c.files.file(a.fileName)
+                            if (!f.exists()) return@forEach
+                            zip.putNextEntry(ZipEntry("attachments/${a.fileName}"))
                             FileInputStream(f).use { it.copyTo(zip) }
                             zip.closeEntry()
                         }

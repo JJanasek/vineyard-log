@@ -60,7 +60,7 @@ object Routes {
     const val ENTRY = "entry/{id}"
     fun entry(id: Long) = "entry/$id"
 
-    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}&title={title}&notes={notes}&stage={stage}"
+    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}&title={title}&notes={notes}&stage={stage}&guideKey={guideKey}"
     fun entryEdit(
         id: Long? = null,
         domain: Domain = Domain.VINEYARD,
@@ -70,12 +70,14 @@ object Routes {
         title: String? = null,
         notes: String? = null,
         stage: PhenologyStage? = null,
+        guideKey: String? = null,
     ): String {
         var s = "entryEdit?id=${id ?: -1}&domain=${domain.name}&blockId=${blockId ?: -1}&batchId=${batchId ?: -1}"
         if (type != null) s += "&type=${type.name}"
         if (!title.isNullOrBlank()) s += "&title=${android.net.Uri.encode(title)}"
         if (!notes.isNullOrBlank()) s += "&notes=${android.net.Uri.encode(notes)}"
         if (stage != null) s += "&stage=${stage.name}"
+        if (!guideKey.isNullOrBlank()) s += "&guideKey=${android.net.Uri.encode(guideKey)}"
         return s
     }
 }

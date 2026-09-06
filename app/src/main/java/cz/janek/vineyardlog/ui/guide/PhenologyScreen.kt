@@ -34,7 +34,7 @@ import cz.janek.vineyardlog.ui.label
 
 /** Growth stages with photos: what to look for, when it usually comes and what it means for the work. */
 @Composable
-fun PhenologyScreen(onBack: () -> Unit, onLogStage: (PhenologyStage) -> Unit, onOpenSprays: () -> Unit) {
+fun PhenologyScreen(onBack: () -> Unit, onLogStage: (PhenologyStage) -> Unit, onOpenSprays: () -> Unit, onOpenEntry: (Long) -> Unit = {}) {
     val czech = isCzech()
     val context = LocalContext.current
     val credits = remember { GuideCredits.load(context) }
@@ -71,6 +71,7 @@ fun PhenologyScreen(onBack: () -> Unit, onLogStage: (PhenologyStage) -> Unit, on
                                 }
                             }
                             ExtraPhotos("stage:${s.stage.name}")
+                            OwnPhotos(filter = { e -> e.entry.phenologyStage == s.stage }, onOpenEntry = onOpenEntry)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TextButton(onClick = { onLogStage(s.stage) }) { Text(stringResource(R.string.log_stage)) }
                                 if (s.sprayWindow != null) TextButton(onClick = onOpenSprays) { Text(stringResource(R.string.spray_program)) }
