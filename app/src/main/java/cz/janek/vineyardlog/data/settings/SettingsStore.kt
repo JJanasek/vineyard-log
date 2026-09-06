@@ -49,6 +49,8 @@ data class Settings(
     val autoPlan: Boolean = true,
     val autoFermentation: Boolean = true,
     val autoSampling: Boolean = true,
+    /** True once the first-run quick start was closed. */
+    val quickStartDone: Boolean = false,
 ) {
     /** Factor from hectares to the display unit. */
     val areaFactor: Double get() = when (areaUnit) { "m2" -> 10_000.0; "a" -> 100.0; else -> 1.0 }
@@ -80,6 +82,7 @@ class SettingsStore(private val context: Context) {
         val AUTO_PLAN = booleanPreferencesKey("auto_plan")
         val AUTO_FERM = booleanPreferencesKey("auto_fermentation")
         val AUTO_SAMPLING = booleanPreferencesKey("auto_sampling")
+        val QUICK_START_DONE = booleanPreferencesKey("quick_start_done")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -104,6 +107,7 @@ class SettingsStore(private val context: Context) {
             phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
             autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
             autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
+            quickStartDone = p[Keys.QUICK_START_DONE] ?: false,
         )
     }
 
@@ -130,6 +134,7 @@ class SettingsStore(private val context: Context) {
             phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
             autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
             autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
+            quickStartDone = p[Keys.QUICK_START_DONE] ?: false,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -151,6 +156,7 @@ class SettingsStore(private val context: Context) {
             p[Keys.PHI_REMINDERS] = next.phiReminders
             p[Keys.AUTO_RISK] = next.autoRisk; p[Keys.AUTO_PLAN] = next.autoPlan
             p[Keys.AUTO_FERM] = next.autoFermentation; p[Keys.AUTO_SAMPLING] = next.autoSampling
+            p[Keys.QUICK_START_DONE] = next.quickStartDone
         }
     }
 }

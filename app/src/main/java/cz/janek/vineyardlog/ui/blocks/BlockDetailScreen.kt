@@ -60,6 +60,7 @@ import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.ripenessKinds
 import cz.janek.vineyardlog.util.Gdd
 import cz.janek.vineyardlog.util.WineMath
+import cz.janek.vineyardlog.util.Phi
 import cz.janek.vineyardlog.data.varieties.Varieties
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.dayOfYear
@@ -236,10 +237,7 @@ private fun SeasonCard(
         .groupBy { it.entry.phenologyStage!! }
         .mapValues { (_, list) -> list.minOf { it.entry.date } }
     val harvestDates = yearEntries.filter { it.entry.type == EntryType.HARVEST }.map { it.entry.date }
-    val phiHarvest = yearEntries
-        .filter { it.entry.type == EntryType.SPRAY }
-        .flatMap { e -> e.usages.mapNotNull { u -> u.product?.phiDays?.let { e.entry.date + it } } }
-        .maxOrNull()
+    val phiHarvest = Phi.earliestHarvest(yearEntries)
     val sprays = yearEntries.count { it.entry.type == EntryType.SPRAY }
     val ferts = yearEntries.count { it.entry.type == EntryType.FERTILIZATION }
     val canopy = yearEntries.count { it.entry.type == EntryType.CANOPY }

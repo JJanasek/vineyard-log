@@ -85,6 +85,8 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
             .groupBy { it.entry.phenologyStage!! }.mapValues { (_, l) -> l.minOf { it.entry.date } }
     }
     val doneText = stringResource(R.string.reminder_created)
+    // heavy text matching once per catalogue, not on every recomposition / scroll frame
+    val matches = remember(products) { SprayProgram.matchAll(products) }
 
     Scaffold(
         topBar = { BackTopBar(stringResource(R.string.spray_program), onBack) { TextButton(onClick = onOpenPhenology) { Text(stringResource(R.string.phenology_title)) } } },
@@ -102,10 +104,10 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
                 }
             }
             items(SprayProgram.windows, key = { it.key }) { w ->
-                val typical = LocalDate.of(year, w.month, w.day).toEpochDay()
+                val typical = remember(w, year) { LocalDate.of(year, w.month, w.day).toEpochDay() }
                 val logged = w.stage?.let { stageDates[it] }
                 val anchor = logged ?: typical
-                val inWindow = sprays.filter { it.entry.date in (anchor - 10)..(anchor + 12) }
+                val inWindow = remember(sprays, anchor) { sprays.filter { it.entry.date in (anchor - 10)..(anchor + 12) } }
                 val title = w.name.get(czech)
                 val advice = w.advice.get(czech)
                 Card(Modifier.fillMaxWidth().padding(16.dp, 4.dp)) {
@@ -121,7 +123,7 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
                         }
                         Text(advice, style = MaterialTheme.typography.bodyMedium)
                         w.targets.forEach { t ->
-                            val mine = SprayProgram.matching(products, t)
+                            val mine = matches[t].orEmpty()
                             Text(
                                 if (mine.isNotEmpty()) stringResource(R.string.your_products, t.label.get(czech), mine.joinToString(", ") { p -> p.name + (p.phiDays?.let { " (OL $it d)" } ?: "") })
                                 else stringResource(R.string.no_product_for, t.label.get(czech)),

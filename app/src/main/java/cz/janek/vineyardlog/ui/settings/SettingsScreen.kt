@@ -1,6 +1,7 @@
 package cz.janek.vineyardlog.ui.settings
 
 import cz.janek.vineyardlog.R
+import androidx.compose.material3.TextButton
 import cz.janek.vineyardlog.data.reminders.AutoChecks
 import androidx.compose.ui.res.stringResource
 import android.content.Context
@@ -217,6 +218,7 @@ fun SettingsScreen(
     pickedLocation: Pair<Double, Double>? = null,
     onPickedConsumed: () -> Unit = {},
     onPickOnMap: (Double?, Double?) -> Unit = { _, _ -> },
+    onOpenQuickStart: () -> Unit = {},
 ) {
     val vm = appViewModel { SettingsViewModel(it) }
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -320,6 +322,7 @@ fun SettingsScreen(
                 Text(stringResource(R.string.phi_reminders), style = MaterialTheme.typography.bodyMedium)
             }
 
+            TextButton(onClick = onOpenQuickStart) { Text(stringResource(R.string.qs_settings_link)) }
             SectionTitle(stringResource(R.string.auto_reminders_title))
             Text(stringResource(R.string.auto_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             listOf(

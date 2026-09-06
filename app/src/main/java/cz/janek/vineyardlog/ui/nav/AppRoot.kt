@@ -27,6 +27,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryType
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import cz.janek.vineyardlog.ui.onboarding.QuickStartScreen
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.ui.guide.PhenologyScreen
 import cz.janek.vineyardlog.ui.batches.BatchDetailScreen
@@ -62,6 +66,17 @@ fun AppRoot(
     onRouteConsumed: () -> Unit = {},
 ) {
     val navController = rememberNavController()
+    // null until the DataStore has actually loaded, so the first-run guide is not triggered by the default value
+    val loadedSettings by LocalContext.current.appContainer.settings.settings.collectAsState(initial = null)
+    val settings = loadedSettings ?: Settings()
+    var quickStartShown by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(loadedSettings?.quickStartDone) {
+        val loaded = loadedSettings ?: return@LaunchedEffect
+        if (!loaded.quickStartDone && !quickStartShown && pendingRoute.isNullOrBlank() && sharedUrl.isNullOrBlank()) {
+            quickStartShown = true
+            navController.navigate(Routes.QUICK_START)
+        }
+    }
     LaunchedEffect(pendingRoute) {
         if (!pendingRoute.isNullOrBlank()) {
             runCatching { navController.navigate(pendingRoute) }
@@ -77,7 +92,6 @@ fun AppRoot(
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val showBar = Tab.entries.any { it.route == currentRoute }
-    val settings by LocalContext.current.appContainer.settings.settings.collectAsState(initial = Settings())
 
     CompositionLocalProvider(LocalSettings provides settings) {
         Scaffold(
@@ -131,6 +145,13 @@ fun AppRoot(
                         onOpenPlan = { navController.navigate(Routes.PLAN) },
                     )
                 }
+                composable(Routes.QUICK_START) {
+                    QuickStartScreen(
+                        onClose = { navController.popBackStack() },
+                        onAddBlock = { navController.popBackStack(); navController.navigateToTab(Tab.VINEYARD); navController.navigate(Routes.blockEdit()) },
+                        onOpenSettings = { navController.popBackStack(); navController.navigate(Routes.SETTINGS) },
+                    )
+                }
                 composable(Routes.PHENOLOGY) {
                     PhenologyScreen(
                         onBack = { navController.popBackStack() },
@@ -174,6 +195,7 @@ fun AppRoot(
                         pickedLocation = picked?.let { it[0] to it[1] },
                         onPickedConsumed = { entry.savedStateHandle["pickedLocation"] = null },
                         onPickOnMap = { lat, lon -> navController.navigate(Routes.mapPicker(lat, lon)) },
+                    onOpenQuickStart = { navController.navigate(Routes.QUICK_START) },
                     )
                 }
                 composable(

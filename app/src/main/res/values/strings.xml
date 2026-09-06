@@ -542,4 +542,17 @@
     <string name="log_stage">Log this stage</string>
     <string name="pick_stage">Pick the stage that matches the vine</string>
     <string name="growth_stages">Growth stages with photos</string>
+    <string name="quick_start">Quick start</string>
+    <string name="qs_intro">Vineyard Log is a notebook for a small vineyard and cellar. Three things make everything else work:</string>
+    <string name="qs_step1_title">1 · Add your blocks</string>
+    <string name="qs_step1">Vineyard tab → +. Name, variety (pick from the catalogue), number of vines and the year planted. Then set the vineyard location in Settings so the weather, GDD and disease risk can be fetched.</string>
+    <string name="qs_step2_title">2 · Log what you do</string>
+    <string name="qs_step2">Open a block and tap +: spray (products with dose per 10 l and PHI), fertilisation, phenology stage from photos, ripeness readings, harvest. In the cellar, create a batch from a block and log its steps.</string>
+    <string name="qs_step3_title">3 · Check Overview</string>
+    <string name="qs_step3">The Overview tab shows the disease risk, the next reminders and open plan tasks, then the season charts. Reminders and daily alerts come on their own once you allow notifications.</string>
+    <string name="qs_more">When you need more: the field guide with growth stages and diseases, the spray programme, cellar protocol templates, the season plan, catalogue import and backup live behind the icons of each tab and in Settings.</string>
+    <string name="qs_add_block">Add the first block</string>
+    <string name="qs_open_settings">Set location</string>
+    <string name="qs_close">Got it</string>
+    <string name="qs_settings_link">Quick start (first-run guide)</string>
 </resources>

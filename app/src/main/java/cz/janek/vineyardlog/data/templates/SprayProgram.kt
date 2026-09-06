@@ -71,12 +71,21 @@ object SprayProgram {
 
     private val plantProtection = setOf(ProductCategory.FUNGICIDE, ProductCategory.INSECTICIDE, ProductCategory.OTHER_VINEYARD, ProductCategory.BIOSTIMULANT)
 
-    private fun norm(s: String) = Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").lowercase()
+    private val marks = Regex("\\p{M}+")
+    private val patterns: Map<SprayTarget, List<Regex>> = SprayTarget.entries.associateWith { t -> t.keywords.map { Regex("\\b" + Regex.escape(it.trim())) } }
+
+    fun norm(s: String): String = marks.replace(Normalizer.normalize(s, Normalizer.Form.NFD), "").lowercase()
+
+    /** True when the product's name, active ingredient, purpose or notes mention [target]. */
+    fun matches(p: Product, target: SprayTarget, normalizedText: String = norm("${p.name} ${p.activeIngredient} ${p.purpose} ${p.notes}")): Boolean =
+        p.category in plantProtection && patterns.getValue(target).any { it.containsMatchIn(normalizedText) }
 
     /** Products from the catalogue that look usable against [target]. */
-    fun matching(products: List<Product>, target: SprayTarget): List<Product> = products.filter { p ->
-        p.category in plantProtection && norm("${p.name} ${p.activeIngredient} ${p.purpose} ${p.notes}").let { text ->
-            target.keywords.any { kw -> Regex("\\b" + Regex.escape(kw.trim())).containsMatchIn(text) }
-        }
+    fun matching(products: List<Product>, target: SprayTarget): List<Product> = products.filter { matches(it, target) }
+
+    /** All targets at once, normalising each product only once (used by the screen). */
+    fun matchAll(products: List<Product>): Map<SprayTarget, List<Product>> {
+        val texts = products.associateWith { norm("${it.name} ${it.activeIngredient} ${it.purpose} ${it.notes}") }
+        return SprayTarget.entries.associateWith { t -> products.filter { p -> matches(p, t, texts.getValue(p)) } }
     }
 }

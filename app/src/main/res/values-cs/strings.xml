@@ -542,4 +542,17 @@
     <string name="log_stage">Zapsat fenofázi</string>
     <string name="pick_stage">Vyber stádium, které odpovídá keři</string>
     <string name="growth_stages">Fenofáze s fotkami</string>
+    <string name="quick_start">Rychlý start</string>
+    <string name="qs_intro">Vineyard Log je zápisník pro malou vinici a sklep. Všechno ostatní stojí na třech věcech:</string>
+    <string name="qs_step1_title">1 · Založ tratě</string>
+    <string name="qs_step1">Záložka Vinice → +. Název, odrůda (výběr z katalogu), počet keřů a rok výsadby. Pak v Nastavení zadej polohu vinice, ať jde stáhnout počasí, GDD a riziko chorob.</string>
+    <string name="qs_step2_title">2 · Zapisuj, co děláš</string>
+    <string name="qs_step2">Otevři trať a klepni na +: postřik (produkty s dávkou na 10 l a ochrannou lhůtou), hnojení, fenofáze podle fotek, měření zralosti, sklizeň. Ve sklepě založ šarži z tratě a zapisuj její kroky.</string>
+    <string name="qs_step3_title">3 · Koukej na Přehled</string>
+    <string name="qs_step3">Záložka Přehled ukazuje riziko chorob, nejbližší připomínky a otevřené úkoly plánu, pod tím grafy sezóny. Připomínky a denní upozornění chodí samy, jakmile povolíš notifikace.</string>
+    <string name="qs_more">Až budeš potřebovat víc: atlas s fenofázemi a chorobami, postřikový program, šablony sklepního protokolu, plán sezóny, import katalogu a zálohy jsou za ikonami jednotlivých záložek a v Nastavení.</string>
+    <string name="qs_add_block">Založit první trať</string>
+    <string name="qs_open_settings">Nastavit polohu</string>
+    <string name="qs_close">Rozumím</string>
+    <string name="qs_settings_link">Rychlý start (průvodce prvním spuštěním)</string>
 </resources>

@@ -32,30 +32,7 @@ class ReminderScheduler(private val context: Context, private val c: AppContaine
     private val alarms get() = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     /** Epoch millis of the next occurrence strictly after [nowMillis], or null when the reminder is over/disabled. */
-    fun nextFire(r: Reminder, nowMillis: Long = System.currentTimeMillis()): Long? {
-        if (!r.enabled) return null
-        val zone = ZoneId.systemDefault()
-        val time = LocalTime.of(r.hour.coerceIn(0, 23), r.minute.coerceIn(0, 59))
-        val start = LocalDate.ofEpochDay(r.startDate)
-        val end = r.endDate?.let { LocalDate.ofEpochDay(it) }
-        fun at(d: LocalDate) = d.atTime(time).atZone(zone).toInstant().toEpochMilli()
-        if (r.repeat == Repeat.ONCE) return at(start).takeIf { it > nowMillis }
-        val today = Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
-        var d = if (today > start) today else start
-        val n = r.everyDays.coerceAtLeast(1)
-        repeat(400) {
-            if (end != null && d > end) return null
-            val ok = when (r.repeat) {
-                Repeat.DAILY -> true
-                Repeat.WEEKLY -> d.dayOfWeek.value == r.weekday
-                Repeat.EVERY_N_DAYS -> ChronoUnit.DAYS.between(start, d) % n == 0L
-                Repeat.ONCE -> false
-            }
-            if (ok) { val t = at(d); if (t > nowMillis) return t }
-            d = d.plusDays(1)
-        }
-        return null
-    }
+    fun nextFire(r: Reminder, nowMillis: Long = System.currentTimeMillis()): Long? = ReminderMath.nextFire(r, nowMillis, ZoneId.systemDefault())
 
     fun canScheduleExact(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()

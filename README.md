@@ -1,5 +1,7 @@
 # Vineyard Log
 
+[![Android CI](https://github.com/JJanasek/vineyard-log/actions/workflows/android.yml/badge.svg)](https://github.com/JJanasek/vineyard-log/actions/workflows/android.yml)
+
 Offline Android app for keeping a vineyard + cellar diary: what was sprayed and fertilised where,
 phenology dates, ripeness readings, harvest, must preparation, fermentation checks, additions and
 SO₂, plus daily weather with growing-degree-days. Everything is stored locally on the phone
@@ -7,6 +9,8 @@ SO₂, plus daily weather with growing-degree-days. Everything is stored locally
 
 Built with Kotlin, Jetpack Compose (Material 3), Room, Navigation Compose and DataStore.
 Minimum Android 8.0 (API 26). UI in English and Czech (follows the phone language, or pick one in Settings).
+
+New here? Read the [quick start](docs/quick-start.md) (English and Czech); the app shows the same three steps on first launch.
 
 ## What it tracks
 
@@ -46,6 +50,16 @@ Or copy the APK to the phone and open it (allow installing from unknown sources)
 
 `./gradlew assembleRelease` produces a minified, unsigned APK; sign it with your own keystore
 before distributing.
+
+### Tests and CI
+
+Unit tests cover the calculation-heavy parts that could give wrong-but-plausible advice: growing degree days, sugar/alcohol/SO₂/chaptalization maths, the small-vineyard unit conversions, the disease-risk thresholds (3-10 rule, oidium index, botrytis wet days), PHI-based earliest harvest, reminder scheduling, the variety catalogue lookup and the spray-programme product matching.
+
+```bash
+./gradlew testDebugUnitTest      # report in app/build/reports/tests/testDebugUnitTest
+```
+
+GitHub Actions (`.github/workflows/android.yml`) runs the tests and builds the debug APK on every push and pull request; the APK is attached to the workflow run as an artifact.
 
 ### Emulator (optional)
 

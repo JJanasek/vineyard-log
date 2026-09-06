@@ -27,6 +27,7 @@ object Routes {
     const val WEATHER = "weather"
     const val SPRAY_PROGRAM = "sprayProgram"
     const val PHENOLOGY = "phenology"
+    const val QUICK_START = "quickStart"
     const val PLAN = "plan"
     const val CALCULATORS = "calculators"
     const val MAP_PICKER = "mapPicker?lat={lat}&lon={lon}"
