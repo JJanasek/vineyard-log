@@ -7,7 +7,7 @@ screenshots in web/site/img. Output: web/dist with /cs and /en page sets plus th
 
 usage: python3 web/build_site.py [--content app/build/site-content] [--out web/dist]
 """
-import argparse, json, os, re, shutil, sys, time, xml.etree.ElementTree as ET
+import argparse, hashlib, json, os, re, shutil, sys, time, xml.etree.ElementTree as ET
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -100,6 +100,18 @@ with open(os.path.join(out, 'viewer', 'labels.json'), 'w', encoding='utf-8') as 
     json.dump(labels, f, ensure_ascii=False)
 with open(os.path.join(out, 'viewer', 'steberla.json'), 'w', encoding='utf-8') as f:
     json.dump(steberla, f)
+# cache-busting: GitHub Pages serves files with max-age=600, so stamp a content hash onto the viewer's
+# own references; otherwise a browser could pair a fresh index.html with a stale app.js for ten minutes
+vdir = os.path.join(out, 'viewer')
+stamp = hashlib.sha1(b''.join(open(os.path.join(vdir, fn), 'rb').read() for fn in
+                              ('app.js', 'models.js', 'style.css', 'labels.json', 'steberla.json'))).hexdigest()[:8]
+for fn, pairs in (('index.html', (('href="style.css"', f'href="style.css?v={stamp}"'), ('src="app.js"', f'src="app.js?v={stamp}"'))),
+                  ('app.js', (("'./models.js'", f"'./models.js?v={stamp}'"), ("'labels.json'", f"'labels.json?v={stamp}'"), ("'steberla.json'", f"'steberla.json?v={stamp}'"))),
+                  ('models.js', (("'steberla.json'", f"'steberla.json?v={stamp}'"),))):
+    path = os.path.join(vdir, fn)
+    with open(path, encoding='utf-8') as f: text = f.read()
+    for a, b in pairs: text = text.replace(a, b)
+    with open(path, 'w', encoding='utf-8') as f: f.write(text)
 with open(os.path.join(out, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(env.get_template('root_index.html').render())
 open(os.path.join(out, '.nojekyll'), 'w').close()
