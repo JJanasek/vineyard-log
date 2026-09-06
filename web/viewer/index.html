@@ -22,6 +22,11 @@
     <h1 id="w-title">Your vineyard log, in the browser</h1>
     <p id="w-text">Open the JSON backup the app writes to your synced folder (vineyard-log-latest.json) or exports from Settings. Everything runs in this browser; nothing is uploaded anywhere.</p>
     <div id="drop" class="drop"><span id="w-drop">Drop the backup file here</span></div>
+    <div class="grid" style="margin-top:1rem">
+      <div class="card"><h3 id="o-file">Choose a file</h3><p class="muted small" id="o-file-hint">The backup the app saved to your folder or exported from Settings.</p><button id="btn-pick" class="primary">Choose file</button></div>
+      <div class="card"><h3 id="o-url">Load from a link</h3><p class="muted small" id="o-url-hint">A public link to the JSON (e.g. a Nextcloud / Drive share); the server must allow cross-site reads.</p><input type="text" id="url-input" placeholder="https://…/vineyard-log-latest.json" style="width:100%"><button id="btn-url" class="primary" style="margin-top:0.4rem">Load</button></div>
+      <div class="card"><h3 id="o-paste">Paste JSON</h3><p class="muted small" id="o-paste-hint">Open the backup in any text app, copy everything and paste it here.</p><textarea id="paste-input" rows="4" style="width:100%" placeholder="{ &quot;schemaVersion&quot;: 1, … }"></textarea><button id="btn-paste" class="primary" style="margin-top:0.4rem">Load</button></div>
+    </div>
   </section>
   <nav id="tabs" hidden></nav>
   <section id="view"></section>
