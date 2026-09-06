@@ -337,7 +337,7 @@
     <string name="risk_moderate">střední</string>
     <string name="risk_high">vysoké</string>
     <string name="risk_peronospora">Peronospora</string>
-    <string name="risk_oidium">Padlí</string>
+    <string name="risk_oidium">Padlí (index podle Kasta / OiDiag)</string>
     <string name="risk_botrytis">Botrytida</string>
     <string name="risk_no_data">Stáhněte počasí z Open-Meteo (se zadanými souřadnicemi vinice), aby se zobrazilo riziko chorob – modely potřebují hodinovou vlhkost a teplotu.</string>
     <string name="risk_forecast">Další dny: %1$s</string>
@@ -555,4 +555,9 @@
     <string name="qs_open_settings">Nastavit polohu</string>
     <string name="qs_close">Rozumím</string>
     <string name="qs_settings_link">Rychlý start (průvodce prvním spuštěním)</string>
+    <string name="steberla_line">Srážky od 1. 5.: %1$s mm, posledních 7 dní %2$s mm – vstup Šteberlovy metody pro plíseň révovou (křivky A/B nejsou veřejné; viz týdenní zpráva BS).</string>
+    <string name="external_sources">Externí zdroje</string>
+    <string name="bs_weekly_report">Situační zpráva BS vinařské potřeby (web)</string>
+    <string name="amet_map">Mapa Šteberla, amet.cz (web)</string>
+    <string name="sources_hint">Týdenní hodnocení infekčního tlaku po stanicích (Šteberla pro plíseň révovou, Kast pro padlí, plíseň šedá), semafor přípravků s ochrannou lhůtou a výhled počasí na 7 dní vydává BS vinařské potřeby; amet.cz mapuje závažnost podle Šteberly pro jižní Moravu.</string>
 </resources>

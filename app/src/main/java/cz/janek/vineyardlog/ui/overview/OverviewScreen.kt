@@ -199,6 +199,16 @@ fun OverviewScreen(
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                         )
                     }
+                    val may1 = LocalDate.of(thisYear, 5, 1).toEpochDay()
+                    val today = todayEpochDay()
+                    if (today >= may1) {
+                        val since = weather.filter { it.date in may1..today }.sumOf { it.rainMm ?: 0.0 }
+                        val week = weather.filter { it.date in (today - 6)..today }.sumOf { it.rainMm ?: 0.0 }
+                        Text(
+                            stringResource(R.string.steberla_line, since.fmt(0), week.fmt(0)), Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 item {
                     Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {

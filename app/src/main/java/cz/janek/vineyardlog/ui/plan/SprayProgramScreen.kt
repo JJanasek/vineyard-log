@@ -25,6 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import android.content.Intent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -101,6 +104,20 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
                         else stringResource(R.string.no_sprays_yet),
                         Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
                     )
+                }
+            }
+            item {
+                val context = LocalContext.current
+                fun open(url: String) = runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                Card(Modifier.fillMaxWidth().padding(16.dp, 4.dp)) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.external_sources), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.sources_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { open("https://www.vinarskepotreby.cz/clanky") }) { Text(stringResource(R.string.bs_weekly_report)) }
+                            TextButton(onClick = { open("http://amet.cz/steberla.htm") }) { Text(stringResource(R.string.amet_map)) }
+                        }
+                    }
                 }
             }
             items(SprayProgram.windows, key = { it.key }) { w ->

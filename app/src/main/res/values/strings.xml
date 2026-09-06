@@ -337,7 +337,7 @@
     <string name="risk_moderate">moderate</string>
     <string name="risk_high">high</string>
     <string name="risk_peronospora">Peronospora</string>
-    <string name="risk_oidium">Oidium</string>
+    <string name="risk_oidium">Oidium (Kast / OiDiag-style index)</string>
     <string name="risk_botrytis">Botrytis</string>
     <string name="risk_no_data">Fetch weather from Open-Meteo (with the vineyard coordinates set) to see disease risk – the models need hourly humidity and temperature.</string>
     <string name="risk_forecast">Next days: %1$s</string>
@@ -555,4 +555,9 @@
     <string name="qs_open_settings">Set location</string>
     <string name="qs_close">Got it</string>
     <string name="qs_settings_link">Quick start (first-run guide)</string>
+    <string name="steberla_line">Rain since 1 May: %1$s mm, last 7 days %2$s mm – the input of the Šteberla downy-mildew method (curves A/B are not public; see the BS weekly report).</string>
+    <string name="external_sources">External sources</string>
+    <string name="bs_weekly_report">BS weekly situation report (web)</string>
+    <string name="amet_map">Šteberla map, amet.cz (web)</string>
+    <string name="sources_hint">Weekly infection-pressure ratings per station (Šteberla for downy mildew, Kast for powdery mildew, botrytis), product traffic light with PHI and a 7-day outlook, published by BS vinařské potřeby; amet.cz maps the Šteberla severity for South Moravia.</string>
 </resources>
