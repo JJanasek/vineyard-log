@@ -20,8 +20,8 @@
     <a href="{{ root }}{{ lang }}/docs/" {% if page=='docs' %}class="active"{% endif %}>{{ t.docs }}</a>
     <a href="{{ root }}viewer/?lang={{ lang }}">{{ t.viewer }}</a>
     <a href="{{ root }}{{ lang }}/download.html" {% if page=='download' %}class="active"{% endif %}>{{ t.download }}</a>
-    <a href="{{ root }}{{ other_lang }}/{{ self_path }}">{{ t.switch }}</a>
   </nav>
+  <div class="lang-switch" title="{{ t.switch }}"><a class="{% if lang=='cs' %}on{% endif %}" href="{{ root }}cs/{{ self_path }}" lang="cs">CS</a><a class="{% if lang=='en' %}on{% endif %}" href="{{ root }}en/{{ self_path }}" lang="en">EN</a></div>
 </div></header>
 <main>
 {% block content %}{% endblock %}
