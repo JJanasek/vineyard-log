@@ -83,6 +83,7 @@ import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.data.model.Product
 import cz.janek.vineyardlog.data.model.ProductUsage
+import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.ui.appViewModel
 import cz.janek.vineyardlog.ui.components.AppTextField
@@ -163,6 +164,10 @@ class EntryEditViewModel(
     private var guideKey: String = initialGuideKey.orEmpty()
     val attachments = mutableStateListOf<AttachmentItem>()
     private val removedAttachments = mutableListOf<AttachmentItem>()
+    /** Weather row of the entry date, so the conditions check can use the day's maximum when no temperature is typed. */
+    var dayWeather by mutableStateOf<WeatherDay?>(null)
+        private set
+    fun loadDayWeather() { viewModelScope.launch { dayWeather = c.weatherDao.get(date) } }
 
     private val started = SharingStarted.WhileSubscribed(5_000)
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, started, emptyList())
@@ -425,10 +430,13 @@ fun EntryEditScreen(
             }
 
             if (vm.type == EntryType.SPRAY) {
+                // water per hectare only matters when a label dose per hectare has to be turned into g per 10 l
+                val perHa = setOf("kg/ha", "g/ha", "l/ha", "ml/ha")
+                val needsWater = vm.waterLha.isNotBlank() || vm.usages.any { it.doseUnit.trim().lowercase().replace(" ", "") in perHa }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     NumberField(vm.sprayVolume, { vm.sprayVolume = it }, stringResource(R.string.spray_volume), Modifier.weight(1f), suffix = "L",
                         supportingText = stringResource(R.string.spray_volume_hint))
-                    NumberField(vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), Modifier.weight(1f), suffix = "l/ha",
+                    if (needsWater) NumberField(vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), Modifier.weight(1f), suffix = "l/ha",
                         supportingText = stringResource(R.string.default_water_hint, settings.defaultWaterLha.input()))
                 }
             }
@@ -440,6 +448,27 @@ fun EntryEditScreen(
                     NumberField(vm.humidityPct, { vm.humidityPct = it }, stringResource(R.string.rh), Modifier.weight(1f), suffix = "%")
                 }
                 AppTextField(vm.weatherNote, { vm.weatherNote = it }, stringResource(R.string.weather_note), placeholder = stringResource(R.string.weather_note_hint))
+                if (vm.type == EntryType.SPRAY || vm.type == EntryType.FERTILIZATION) {
+                    LaunchedEffect(vm.date) { vm.loadDayWeather() }
+                    val chosenCond = vm.usages.mapNotNull { u -> products.firstOrNull { it.id == u.productId } }
+                    val typedT = vm.tempC.toDoubleLenient()
+                    val weatherT = vm.dayWeather?.tMax
+                    val t = typedT ?: weatherT
+                    val wind = vm.windKmh.toDoubleLenient()
+                    val condNotes = remember(chosenCond, t, wind) { TankMix.conditions(chosenCond, t, wind) }
+                    if (condNotes.isNotEmpty()) {
+                        val czechCond = LocalConfiguration.current.locales[0]?.language == "cs"
+                        Card(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(stringResource(R.string.cond_check), style = MaterialTheme.typography.titleSmall)
+                                if (typedT == null && weatherT != null) Text(stringResource(R.string.cond_from_weather, weatherT.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                condNotes.forEach { n ->
+                                    Text(n.text.get(czechCond), style = MaterialTheme.typography.bodySmall, color = if (n.level == TankMix.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             if (vm.type == EntryType.RENEWAL) {

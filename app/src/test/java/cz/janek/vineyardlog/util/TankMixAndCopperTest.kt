@@ -35,6 +35,36 @@ class TankMixAndCopperTest {
         assertTrue(TankMix.check(listOf(topas), month = 11).none { it.text.en.contains("recommends sulphur") })
     }
 
+    @Test fun conditionsWarnAboutHeatColdAndWind() {
+        val oil = Product(id = 6, name = "Paroil", category = ProductCategory.INSECTICIDE, activeIngredient = "parafinový olej")
+        val leaf = Product(id = 7, name = "Wuxal Boron", category = ProductCategory.FOLIAR_FERTILIZER)
+        // sulphur in heat is a warning, the general heat hint is then skipped
+        val hot = TankMix.conditions(listOf(kumulus, topas), tempC = 30.0, windKmh = null)
+        assertTrue(hot.any { it.level == TankMix.Level.WARN && it.text.en.startsWith("Sulphur (Kumulus WG) at 30 °C") })
+        assertTrue(hot.none { it.text.en.startsWith("Above 25 °C") })
+        // sulphur between 25 and 28 is only a hint
+        val warm = TankMix.conditions(listOf(kumulus), tempC = 26.0, windKmh = null)
+        assertTrue(warm.single().level == TankMix.Level.INFO && warm.single().text.en.contains("close to 28 °C"))
+        // no sulphur / oil: general heat hint only
+        val general = TankMix.conditions(listOf(topas), tempC = 27.0, windKmh = null)
+        assertEquals(1, general.size); assertTrue(general[0].text.en.startsWith("Above 25 °C"))
+        // oil and foliar fertiliser in heat
+        val oilHot = TankMix.conditions(listOf(oil, leaf), tempC = 26.0, windKmh = null)
+        assertTrue(oilHot.any { it.level == TankMix.Level.WARN && it.text.en.contains("Oil (Paroil)") })
+        assertTrue(oilHot.any { it.level == TankMix.Level.INFO && it.text.en.contains("Foliar fertiliser (Wuxal Boron)") })
+        // cold: sulphur weak, labels 10–25 °C
+        val cold = TankMix.conditions(listOf(kumulus), tempC = 8.0, windKmh = null)
+        assertTrue(cold.any { it.text.en.startsWith("Sulphur works weakly") })
+        assertTrue(cold.any { it.text.en.startsWith("Most labels") })
+        // wind: over 5 m/s is a warning, 3–5 m/s a hint, nothing typed = nothing said
+        assertTrue(TankMix.conditions(listOf(topas), tempC = null, windKmh = 20.0).single().level == TankMix.Level.WARN)
+        assertTrue(TankMix.conditions(listOf(topas), tempC = null, windKmh = 14.0).single().level == TankMix.Level.INFO)
+        assertTrue(TankMix.conditions(listOf(topas), tempC = null, windKmh = 5.0).isEmpty())
+        assertTrue(TankMix.conditions(listOf(kumulus), tempC = 20.0, windKmh = null).isEmpty())
+        // oil + sulphur is a tank-mix warning regardless of temperature
+        assertTrue(TankMix.check(listOf(oil, kumulus), month = 6).any { it.level == TankMix.Level.WARN && it.text.en.contains("oil (Paroil) with sulphur") })
+    }
+
     @Test fun rotationIgnoresSulphurAndCopperButCatchesSameActive() {
         assertEquals(listOf("penkonazol"), TankMix.repeatedActives(listOf(topas, kumulus), listOf(topas, flowbrix)))
         assertTrue(TankMix.repeatedActives(listOf(kumulus, flowbrix), listOf(kumulus, flowbrix)).isEmpty())

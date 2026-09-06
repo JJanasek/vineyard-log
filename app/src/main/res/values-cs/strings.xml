@@ -44,7 +44,7 @@
     <string name="no_batch">Bez šarže</string>
     <string name="stage">Fenofáze</string>
     <string name="water_volume">Objem vody</string>
-    <string name="default_water_hint">Výchozí v nastavení: %1$s l/ha</string>
+    <string name="default_water_hint">Jen pro dávky z etikety na hektar: dávka/ha ÷ voda/ha = množství na 10 l. Výchozí %1$s l/ha z Nastavení.</string>
     <string name="conditions">Podmínky</string>
     <string name="temp">Teplota</string>
     <string name="wind">Vítr</string>
@@ -580,6 +580,8 @@
     <string name="extra_photos">Fotky navíc v tomto zařízení</string>
     <string name="copper_label">Obsah mědi</string>
     <string name="copper_support">Gramy kovové Cu na kg nebo litr (etiketa: např. 500 g/kg u Kuprikolu 50). Pro eko limit 4 kg Cu/ha/rok; když je prázdné, zkusí se vyčíst z účinné látky.</string>
+    <string name="cond_check">Podmínky postřiku</string>
+    <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>
     <string name="rotation_warn">Stejná účinná látka jako v minulém postřiku %1$s (%2$s) – střídej skupiny (antirezistentní strategie).</string>
     <string name="sampling_protocol">Protokol odběru (BS)</string>
