@@ -178,7 +178,50 @@ fun RemindersScreen(onBack: () -> Unit, onEdit: (Long?) -> Unit) {
                 }
             }
             if (reminders.isEmpty()) item { EmptyState(stringResource(R.string.no_reminders)) }
-            items(reminders, key = { it.id }) { r ->
+            val manual = reminders.filter { !it.auto }
+            val autoGroups = reminders.filter { it.auto }.groupBy { it.batchId }
+            if (manual.isNotEmpty() && autoGroups.isNotEmpty()) item { SectionTitle(stringResource(R.string.your_reminders), Modifier.padding(horizontal = 16.dp)) }
+            items(manual, key = { it.id }) { r -> ReminderCard(r, vm, blocks, batches, onEdit) { toDelete = r } }
+            autoGroups.forEach { (bid, list) ->
+                item {
+                    val name = bid?.let { id -> batches.firstOrNull { it.id == id }?.name }
+                    SectionTitle(if (name != null) stringResource(R.string.protocol_of, name) else stringResource(R.string.automatic_reminders), Modifier.padding(horizontal = 16.dp))
+                }
+                items(list, key = { it.id }) { r -> ReminderCard(r, vm, blocks, batches, onEdit) { toDelete = r } }
+            }
+            item { SectionTitle(stringResource(R.string.templates), Modifier.padding(horizontal = 16.dp)) }
+            items(Template.entries) { t ->
+                val title = stringResource(t.titleRes)
+                Card(Modifier.fillMaxWidth().padding(16.dp, 4.dp)) {
+                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            Text(title, style = MaterialTheme.typography.titleSmall)
+                            Text(stringResource(t.descRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        TextButton(onClick = { vm.add(t.build(title)) }) { Text(stringResource(R.string.add)) }
+                    }
+                }
+            }
+        }
+    }
+    toDelete?.let { r ->
+        ConfirmDialog(
+            title = stringResource(R.string.delete_reminder_q), text = r.title,
+            onConfirm = { vm.delete(r); toDelete = null }, onDismiss = { toDelete = null },
+        )
+    }
+}
+
+@Composable
+private fun ReminderCard(
+    r: Reminder,
+    vm: RemindersViewModel,
+    blocks: List<cz.janek.vineyardlog.data.model.Block>,
+    batches: List<cz.janek.vineyardlog.data.model.Batch>,
+    onEdit: (Long?) -> Unit,
+    onDelete: () -> Unit,
+) {
+
                 val next = remember(r) { vm.nextFire(r) }
                 val target = listOfNotNull(
                     r.blockId?.let { id -> blocks.firstOrNull { it.id == id }?.name },
@@ -203,31 +246,9 @@ fun RemindersScreen(onBack: () -> Unit, onEdit: (Long?) -> Unit) {
                             )
                         }
                         Switch(checked = r.enabled, onCheckedChange = { vm.setEnabled(r, it) })
-                        IconButton(onClick = { toDelete = r }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
+                        IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete)) }
                     }
                 }
-            }
-            item { SectionTitle(stringResource(R.string.templates), Modifier.padding(horizontal = 16.dp)) }
-            items(Template.entries) { t ->
-                val title = stringResource(t.titleRes)
-                Card(Modifier.fillMaxWidth().padding(16.dp, 4.dp)) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column(Modifier.weight(1f)) {
-                            Text(title, style = MaterialTheme.typography.titleSmall)
-                            Text(stringResource(t.descRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        TextButton(onClick = { vm.add(t.build(title)) }) { Text(stringResource(R.string.add)) }
-                    }
-                }
-            }
-        }
-    }
-    toDelete?.let { r ->
-        ConfirmDialog(
-            title = stringResource(R.string.delete_reminder_q), text = r.title,
-            onConfirm = { vm.delete(r); toDelete = null }, onDismiss = { toDelete = null },
-        )
-    }
 }
 
 /** "Weekly · Monday 7:00 · 5. 9. – 31. 10." */

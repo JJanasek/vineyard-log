@@ -97,7 +97,7 @@ class ReminderScheduler(private val context: Context, private val c: AppContaine
         val target = listOfNotNull(blockName, batchName).joinToString(" · ")
         val text = listOf(target, r.notes).filter { it.isNotBlank() }.joinToString("\n").ifBlank { context.getString(R.string.tap_to_log) }
         val domain = r.entryType?.domain ?: if (r.batchId != null) Domain.CELLAR else Domain.VINEYARD
-        val route = Routes.entryEdit(domain = domain, blockId = r.blockId, batchId = r.batchId, type = r.entryType, title = r.title.takeIf { r.auto })
+        val route = Routes.entryEdit(domain = domain, blockId = r.blockId, batchId = r.batchId, type = r.entryType, title = r.title, notes = r.notes)
         val open = Intent(context, MainActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(MainActivity.EXTRA_ROUTE, route)

@@ -119,6 +119,7 @@ class EntryEditViewModel(
     initialBatchId: Long?,
     initialType: EntryType?,
     initialTitle: String? = null,
+    initialNotes: String? = null,
 ) : ViewModel() {
     var domain by mutableStateOf(initialDomain)
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
@@ -126,7 +127,7 @@ class EntryEditViewModel(
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
-    var notes by mutableStateOf("")
+    var notes by mutableStateOf(initialNotes.orEmpty())
     var stage by mutableStateOf<PhenologyStage?>(null)
     var waterLha by mutableStateOf("")
     var sprayVolume by mutableStateOf("")
@@ -303,9 +304,10 @@ fun EntryEditScreen(
     initialType: EntryType?,
     onDone: () -> Unit,
     initialTitle: String? = null,
+    initialNotes: String? = null,
 ) {
-    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}") {
-        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle)
+    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}-${initialNotes?.hashCode() ?: 0}") {
+        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle, initialNotes)
     }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val batches by vm.batches.collectAsStateWithLifecycle()

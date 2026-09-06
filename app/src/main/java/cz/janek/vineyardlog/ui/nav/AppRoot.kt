@@ -39,6 +39,7 @@ import cz.janek.vineyardlog.ui.guide.GuideDetailScreen
 import cz.janek.vineyardlog.ui.guide.GuideScreen
 import cz.janek.vineyardlog.ui.map.MapPickerScreen
 import cz.janek.vineyardlog.ui.plan.SeasonPlanScreen
+import cz.janek.vineyardlog.ui.plan.SprayProgramScreen
 import cz.janek.vineyardlog.ui.products.ProductEditScreen
 import cz.janek.vineyardlog.ui.products.ProductsScreen
 import cz.janek.vineyardlog.ui.settings.SettingsScreen
@@ -111,6 +112,7 @@ fun AppRoot(
                         onNewBlock = { navController.navigate(Routes.blockEdit()) },
                         onOpenGuide = { navController.navigate(Routes.GUIDE) },
                         onOpenPlan = { navController.navigate(Routes.PLAN) },
+                        onOpenSprays = { navController.navigate(Routes.SPRAY_PROGRAM) },
                     )
                 }
                 composable(Tab.CELLAR.route) {
@@ -125,6 +127,12 @@ fun AppRoot(
                         onOpenWeather = { navController.navigate(Routes.WEATHER) },
                         onOpenReminders = { navController.navigate(Routes.REMINDERS) },
                         onOpenPlan = { navController.navigate(Routes.PLAN) },
+                    )
+                }
+                composable(Routes.SPRAY_PROGRAM) {
+                    SprayProgramScreen(
+                        onBack = { navController.popBackStack() },
+                        onLogSpray = { title, notes -> navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.SPRAY, title = title, notes = notes)) },
                     )
                 }
                 composable(Routes.WEATHER) {
@@ -232,6 +240,9 @@ fun AppRoot(
                             navController.navigate(Routes.entryEdit(domain = Domain.CELLAR, batchId = id, type = type))
                         },
                         onDeleted = { navController.popBackStack() },
+                        onLogStep = { r ->
+                            navController.navigate(Routes.entryEdit(domain = Domain.CELLAR, batchId = r.batchId, type = r.entryType, title = r.title, notes = r.notes))
+                        },
                     )
                 }
                 composable(
@@ -276,6 +287,7 @@ fun AppRoot(
                         navArgument("batchId") { type = NavType.LongType; defaultValue = -1L },
                         navArgument("type") { type = NavType.StringType; defaultValue = "" },
                         navArgument("title") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("notes") { type = NavType.StringType; defaultValue = "" },
                     ),
                 ) { entry ->
                     val args = entry.arguments
@@ -291,6 +303,7 @@ fun AppRoot(
                         initialBatchId = batchId,
                         initialType = type,
                         initialTitle = args?.getString("title")?.takeIf { it.isNotBlank() },
+                        initialNotes = args?.getString("notes")?.takeIf { it.isNotBlank() },
                         onDone = { navController.popBackStack() },
                     )
                 }

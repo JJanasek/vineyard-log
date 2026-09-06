@@ -94,7 +94,7 @@ při 3–10 cm letorostů a odstranění napadeného réví v zimě.
 2. ~~ČHMÚ jako zdroj počasí (Hluk 4 km)~~ – hotovo (5. 9.).
 3. ~~Odrůdový katalog + předvyplnění tratí, šarží, plánu a cílů podle odrůd~~ – hotovo (5. 9.).
 4. ~~Záložka Přehled s grafy~~ – hotovo (6. 9.): riziko + připomínky + úkoly nahoře, grafy rozdělené na Vinice (počasí sezóny s postřiky, GDD po ročnících, zrání a kyseliny z měření na vinici, sklizeň po letech) a Sklep (kvašení a teplota po šaržích, poslední rozbory) a Půda. Zbývají automatické připomínky (úkoly plánu, riziko na pozadí, kvašení, odhad odběru).
-5. Šablony protokolů ve sklepě a kostra postřiků.
+5. ~~Šablony protokolů ve sklepě a kostra postřiků~~ – hotovo (6. 9.): tři šablony (aromatické bílé bez JMF, rosé, červené) → datované připomínky s návodem + checklist v detailu šarže; postřikový program po fenofázích s tvými produkty a tlačítky Zapsat / Připomenout.
 6. Vlastní fotky k tématům atlasu; přílohy PDF; GDD do sklizně po první sezóně.
 7. Diagnostika napříč ročníky (GDD vs. cukr při sklizni, postřiky vs. výskyt chorob, YAN vs. délka kvašení, roční Cu/S, náklady na trať).
 8. Počasí z vlastní stanice (CSV import, později čidla hustoty), rozpoznávání fotek.

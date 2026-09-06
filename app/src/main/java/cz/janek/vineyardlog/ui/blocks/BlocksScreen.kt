@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Sanitizer
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -81,7 +82,9 @@ class BlocksViewModel(c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuide: () -> Unit = {}, onOpenPlan: () -> Unit = {}) {
+fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuide: () -> Unit = {}, onOpenPlan: () -> Unit = {},
+    onOpenSprays: () -> Unit = {},
+) {
     val vm = appViewModel { BlocksViewModel(it) }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val openNow by vm.openThisMonth.collectAsStateWithLifecycle()
@@ -94,6 +97,7 @@ fun BlocksScreen(onOpenBlock: (Long) -> Unit, onNewBlock: () -> Unit, onOpenGuid
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_vineyard)) },
                 actions = {
+                    IconButton(onClick = onOpenSprays) { Icon(Icons.Default.Sanitizer, contentDescription = stringResource(R.string.spray_program)) }
                     IconButton(onClick = onOpenPlan) { Icon(Icons.Default.Checklist, contentDescription = stringResource(R.string.season_plan)) }
                     IconButton(onClick = onOpenGuide) { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = stringResource(R.string.field_guide)) }
                 },
