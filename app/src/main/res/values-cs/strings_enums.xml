@@ -102,4 +102,8 @@
     <string name="bs_bottled">Lahvováno</string>
     <string name="bs_finished">Hotovo</string>
     <string name="et_renewal">Obnova vinice (dosadba, přeštěpování)</string>
+    <string name="ph_wool_stage">Vatové stádium</string>
+    <string name="ph_shoots">Letorosty 3–10 cm, 3–5 listů</string>
+    <string name="ph_inflorescence">Květenství viditelná</string>
+    <string name="ph_pea_size">Hrášek</string>
 </resources>

@@ -46,7 +46,7 @@ import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.label
 
 @Composable
-private fun isCzech(): Boolean = LocalConfiguration.current.locales[0]?.language == "cs"
+internal fun isCzech(): Boolean = LocalConfiguration.current.locales[0]?.language == "cs"
 
 private val GuideKind.titleRes: Int
     get() = when (this) {
@@ -57,10 +57,21 @@ private val GuideKind.titleRes: Int
     }
 
 @Composable
-fun GuideScreen(onOpen: (String) -> Unit, onBack: () -> Unit) {
+fun GuideScreen(onOpen: (String) -> Unit, onBack: () -> Unit, onOpenPhenology: () -> Unit = {}) {
     val czech = isCzech()
     Scaffold(topBar = { BackTopBar(title = stringResource(R.string.field_guide), onBack = onBack) }) { padding ->
         LazyColumn(Modifier.padding(padding).fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+            item {
+                Card(onClick = onOpenPhenology, modifier = Modifier.fillMaxWidth().padding(16.dp, 8.dp)) {
+                    Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AssetImage("guide/pheno_veraison.jpg", Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)), targetPx = 200)
+                        Column {
+                            Text(stringResource(R.string.phenology_title), style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.growth_stages), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
             item {
                 Text(
                     stringResource(R.string.guide_disclaimer),

@@ -102,4 +102,8 @@
     <string name="bs_bottled">Bottled</string>
     <string name="bs_finished">Finished</string>
     <string name="et_renewal">Renewal (replanting, regrafting)</string>
+    <string name="ph_wool_stage">Wool stage</string>
+    <string name="ph_shoots">Shoots 3–10 cm, 3–5 leaves</string>
+    <string name="ph_inflorescence">Inflorescences visible</string>
+    <string name="ph_pea_size">Pea-sized berries</string>
 </resources>

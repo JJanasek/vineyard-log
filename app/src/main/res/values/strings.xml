@@ -536,4 +536,10 @@
     <string name="alert_sampling_title">Harvest estimate: %1$s</string>
     <string name="alert_sampling_text">%1$s °NM expected around %2$s. Sampling reminder set for %3$s.</string>
     <string name="sampling_reminder_title">Control sampling – %1$s (estimate %2$s °NM on %3$s)</string>
+    <string name="phenology_title">Growth stages (BBCH)</string>
+    <string name="phenology_intro">The stages the app uses, in season order, with what to look for on the vine. Log the stage when about half of the vines show it – the dates drive the disease-risk model, the spray programme and the season plan.</string>
+    <string name="what_you_see">What you see</string>
+    <string name="log_stage">Log this stage</string>
+    <string name="pick_stage">Pick the stage that matches the vine</string>
+    <string name="growth_stages">Growth stages with photos</string>
 </resources>

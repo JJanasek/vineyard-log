@@ -82,6 +82,7 @@ import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.DateField
 import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.ui.components.NumberField
+import cz.janek.vineyardlog.ui.components.StagePicker
 import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.suggestedKinds
@@ -120,6 +121,7 @@ class EntryEditViewModel(
     initialType: EntryType?,
     initialTitle: String? = null,
     initialNotes: String? = null,
+    initialStage: PhenologyStage? = null,
 ) : ViewModel() {
     var domain by mutableStateOf(initialDomain)
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
@@ -128,7 +130,7 @@ class EntryEditViewModel(
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
     var notes by mutableStateOf(initialNotes.orEmpty())
-    var stage by mutableStateOf<PhenologyStage?>(null)
+    var stage by mutableStateOf<PhenologyStage?>(initialStage)
     var waterLha by mutableStateOf("")
     var sprayVolume by mutableStateOf("")
     var quantity by mutableStateOf("")
@@ -305,9 +307,10 @@ fun EntryEditScreen(
     onDone: () -> Unit,
     initialTitle: String? = null,
     initialNotes: String? = null,
+    initialStage: PhenologyStage? = null,
 ) {
-    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}-${initialNotes?.hashCode() ?: 0}") {
-        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle, initialNotes)
+    val vm = appViewModel(key = "entryEdit${entryId ?: "new"}-${initialTitle?.hashCode() ?: 0}-${initialNotes?.hashCode() ?: 0}-${initialStage?.name ?: ""}") {
+        EntryEditViewModel(it, entryId, initialDomain, initialBlockId, initialBatchId, initialType, initialTitle, initialNotes, initialStage)
     }
     val blocks by vm.blocks.collectAsStateWithLifecycle()
     val batches by vm.batches.collectAsStateWithLifecycle()
@@ -384,13 +387,8 @@ fun EntryEditScreen(
             }
 
             if (vm.type == EntryType.PHENOLOGY) {
-                DropdownField(
-                    label = stringResource(R.string.stage),
-                    options = PhenologyStage.entries,
-                    selected = vm.stage,
-                    labelOf = { it.label },
-                    onSelect = { vm.stage = it },
-                )
+                Text(stringResource(R.string.pick_stage), style = MaterialTheme.typography.labelMedium)
+                StagePicker(selected = vm.stage, onSelect = { vm.stage = it })
             }
 
             if (vm.type == EntryType.SPRAY) {

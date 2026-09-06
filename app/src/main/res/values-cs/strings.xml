@@ -536,4 +536,10 @@
     <string name="alert_sampling_title">Odhad sklizně: %1$s</string>
     <string name="alert_sampling_text">%1$s °NM se čeká kolem %2$s. Odběr připomenu %3$s.</string>
     <string name="sampling_reminder_title">Kontrolní odběr – %1$s (odhad %2$s °NM %3$s)</string>
+    <string name="phenology_title">Fenofáze révy (BBCH)</string>
+    <string name="phenology_intro">Stádia, se kterými aplikace pracuje, v pořadí sezóny a s tím, co na keři hledat. Fenofázi zapiš, když ji ukazuje zhruba polovina keřů – data řídí model rizika chorob, postřikový program a plán sezóny.</string>
+    <string name="what_you_see">Co vidíš</string>
+    <string name="log_stage">Zapsat fenofázi</string>
+    <string name="pick_stage">Vyber stádium, které odpovídá keři</string>
+    <string name="growth_stages">Fenofáze s fotkami</string>
 </resources>

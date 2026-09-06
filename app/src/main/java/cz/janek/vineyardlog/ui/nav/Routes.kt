@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import cz.janek.vineyardlog.R
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.PhenologyStage
 
 /** Top-level tabs shown in the bottom bar. */
 enum class Tab(val route: String, @StringRes val labelRes: Int, val icon: ImageVector) {
@@ -25,6 +26,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val WEATHER = "weather"
     const val SPRAY_PROGRAM = "sprayProgram"
+    const val PHENOLOGY = "phenology"
     const val PLAN = "plan"
     const val CALCULATORS = "calculators"
     const val MAP_PICKER = "mapPicker?lat={lat}&lon={lon}"
@@ -57,7 +59,7 @@ object Routes {
     const val ENTRY = "entry/{id}"
     fun entry(id: Long) = "entry/$id"
 
-    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}&title={title}&notes={notes}"
+    const val ENTRY_EDIT = "entryEdit?id={id}&domain={domain}&blockId={blockId}&batchId={batchId}&type={type}&title={title}&notes={notes}&stage={stage}"
     fun entryEdit(
         id: Long? = null,
         domain: Domain = Domain.VINEYARD,
@@ -66,11 +68,13 @@ object Routes {
         type: EntryType? = null,
         title: String? = null,
         notes: String? = null,
+        stage: PhenologyStage? = null,
     ): String {
         var s = "entryEdit?id=${id ?: -1}&domain=${domain.name}&blockId=${blockId ?: -1}&batchId=${batchId ?: -1}"
         if (type != null) s += "&type=${type.name}"
         if (!title.isNullOrBlank()) s += "&title=${android.net.Uri.encode(title)}"
         if (!notes.isNullOrBlank()) s += "&notes=${android.net.Uri.encode(notes)}"
+        if (stage != null) s += "&stage=${stage.name}"
         return s
     }
 }

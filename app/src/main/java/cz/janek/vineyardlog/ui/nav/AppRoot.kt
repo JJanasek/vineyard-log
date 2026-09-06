@@ -27,6 +27,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.PhenologyStage
+import cz.janek.vineyardlog.ui.guide.PhenologyScreen
 import cz.janek.vineyardlog.ui.batches.BatchDetailScreen
 import cz.janek.vineyardlog.ui.batches.BatchEditScreen
 import cz.janek.vineyardlog.ui.batches.BatchesScreen
@@ -129,9 +131,17 @@ fun AppRoot(
                         onOpenPlan = { navController.navigate(Routes.PLAN) },
                     )
                 }
+                composable(Routes.PHENOLOGY) {
+                    PhenologyScreen(
+                        onBack = { navController.popBackStack() },
+                        onLogStage = { st -> navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.PHENOLOGY, stage = st)) },
+                        onOpenSprays = { navController.navigate(Routes.SPRAY_PROGRAM) },
+                    )
+                }
                 composable(Routes.SPRAY_PROGRAM) {
                     SprayProgramScreen(
                         onBack = { navController.popBackStack() },
+                        onOpenPhenology = { navController.navigate(Routes.PHENOLOGY) },
                         onLogSpray = { title, notes -> navController.navigate(Routes.entryEdit(domain = Domain.VINEYARD, type = EntryType.SPRAY, title = title, notes = notes)) },
                     )
                 }
@@ -194,7 +204,7 @@ fun AppRoot(
                     )
                 }
                 composable(Routes.GUIDE) {
-                    GuideScreen(onOpen = { navController.navigate(Routes.guide(it)) }, onBack = { navController.popBackStack() })
+                    GuideScreen(onOpen = { navController.navigate(Routes.guide(it)) }, onBack = { navController.popBackStack() }, onOpenPhenology = { navController.navigate(Routes.PHENOLOGY) })
                 }
                 composable(Routes.GUIDE_ENTRY, arguments = listOf(navArgument("key") { type = NavType.StringType })) { entry ->
                     val key = entry.arguments?.getString("key") ?: return@composable
@@ -288,6 +298,7 @@ fun AppRoot(
                         navArgument("type") { type = NavType.StringType; defaultValue = "" },
                         navArgument("title") { type = NavType.StringType; defaultValue = "" },
                         navArgument("notes") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("stage") { type = NavType.StringType; defaultValue = "" },
                     ),
                 ) { entry ->
                     val args = entry.arguments
@@ -304,6 +315,7 @@ fun AppRoot(
                         initialType = type,
                         initialTitle = args?.getString("title")?.takeIf { it.isNotBlank() },
                         initialNotes = args?.getString("notes")?.takeIf { it.isNotBlank() },
+                        initialStage = args?.getString("stage")?.takeIf { it.isNotBlank() }?.let { runCatching { PhenologyStage.valueOf(it) }.getOrNull() },
                         onDone = { navController.popBackStack() },
                     )
                 }

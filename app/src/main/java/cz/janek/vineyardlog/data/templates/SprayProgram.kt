@@ -35,11 +35,11 @@ data class SprayWindow(
  */
 object SprayProgram {
     val windows = listOf(
-        SprayWindow("phomopsis", PhenologyStage.BUD_BREAK, Bi("Bud break – shoots 3–10 cm", "Rašení – výhony 3–10 cm"), "09–15",
+        SprayWindow("phomopsis", PhenologyStage.SHOOTS, Bi("Bud break – shoots 3–10 cm", "Rašení – výhony 3–10 cm"), "09–15",
             Bi("Late April to early May", "Konec dubna až začátek května"), listOf(SprayTarget.PHOMOPSIS, SprayTarget.MITES),
             Bi("If black spot (Phomopsis) showed last year, treat already at 3–5 cm shoots and repeat after 10 days: copper or dithianon / metiram (Delan, Polyram). Erinose or mites: sulphur.",
                 "Pokud byla loni černá skvrnitost, ošetřit už při 3–5 cm výhonů a za 10 dní opakovat: měď nebo dithianon / metiram (Delan, Polyram). Vlnovník nebo svilušky: síra."), 5, 1),
-        SprayWindow("preflower", null, Bi("Before flowering", "Před květem"), "53–57",
+        SprayWindow("preflower", PhenologyStage.INFLORESCENCE, Bi("Before flowering", "Před květem"), "53–57",
             Bi("Late May to early June", "Konec května až začátek června"), listOf(SprayTarget.PERONOSPORA, SprayTarget.OIDIUM),
             Bi("First downy mildew protection after the first infection conditions (3-10 rule, see the risk card), contact or systemic product. Powdery mildew: sulphur 3–5 kg/ha (30–50 g per 10 l at 400 l/ha... use the product row hints) or a systemic. Interval 10–14 days by weather.",
                 "První ochrana proti peronospoře po prvních infekčních podmínkách (pravidlo 3-10, karta rizika), kontaktní nebo systemický přípravek. Padlí: síra 3–5 kg/ha nebo systemický přípravek. Interval 10–14 dní podle počasí."), 6, 1),
@@ -47,7 +47,7 @@ object SprayProgram {
             Bi("Mid to late June", "Polovina až konec června"), listOf(SprayTarget.PERONOSPORA, SprayTarget.OIDIUM, SprayTarget.BOTRYTIS),
             Bi("Most sensitive period: systemic products against both downy and powdery mildew, ideally combined. After a rainy flowering a botryticide (Switch) at the end of flowering.",
                 "Nejcitlivější období: systemické přípravky proti peronospoře i padlí, ideálně kombinovat. Po deštivém květu botryticid (Switch) na konci kvetení."), 6, 20),
-        SprayWindow("peasize", PhenologyStage.FRUIT_SET, Bi("Pea-sized berries", "Hrášek"), "73–75",
+        SprayWindow("peasize", PhenologyStage.PEA_SIZE, Bi("Pea-sized berries", "Hrášek"), "73–75",
             Bi("Early July", "Začátek července"), listOf(SprayTarget.PERONOSPORA, SprayTarget.OIDIUM, SprayTarget.TORTRIX),
             Bi("Keep the 10–12 day interval. Second generation of grape moths by pheromone traps: Bt, spinosad or indoxacarb.",
                 "Držet interval 10–12 dní. Obaleči 2. generace podle feromonových lapačů: Bt, spinosad nebo indoxakarb."), 7, 5),

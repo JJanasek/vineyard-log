@@ -67,15 +67,20 @@ enum class EntryType(@StringRes val labelRes: Int, val domain: Domain) {
     }
 }
 
-enum class PhenologyStage(@StringRes val labelRes: Int) {
-    BUD_BREAK(R.string.ph_bud_break),
-    FLOWERING_START(R.string.ph_flowering_start),
-    FLOWERING_END(R.string.ph_flowering_end),
-    FRUIT_SET(R.string.ph_fruit_set),
-    BUNCH_CLOSURE(R.string.ph_bunch_closure),
-    VERAISON(R.string.ph_veraison),
-    HARVEST(R.string.ph_harvest),
-    LEAF_FALL(R.string.ph_leaf_fall),
+/** Growth stages in season order with their BBCH code range (Lorenz scale for grapevine). */
+enum class PhenologyStage(@StringRes val labelRes: Int, val bbch: String) {
+    WOOL_STAGE(R.string.ph_wool_stage, "03–05"),
+    BUD_BREAK(R.string.ph_bud_break, "07–09"),
+    SHOOTS(R.string.ph_shoots, "11–15"),
+    INFLORESCENCE(R.string.ph_inflorescence, "53–57"),
+    FLOWERING_START(R.string.ph_flowering_start, "61–63"),
+    FLOWERING_END(R.string.ph_flowering_end, "68–69"),
+    FRUIT_SET(R.string.ph_fruit_set, "71"),
+    PEA_SIZE(R.string.ph_pea_size, "73–75"),
+    BUNCH_CLOSURE(R.string.ph_bunch_closure, "77–79"),
+    VERAISON(R.string.ph_veraison, "81–85"),
+    HARVEST(R.string.ph_harvest, "89"),
+    LEAF_FALL(R.string.ph_leaf_fall, "93–97"),
 }
 
 /** Numeric readings. `domain == null` means the kind is used on both sides (e.g. sugar). */

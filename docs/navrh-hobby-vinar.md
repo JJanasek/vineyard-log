@@ -157,3 +157,6 @@ téma a zobrazí ji v atlasu; časem tak vznikne tvoje vlastní galerie (a zákl
 rozpoznávání); (2) u nedostatků živin jednoduché schéma listu místo fotky; (3) zdroje s licencí
 CC BY-NC (např. Bugwood/IPM Images) jdou použít v aplikaci pro osobní použití, ale ne do
 veřejného repozitáře.
+
+### 8e. Fenofáze s fotkami (6. 9. 2026)
+Hotovo na jeho podnět („nepamatuju si všechny fenofáze, a je to důležité pro postřikový plán“): 12 stádií BBCH od vatového stádia po opad listů, každé s fotkou z Commons (kromě vatového stádia, na Commons není licencovaná), popisem „co vidíš“, „co to znamená pro práci“ a obvyklým termínem. Zápis fenofáze vybírá stádium z karet s fotkou; atlas má sekci Fenofáze s tlačítkem „Zapsat fenofázi“; postřikový program odkazuje na jemnější stádia (letorosty 3–10 cm, květenství viditelná, hrášek).

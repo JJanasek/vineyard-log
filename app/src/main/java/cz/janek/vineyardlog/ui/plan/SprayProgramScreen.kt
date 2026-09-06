@@ -70,7 +70,7 @@ class SprayProgramViewModel(private val c: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: String) -> Unit) {
+fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: String) -> Unit, onOpenPhenology: () -> Unit = {}) {
     val vm = appViewModel(key = "sprayProgram") { SprayProgramViewModel(it) }
     val products by vm.products.collectAsStateWithLifecycle()
     val entries by vm.entries.collectAsStateWithLifecycle()
@@ -87,7 +87,7 @@ fun SprayProgramScreen(onBack: () -> Unit, onLogSpray: (title: String, notes: St
     val doneText = stringResource(R.string.reminder_created)
 
     Scaffold(
-        topBar = { BackTopBar(stringResource(R.string.spray_program), onBack) },
+        topBar = { BackTopBar(stringResource(R.string.spray_program), onBack) { TextButton(onClick = onOpenPhenology) { Text(stringResource(R.string.phenology_title)) } } },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         LazyColumn(Modifier.padding(padding).fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
