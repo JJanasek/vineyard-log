@@ -4,9 +4,9 @@
 {% for tpl in templates %}
 <h2>{{ tpl.name[lang] }} <span class="pill">{{ styles[tpl.style] }}</span></h2>
 <p>{{ tpl.summary[lang] }}</p>
-<table><tr><th>{{ t.day }}</th><th>{{ t.step }}</th><th>{{ t.notes }}</th></tr>
+<div class="table-wrap"><table><tr><th>{{ t.day }}</th><th>{{ t.step }}</th><th>{{ t.notes }}</th></tr>
 {% for s in tpl.steps %}<tr><td>{{ s.day }}{% if s.untilDay %}–{{ s.untilDay }}{% endif %}</td><td><b>{{ s.title[lang] }}</b><div class="muted">{{ s.typeText }}</div></td><td>{{ s.notes[lang] }}</td></tr>{% endfor %}
-</table>
+</table></div>
 {% endfor %}
 {% include "sources_block.html" %}
 {% endblock %}
