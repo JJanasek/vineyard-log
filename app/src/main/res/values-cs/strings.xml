@@ -403,7 +403,7 @@
     <string name="chmi_credit">Naměřená data: ČHMÚ, opendata.chmi.cz (CC BY 4.0). Srážky jsou za klimatologický den 07–07 h.</string>
     <string name="source_chmi">ČHMÚ</string>
     <string name="pick_variety">Vybrat z katalogu odrůd</string>
-    <string name="variety_info">%1$s · sklizeň obvykle %2$s–%3$s · cíl ≈ %4$s °NM</string>
+    <string name="variety_info">%1$s · sklizeň obvykle %2$s–%3$s</string>
     <string name="variety_piwi">PIWI (odolná k houbám)</string>
     <string name="harvest_window">Obvyklé okno sklizně pro %1$s: %2$s – %3$s</string>
     <string name="susceptible_varieties">Citlivé odrůdy u tebe: %1$s</string>
@@ -588,6 +588,12 @@
     <string name="sources_intro">Odkud pocházejí vestavěné katalogy. Typické hodnoty jsou k úpravě podle stanoviště; etiketa přípravku a laboratorní výsledek mají vždy přednost.</string>
     <string name="sources_varieties">Zdroje k odrůdám</string>
     <string name="book">kniha</string>
+    <string name="block_target_nm">Cukernatost sklizně pro tuto trať</string>
+    <string name="block_target_hint">Používá se pro odhad sklizně. Prázdné = cíl z Nastavení (%1$s °NM).</string>
+    <string name="use_typical_nm">Použít typických %1$s °NM pro tuto odrůdu (%2$s)</string>
+    <string name="grade_is">Kategorie: %1$s</string>
+    <string name="typical_nm">typicky kolem %1$s °NM (%2$s)</string>
+    <string name="block_target_is">sklizeň při %1$s °NM (%2$s)</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

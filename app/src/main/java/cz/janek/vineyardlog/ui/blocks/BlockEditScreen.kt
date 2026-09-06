@@ -43,6 +43,7 @@ import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.util.SugarGrades
 import cz.janek.vineyardlog.data.model.fmt
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +66,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
     var plantedYear by mutableStateOf("")
     var rootstock by mutableStateOf("")
     var training by mutableStateOf("")
+    var targetNm by mutableStateOf("")
     var notes by mutableStateOf("")
     var archived by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
@@ -76,6 +78,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
                 name = b.name; variety = b.variety; areaHa = b.areaHa?.let { it * areaFactor }.input(); vineCount = b.vineCount.input()
                 rowSpacing = b.rowSpacingM.input(); vineSpacing = b.vineSpacingM.input(); plantedYear = b.plantedYear.input()
                 rootstock = b.rootstock; training = b.trainingSystem; notes = b.notes; archived = b.archived
+                targetNm = b.targetNm.input()
             }
         }
     }
@@ -92,6 +95,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
             vineSpacingM = vineSpacing.toDoubleLenient(),
             plantedYear = plantedYear.toIntLenient(),
             rootstock = rootstock.trim(),
+            targetNm = targetNm.toDoubleLenient(),
             trainingSystem = training.trim(),
             notes = notes.trim(),
             archived = archived,
@@ -119,6 +123,7 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit, onOpenSources: () -> Uni
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            val czechLoc = LocalConfiguration.current.locales[0]?.language == "cs"
             AppTextField(vm.name, { vm.name = it }, stringResource(R.string.name_required), placeholder = stringResource(R.string.block_name_hint))
             AppTextField(vm.variety, { vm.variety = it }, stringResource(R.string.variety), placeholder = stringResource(R.string.variety_hint))
             DropdownField(
@@ -126,12 +131,21 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit, onOpenSources: () -> Uni
                 { it.name + if (it.piwi) " (PIWI)" else "" }, { vm.variety = it.name },
             )
             Varieties.find(vm.variety)?.let { v ->
-                val czech = LocalConfiguration.current.locales[0]?.language == "cs"
                 Text(
-                    stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md(), v.targetNm.fmt(1)) + "\n" + v.note.get(czech),
+                    stringResource(R.string.variety_info, if (czechLoc) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md()) + "\n" + v.note.get(czechLoc),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(onClick = onOpenSources) { Text(stringResource(R.string.sources_varieties)) }
+            }
+            NumberField(
+                vm.targetNm, { vm.targetNm = it }, stringResource(R.string.block_target_nm), suffix = "°NM",
+                supportingText = vm.targetNm.toDoubleLenient()?.let { t -> SugarGrades.labelFor(t, czechLoc)?.let { stringResource(R.string.grade_is, it) } }
+                    ?: stringResource(R.string.block_target_hint, settings.targetSugarNm.fmt(1)),
+            )
+            Varieties.find(vm.variety)?.takeIf { vm.targetNm.isBlank() }?.let { v ->
+                TextButton(onClick = { vm.targetNm = v.targetNm.input() }) {
+                    Text(stringResource(R.string.use_typical_nm, v.targetNm.fmt(1), SugarGrades.labelFor(v.targetNm, czechLoc).orEmpty()))
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = settings.areaLabel)

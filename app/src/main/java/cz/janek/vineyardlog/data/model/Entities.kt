@@ -23,6 +23,8 @@ data class Block(
     val plantedYear: Int? = null,
     val rootstock: String = "",
     val trainingSystem: String = "",
+    /** Sugar this block is picked at (°NM); null = the target from Settings. */
+    val targetNm: Double? = null,
     val notes: String = "",
     val archived: Boolean = false,
 )

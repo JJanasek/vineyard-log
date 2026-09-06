@@ -314,7 +314,7 @@ fun OverviewScreen(
                             sharedScale = true, xLabel = xDay,
                         )
                         val targets = byBlock.keys.mapNotNull { bid -> blocks.firstOrNull { it.id == bid } }.map { b ->
-                            "${b.name}: ${(Varieties.find(b.variety)?.targetNm ?: settings.targetSugarNm).fmt(1)} °NM"
+                            "${b.name}: ${(b.targetNm ?: settings.targetSugarNm).fmt(1)} °NM"
                         }
                         if (targets.isNotEmpty()) Text(stringResource(R.string.target_nm_line, targets.joinToString(" · ")), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         val context = LocalContext.current

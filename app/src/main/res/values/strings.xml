@@ -403,7 +403,7 @@
     <string name="chmi_credit">Measured data: ČHMÚ, opendata.chmi.cz (CC BY 4.0). Rain is the 07–07 climatological day.</string>
     <string name="source_chmi">ČHMÚ</string>
     <string name="pick_variety">Pick from the variety catalogue</string>
-    <string name="variety_info">%1$s · harvest usually %2$s–%3$s · target ≈ %4$s °NM</string>
+    <string name="variety_info">%1$s · harvest usually %2$s–%3$s</string>
     <string name="variety_piwi">PIWI (fungus-resistant)</string>
     <string name="harvest_window">Usual harvest window for %1$s: %2$s – %3$s</string>
     <string name="susceptible_varieties">Sensitive varieties here: %1$s</string>
@@ -588,6 +588,12 @@
     <string name="sources_intro">Where the built-in catalogues come from. Typical values are meant to be adjusted for your site; the product label and the lab result always win.</string>
     <string name="sources_varieties">Sources for varieties</string>
     <string name="book">book</string>
+    <string name="block_target_nm">Picking sugar for this block</string>
+    <string name="block_target_hint">Used for the harvest forecast. Empty = the target from Settings (%1$s °NM).</string>
+    <string name="use_typical_nm">Use the typical %1$s °NM for this variety (%2$s)</string>
+    <string name="grade_is">Category: %1$s</string>
+    <string name="typical_nm">typically around %1$s °NM (%2$s)</string>
+    <string name="block_target_is">picked at %1$s °NM (%2$s)</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

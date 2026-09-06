@@ -64,6 +64,7 @@ import cz.janek.vineyardlog.util.Phi
 import cz.janek.vineyardlog.util.Copper
 import cz.janek.vineyardlog.util.Nutrients
 import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.util.SugarGrades
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.dayOfYear
 import cz.janek.vineyardlog.util.formatDate
@@ -161,8 +162,12 @@ fun BlockDetailScreen(
                     if (info.isNotBlank()) Text(info, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Varieties.find(b.variety)?.let { v ->
                         val czech = LocalConfiguration.current.locales[0]?.language == "cs"
+                        // the built-in number is a hint; the block's own target (or Settings) drives the forecast
+                        val target = b.targetNm
                         Text(
-                            stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md(), v.targetNm.fmt(1)),
+                            stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md()) +
+                                (target?.let { " · " + stringResource(R.string.block_target_is, it.fmt(1), SugarGrades.labelFor(it, czech).orEmpty()) }
+                                    ?: (" · " + stringResource(R.string.typical_nm, v.targetNm.fmt(1), SugarGrades.labelFor(v.targetNm, czech).orEmpty()))),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
                         )
                     }
@@ -295,7 +300,7 @@ private fun SeasonCard(
                 KeyValueRow(stringResource(R.string.latest_kind, latestSugar.kind.label), "${latestSugar.value.fmt()} ${latestSugar.kind.unit} (${formatDate(latestSugar.date)})")
                 val trend = WineMath.sugarTrend(yearMeasurements.filter { it.kind == latestSugar.kind })
                 if (trend != null && trend.perDay > 0) {
-                    val targetNm = block?.variety?.let { Varieties.find(it) }?.targetNm ?: settings.targetSugarNm
+                    val targetNm = block?.targetNm ?: settings.targetSugarNm
                     val target = when (trend.kind) { MeasurementKind.BRIX -> targetNm * WineMath.BX_PER_NM; MeasurementKind.OECHSLE -> targetNm * WineMath.OE_PER_NM; else -> targetNm }
                     val days = WineMath.daysTo(trend, target)
                     if (days != null && days < 120) {

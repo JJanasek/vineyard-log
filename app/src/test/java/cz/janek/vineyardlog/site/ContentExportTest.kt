@@ -6,6 +6,7 @@ import cz.janek.vineyardlog.data.guide.GuideData
 import cz.janek.vineyardlog.data.guide.GuideLinks
 import cz.janek.vineyardlog.data.guide.Phenology
 import cz.janek.vineyardlog.data.guide.Sources
+import cz.janek.vineyardlog.util.SugarGrades
 import cz.janek.vineyardlog.data.model.EntryType
 import cz.janek.vineyardlog.data.model.MeasurementKind
 import cz.janek.vineyardlog.data.model.PhenologyStage
@@ -105,6 +106,9 @@ class ContentExportTest {
             put("measurementKinds", buildJsonArray { MeasurementKind.entries.forEach { add(buildJsonObject { put("key", it.name); put("label", res(it.labelRes)); put("unit", it.unit); put("domain", it.domain?.name ?: "") }) } })
             put("productCategories", buildJsonArray { ProductCategory.entries.forEach { add(buildJsonObject { put("key", it.name); put("label", res(it.labelRes)); put("domain", it.domain.name) }) } })
             put("wineStyles", buildJsonArray { WineStyle.entries.forEach { add(buildJsonObject { put("key", it.name); put("label", res(it.labelRes)) }) } })
+        })
+        write("sugar_grades.json", buildJsonArray {
+            SugarGrades.all.forEach { g -> add(buildJsonObject { put("nm", g.nm); put("label", bi(g.label)) }) }
         })
         write("sources.json", buildJsonArray {
             Sources.all.forEach { t ->

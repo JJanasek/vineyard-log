@@ -194,7 +194,7 @@ object AutoChecks {
             val latest = ms.filter { it.kind == MeasurementKind.NM || it.kind == MeasurementKind.BRIX || it.kind == MeasurementKind.OECHSLE }.maxByOrNull { it.date } ?: continue
             val trend = WineMath.sugarTrend(ms.filter { it.kind == latest.kind }) ?: continue
             if (trend.perDay <= 0) continue
-            val targetNm = Varieties.find(b.variety)?.targetNm ?: s.targetSugarNm
+            val targetNm = b.targetNm ?: s.targetSugarNm
             val target = when (trend.kind) { MeasurementKind.BRIX -> targetNm * WineMath.BX_PER_NM; MeasurementKind.OECHSLE -> targetNm * WineMath.OE_PER_NM; else -> targetNm }
             val days = WineMath.daysTo(trend, target) ?: continue
             val estimate = trend.lastDate + days

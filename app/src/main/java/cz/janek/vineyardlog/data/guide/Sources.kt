@@ -13,9 +13,10 @@ data class SourceTopic(val key: String, val title: Bi, val intro: Bi, val items:
 object Sources {
     val VARIETIES = SourceTopic(
         "varieties", Bi("Varieties", "Odrůdy"),
-        Bi("Ripening class, harvest window, target sugar and susceptibility are typical values for South Moravia compiled from these references and growers' experience – defaults to adjust for your site, not rules.",
-            "Ranost, okno sklizně, cílová cukernatost a náchylnost jsou typické hodnoty pro jižní Moravu sestavené z těchto zdrojů a ze zkušenosti vinařů – výchozí hodnoty k úpravě podle stanoviště, ne pravidla."),
+        Bi("Ripening class, harvest window and susceptibility are typical values for South Moravia compiled from these references and growers' experience – orientation, not rules. The only hard numbers on the °NM scale are the categories of the wine law; what you pick at is your decision, set per block or in Settings.",
+            "Ranost, okno sklizně a náchylnost jsou typické hodnoty pro jižní Moravu sestavené z těchto zdrojů a ze zkušenosti vinařů – orientace, ne pravidla. Jediná pevná čísla na stupnici °NM jsou kategorie z vinařského zákona; při jaké cukernatosti sklízíš, je tvoje rozhodnutí – nastav ji u tratě nebo v Nastavení."),
         listOf(
+            Source("Zákon č. 321/2004 Sb., o vinohradnictví a vinařství, § 17–19", "https://www.zakonyprolidi.cz/cs/2004-321", Bi("Defines °NM (kg of fermentable sugar per hl of must) and the categories: 14 regional, 15 quality, 19 kabinett, 21 late harvest, 24 selection of grapes, 27 selection of berries / ice / straw, 32 raisined berries.", "Definuje °NM (kg zkvasitelných cukrů na hl moštu) a kategorie: 14 zemské, 15 jakostní, 19 kabinetní, 21 pozdní sběr, 24 výběr z hroznů, 27 výběr z bobulí / ledové / slámové, 32 výběr z cibéb.")),
             Source("ÚKZÚS – Státní odrůdová kniha", "https://eagri.cz/public/portal/ukzuz/odrudy/statni-odrudova-kniha", Bi("Varieties registered in the Czech Republic, official names and maintainers.", "Odrůdy registrované v ČR, úřední názvy a udržovatelé.")),
             Source("VIVC – Vitis International Variety Catalogue (JKI Geilweilerhof)", "https://www.vivc.de/", Bi("Synonyms, parentage and ampelographic data for every variety.", "Synonyma, původ a ampelografické údaje ke každé odrůdě.")),
             Source("Vína z Moravy a z Čech – Odrůdy", "https://www.wineofczechrepublic.cz/nase-vina/odrudy", Bi("Profiles of the varieties grown in Moravia and Bohemia.", "Profily odrůd pěstovaných na Moravě a v Čechách.")),
