@@ -232,14 +232,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Merlot_fruit_set.jpg"
  },
  {
-  "key": "pheno_pea_size",
-  "file": "Clusters of green Catawba grapes on the vine with green leaves surrounding. (5ea61f67-675d-44c6-a21f-4493a8274912).JPG",
-  "author": "NPS",
-  "license": "Public domain",
-  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-  "source": "https://commons.wikimedia.org/wiki/File:Clusters_of_green_Catawba_grapes_on_the_vine_with_green_leaves_surrounding._(5ea61f67-675d-44c6-a21f-4493a8274912).JPG"
- },
- {
   "key": "pheno_bunch_closure",
   "file": "Traminette grapes on the vine.jpg",
   "author": "\"slgckgc\"",
@@ -278,5 +270,29 @@
   "license": "CC BY-SA 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Autumn_grapevines.jpg"
+ },
+ {
+  "key": "pheno_pea_size",
+  "file": "Immature grapes fruit.jpg",
+  "author": "Rosendahl",
+  "license": "Public domain",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File:Immature_grapes_fruit.jpg"
+ },
+ {
+  "key": "pheno_flowering_start",
+  "file": "Vitis vinifera - flower.jpg",
+  "author": "Darijanus",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Vitis_vinifera_-_flower.jpg"
+ },
+ {
+  "key": "pheno_bunch_closure_2",
+  "file": "Bunch Of Grapes On Vine.jpg",
+  "author": "Panelxf",
+  "license": "CC0",
+  "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:Bunch_Of_Grapes_On_Vine.jpg"
  }
 ]
