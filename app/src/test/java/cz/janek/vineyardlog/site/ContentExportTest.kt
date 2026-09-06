@@ -72,7 +72,7 @@ class ContentExportTest {
                 add(buildJsonObject {
                     put("name", v.name); put("aliases", strings(v.aliases)); put("style", v.style.name)
                     put("ripening", buildJsonObject { put("en", v.ripening.en); put("cs", v.ripening.cs) })
-                    put("harvestFrom", v.harvestFrom); put("harvestTo", v.harvestTo); put("targetNm", v.targetNm)
+                    put("harvestFrom", v.harvestFrom); put("harvestTo", v.harvestTo); put("nmFrom", v.nmFrom); put("nmTo", v.nmTo)
                     put("risk", buildJsonObject { put("peronospora", v.risk.peronospora.name); put("oidium", v.risk.oidium.name); put("botrytis", v.risk.botrytis.name); put("phomopsis", v.risk.phomopsis.name) })
                     put("note", bi(v.note)); put("piwi", v.piwi)
                 })

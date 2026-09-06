@@ -590,10 +590,10 @@
     <string name="book">kniha</string>
     <string name="block_target_nm">Cukernatost sklizně pro tuto trať</string>
     <string name="block_target_hint">Používá se pro odhad sklizně. Prázdné = cíl z Nastavení (%1$s °NM).</string>
-    <string name="use_typical_nm">Použít typických %1$s °NM pro tuto odrůdu (%2$s)</string>
     <string name="grade_is">Kategorie: %1$s</string>
-    <string name="typical_nm">typicky kolem %1$s °NM (%2$s)</string>
     <string name="block_target_is">sklizeň při %1$s °NM (%2$s)</string>
+    <string name="typical_nm_range">typicky %1$s–%2$s °NM</string>
+    <string name="nm_source_note">Rozsah z hesla odrůdy na české Wikipedii; je orientační a nic neřídí.</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

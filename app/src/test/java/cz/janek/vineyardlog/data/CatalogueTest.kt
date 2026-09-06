@@ -17,7 +17,13 @@ class CatalogueTest {
         assertEquals("Rulandské šedé", Varieties.find("Pinot gris")!!.name)
         assertEquals(WineStyle.RED, Varieties.find("Modrý Portugal")!!.style)
         assertNull(Varieties.find("Chateau Nonexistent"))
-        assertTrue(Varieties.all.all { it.harvestFrom.length == 5 && it.targetNm in 15.0..25.0 })
+        assertTrue(Varieties.all.all { it.harvestFrom.length == 5 && it.harvestTo.length == 5 })
+        // the sugar range is optional (only where a source states one) and must be a sane, ordered span
+        assertTrue(Varieties.all.all { v -> (v.nmFrom == null) == (v.nmTo == null) })
+        assertTrue(Varieties.all.mapNotNull { it.nmFrom }.all { it in 14.0..24.0 })
+        assertTrue(Varieties.all.all { v -> v.nmFrom == null || v.nmTo!! > v.nmFrom!! && v.nmTo!! <= 27.0 })
+        assertEquals(19.0, Varieties.find("Tramín červený")!!.nmFrom!!, 1e-9)
+        assertNull(Varieties.find("Pálava")!!.nmFrom)
     }
 
     @Test fun sprayTargetsMatchProductsByKeywordAndCategory() {

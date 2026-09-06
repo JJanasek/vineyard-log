@@ -2,7 +2,7 @@
 <h1>{{ t.varieties }}</h1>
 <p class="muted">{{ t.varieties_intro }}</p>
 <table><tr><th>{{ t.variety }}</th><th>{{ t.style }}</th><th>{{ t.ripening }}</th><th>{{ t.harvest_window }}</th><th>{{ t.typical_nm }}</th><th>Peronospora</th><th>Oidium</th><th>Botrytis</th><th></th></tr>
-{% for v in varieties %}<tr><td><b>{{ v.name }}</b>{% if v.piwi %} <span class="pill">PIWI</span>{% endif %}<div class="muted">{{ v.note[lang] }}</div></td><td>{{ styles[v.style] }}</td><td>{{ v.ripening[lang] }}</td><td>{{ v.harvestFrom }} – {{ v.harvestTo }}</td><td>{{ v.targetNm }}</td><td>{{ lv[v.risk.peronospora] }}</td><td>{{ lv[v.risk.oidium] }}</td><td>{{ lv[v.risk.botrytis] }}</td><td class="muted">{{ v.aliases|join(', ') }}</td></tr>{% endfor %}
+{% for v in varieties %}<tr><td><b>{{ v.name }}</b>{% if v.piwi %} <span class="pill">PIWI</span>{% endif %}<div class="muted">{{ v.note[lang] }}</div></td><td>{{ styles[v.style] }}</td><td>{{ v.ripening[lang] }}</td><td>{{ v.harvestFrom }} – {{ v.harvestTo }}</td><td>{% if v.nmFrom %}{{ v.nmFrom|nm }}–{{ v.nmTo|nm }}{% else %}<span class="muted">–</span>{% endif %}</td><td>{{ lv[v.risk.peronospora] }}</td><td>{{ lv[v.risk.oidium] }}</td><td>{{ lv[v.risk.botrytis] }}</td><td class="muted">{{ v.aliases|join(', ') }}</td></tr>{% endfor %}
 </table>
 <h2>{{ t.grades_title }}</h2>
 <p class="muted">{{ t.grades_note }}</p>

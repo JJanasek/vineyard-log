@@ -22,6 +22,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +45,7 @@ import cz.janek.vineyardlog.ui.components.BackTopBar
 import cz.janek.vineyardlog.ui.components.NumberField
 import cz.janek.vineyardlog.ui.components.DropdownField
 import cz.janek.vineyardlog.data.varieties.Varieties
+import cz.janek.vineyardlog.data.varieties.nmRange
 import cz.janek.vineyardlog.util.SugarGrades
 import cz.janek.vineyardlog.data.model.fmt
 import androidx.compose.ui.platform.LocalConfiguration
@@ -132,7 +135,8 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit, onOpenSources: () -> Uni
             )
             Varieties.find(vm.variety)?.let { v ->
                 Text(
-                    stringResource(R.string.variety_info, if (czechLoc) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md()) + "\n" + v.note.get(czechLoc),
+                    stringResource(R.string.variety_info, if (czechLoc) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md()) +
+                        (nmRange(v)?.let { " · " + it } ?: "") + "\n" + v.note.get(czechLoc),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(onClick = onOpenSources) { Text(stringResource(R.string.sources_varieties)) }
@@ -142,9 +146,13 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit, onOpenSources: () -> Uni
                 supportingText = vm.targetNm.toDoubleLenient()?.let { t -> SugarGrades.labelFor(t, czechLoc)?.let { stringResource(R.string.grade_is, it) } }
                     ?: stringResource(R.string.block_target_hint, settings.targetSugarNm.fmt(1)),
             )
-            Varieties.find(vm.variety)?.takeIf { vm.targetNm.isBlank() }?.let { v ->
-                TextButton(onClick = { vm.targetNm = v.targetNm.input() }) {
-                    Text(stringResource(R.string.use_typical_nm, v.targetNm.fmt(1), SugarGrades.labelFor(v.targetNm, czechLoc).orEmpty()))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // the wine-law categories are the only hard numbers on the °NM scale, so they make the shortcuts
+                SugarGrades.all.filter { it.nm in 19.0..27.0 }.forEach { g ->
+                    AssistChip(
+                        onClick = { vm.targetNm = g.nm.input() },
+                        label = { Text("${g.nm.fmt(0)} · ${g.label.get(czechLoc)}") },
+                    )
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

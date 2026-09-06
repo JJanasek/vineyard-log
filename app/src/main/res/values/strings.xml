@@ -590,10 +590,10 @@
     <string name="book">book</string>
     <string name="block_target_nm">Picking sugar for this block</string>
     <string name="block_target_hint">Used for the harvest forecast. Empty = the target from Settings (%1$s °NM).</string>
-    <string name="use_typical_nm">Use the typical %1$s °NM for this variety (%2$s)</string>
     <string name="grade_is">Category: %1$s</string>
-    <string name="typical_nm">typically around %1$s °NM (%2$s)</string>
     <string name="block_target_is">picked at %1$s °NM (%2$s)</string>
+    <string name="typical_nm_range">typically %1$s–%2$s °NM</string>
+    <string name="nm_source_note">Range from the Czech Wikipedia article of the variety; it is orientation and drives nothing.</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>
