@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }} · Vineyard Log</title>
-<link rel="stylesheet" href="{{ root }}static/style.css">
+<link rel="stylesheet" href="{{ root }}static/style.css?v={{ css_v }}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍇</text></svg>">
 </head>
 <body>
 <header><div class="bar">
   <a class="brand" href="{{ root }}{{ lang }}/">🍇 Vineyard Log</a>
   <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
-  <label for="nav-toggle" class="nav-btn" aria-label="Menu">☰ <span>{{ t.menu }}</span></label>
   <div class="lang-switch" title="{{ t.switch }}"><a class="{% if lang=='cs' %}on{% endif %}" href="{{ root }}cs/{{ self_path }}" lang="cs">CS</a><a class="{% if lang=='en' %}on{% endif %}" href="{{ root }}en/{{ self_path }}" lang="en">EN</a></div>
+  <label for="nav-toggle" class="nav-btn" aria-label="Menu">☰<span> {{ t.menu }}</span></label>
   <nav>
     <a href="{{ root }}{{ lang }}/" {% if page=='index' %}class="active"{% endif %}>{{ t.home }}</a>
     <a href="{{ root }}{{ lang }}/guide/" {% if page=='guide' %}class="active"{% endif %}>{{ t.guide }}</a>

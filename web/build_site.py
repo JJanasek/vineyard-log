@@ -98,6 +98,8 @@ UI = {
     kinds={'DISEASE': 'Choroby', 'PEST': 'Škůdci', 'DEFICIENCY': 'Nedostatky živin', 'DISORDER': 'Poruchy a poškození'}, levels={'LOW': 'N', 'MEDIUM': 'S', 'HIGH': 'V'}),
 }
 
+with open(os.path.join(ROOT, 'web', 'site', 'static', 'style.css'), 'rb') as f:
+    CSS_V = hashlib.sha1(f.read()).hexdigest()[:8]
 env = Environment(loader=FileSystemLoader(os.path.join(ROOT, 'web', 'site', 'templates')), autoescape=select_autoescape(['html']))
 out = args.out
 if os.path.exists(out):
@@ -141,7 +143,7 @@ for fn, pairs in (('index.html', (('href="style.css"', f'href="style.css?v={stam
     for a, b in pairs: text = text.replace(a, b)
     with open(path, 'w', encoding='utf-8') as f: f.write(text)
 with open(os.path.join(out, 'index.html'), 'w', encoding='utf-8') as f:
-    f.write(env.get_template('root_index.html').render())
+    f.write(env.get_template('root_index.html').render(css_v=CSS_V))
 open(os.path.join(out, '.nojekyll'), 'w').close()
 
 DOCS = [('quick-start', {'en': 'Quick start', 'cs': 'Rychlý start'}), ('disease-models', {'en': 'Disease models (Šteberla, Kast)', 'cs': 'Modely chorob (Šteberla, Kast)'}),
@@ -156,7 +158,7 @@ for lang in ('en', 'cs'):
     def render(template, path, depth, **ctx):
         root = '../' * depth
         self_path = path
-        html = env.get_template(template).render(lang=lang, other_lang=other, t=t, root=root, built=built, self_path=self_path, **ctx)
+        html = env.get_template(template).render(lang=lang, other_lang=other, t=t, root=root, built=built, self_path=self_path, css_v=CSS_V, **ctx)
         with open(os.path.join(base, path), 'w', encoding='utf-8') as f:
             f.write(html)
     render('index.html', 'index.html', 1, page='index', title=t['tagline'])
