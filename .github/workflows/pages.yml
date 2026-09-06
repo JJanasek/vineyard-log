@@ -27,7 +27,8 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v4
       - name: Export app content (unit test writes app/build/site-content)
-        run: ./gradlew --no-daemon testDebugUnitTest --tests 'cz.janek.vineyardlog.site.ContentExportTest'
+        # --rerun: the JSON files are a side effect of the test, so a build-cache hit must not skip it
+        run: ./gradlew --no-daemon :app:testDebugUnitTest --tests 'cz.janek.vineyardlog.site.ContentExportTest' --rerun
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install jinja2

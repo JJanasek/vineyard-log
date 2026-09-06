@@ -16,6 +16,9 @@ ap.add_argument('--content', default=os.path.join(ROOT, 'app', 'build', 'site-co
 ap.add_argument('--out', default=os.path.join(ROOT, 'web', 'dist'))
 args = ap.parse_args()
 
+if not os.path.isdir(args.content) or not os.listdir(args.content):
+    sys.exit(f'{args.content} is missing or empty – run ./gradlew :app:testDebugUnitTest --tests "*ContentExportTest" --rerun first')
+
 def load(name):
     with open(os.path.join(args.content, name), encoding='utf-8') as f:
         return json.load(f)
