@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         pendingRoute = intent?.getStringExtra(EXTRA_ROUTE)
         lifecycleScope.launch { appContainer.folderBackup.backupIfStale() }
         lifecycleScope.launch { runCatching { appContainer.reminders.rescheduleAll() } }
+        runCatching { cz.janek.vineyardlog.data.reminders.DailyCheckWorker.schedule(this) }
         setContent {
             VineyardTheme {
                 AppRoot(

@@ -87,6 +87,34 @@ class ReminderScheduler(private val context: Context, private val c: AppContaine
                 },
             )
         }
+        if (nm.getNotificationChannel(ALERTS) == null) {
+            nm.createNotificationChannel(
+                NotificationChannel(ALERTS, context.getString(R.string.alerts_channel), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = context.getString(R.string.alerts_channel_desc)
+                },
+            )
+        }
+    }
+
+    /** Post an automatic alert (risk, plan, fermentation, sampling); tapping opens [route]. */
+    fun alert(id: Int, title: String, text: String, route: String) {
+        ensureChannel()
+        val open = Intent(context, MainActivity::class.java)
+            .setAction(Intent.ACTION_VIEW)
+            .putExtra(MainActivity.EXTRA_ROUTE, route)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val pi = PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val n = NotificationCompat.Builder(context, ALERTS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .build()
+        val nm = NotificationManagerCompat.from(context)
+        if (nm.areNotificationsEnabled()) runCatching { nm.notify(id, n) }
     }
 
     /** Post the notification for [r]; tapping it opens a prefilled new entry. */
@@ -132,6 +160,7 @@ class ReminderScheduler(private val context: Context, private val c: AppContaine
 
     companion object {
         const val CHANNEL = "reminders"
+        const val ALERTS = "alerts"
         const val ACTION_FIRE = "cz.janek.vineyardlog.REMINDER_FIRE"
         const val EXTRA_ID = "reminderId"
     }

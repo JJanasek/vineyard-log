@@ -1,6 +1,7 @@
 package cz.janek.vineyardlog.ui.settings
 
 import cz.janek.vineyardlog.R
+import cz.janek.vineyardlog.data.reminders.AutoChecks
 import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.location.LocationManager
@@ -80,6 +81,15 @@ import java.time.LocalDate
 class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     val settings = c.settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
     var message by mutableStateOf<String?>(null)
+    var checking by mutableStateOf(false)
+
+    /** Manual run of the daily background checks; the result lines go to the snackbar. */
+    fun runAutoChecks() = viewModelScope.launch {
+        checking = true
+        val out = runCatching { AutoChecks.run(c) }.getOrElse { listOf(it.message ?: it.javaClass.simpleName) }
+        message = if (out.isEmpty()) c.appContext.getString(R.string.checks_nothing) else out.joinToString("\n")
+        checking = false
+    }
     var pendingImport by mutableStateOf<BackupData?>(null)
 
     fun update(transform: (Settings) -> Settings) = viewModelScope.launch { c.settings.update(transform) }
@@ -226,6 +236,10 @@ fun SettingsScreen(
     var areaUnit by remember(settings.areaUnit) { mutableStateOf(settings.areaUnit) }
     var sprayerL by remember(settings.sprayerVolumeL) { mutableStateOf(settings.sprayerVolumeL.input()) }
     var phiRem by remember(settings.phiReminders) { mutableStateOf(settings.phiReminders) }
+    var autoRisk by remember(settings.autoRisk) { mutableStateOf(settings.autoRisk) }
+    var autoPlan by remember(settings.autoPlan) { mutableStateOf(settings.autoPlan) }
+    var autoFerm by remember(settings.autoFermentation) { mutableStateOf(settings.autoFermentation) }
+    var autoSampling by remember(settings.autoSampling) { mutableStateOf(settings.autoSampling) }
     var lat by remember(settings.latitude) { mutableStateOf(settings.latitude.input()) }
     var lon by remember(settings.longitude) { mutableStateOf(settings.longitude.input()) }
     val noLocationMsg = stringResource(R.string.msg_no_location)
@@ -306,6 +320,29 @@ fun SettingsScreen(
                 Text(stringResource(R.string.phi_reminders), style = MaterialTheme.typography.bodyMedium)
             }
 
+            SectionTitle(stringResource(R.string.auto_reminders_title))
+            Text(stringResource(R.string.auto_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            listOf(
+                Triple(R.string.auto_risk, autoRisk) { v: Boolean -> autoRisk = v },
+                Triple(R.string.auto_plan, autoPlan) { v: Boolean -> autoPlan = v },
+                Triple(R.string.auto_fermentation, autoFerm) { v: Boolean -> autoFerm = v },
+                Triple(R.string.auto_sampling, autoSampling) { v: Boolean -> autoSampling = v },
+            ).forEach { (res, value, set) ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Switch(checked = value, onCheckedChange = set)
+                    Text(stringResource(res), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            val context = LocalContext.current
+            val lastRun = AutoChecks.lastRun(context)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { vm.runAutoChecks() }, enabled = !vm.checking) { Text(stringResource(R.string.run_checks_now)) }
+                Text(
+                    stringResource(R.string.last_run, if (lastRun > 0) formatDateTime(lastRun) else stringResource(R.string.never)),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
             SectionTitle(stringResource(R.string.vineyard_location))
             Text(stringResource(R.string.location_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -376,6 +413,7 @@ fun SettingsScreen(
                             areaUnit = areaUnit,
                             sprayerVolumeL = sprayerL.toDoubleLenient() ?: it.sprayerVolumeL,
                             phiReminders = phiRem,
+                            autoRisk = autoRisk, autoPlan = autoPlan, autoFermentation = autoFerm, autoSampling = autoSampling,
                         )
                     }
                     vm.message = savedMessage

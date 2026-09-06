@@ -44,6 +44,11 @@ data class Settings(
     val chmiTempName: String = "",
     /** Create a one-off reminder when the pre-harvest interval of a saved spray ends. */
     val phiReminders: Boolean = true,
+    /** Daily background checks that post alerts (see AutoChecks). */
+    val autoRisk: Boolean = true,
+    val autoPlan: Boolean = true,
+    val autoFermentation: Boolean = true,
+    val autoSampling: Boolean = true,
 ) {
     /** Factor from hectares to the display unit. */
     val areaFactor: Double get() = when (areaUnit) { "m2" -> 10_000.0; "a" -> 100.0; else -> 1.0 }
@@ -71,6 +76,10 @@ class SettingsStore(private val context: Context) {
         val CHMI_TEMP_WSI = stringPreferencesKey("chmi_temp_wsi")
         val CHMI_TEMP_NAME = stringPreferencesKey("chmi_temp_name")
         val PHI_REMINDERS = booleanPreferencesKey("phi_reminders")
+        val AUTO_RISK = booleanPreferencesKey("auto_risk")
+        val AUTO_PLAN = booleanPreferencesKey("auto_plan")
+        val AUTO_FERM = booleanPreferencesKey("auto_fermentation")
+        val AUTO_SAMPLING = booleanPreferencesKey("auto_sampling")
     }
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { p ->
@@ -93,6 +102,8 @@ class SettingsStore(private val context: Context) {
             chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
             chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
             phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
+            autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
+            autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
         )
     }
 
@@ -117,6 +128,8 @@ class SettingsStore(private val context: Context) {
                 chmiRainWsi = p[Keys.CHMI_RAIN_WSI] ?: "", chmiRainName = p[Keys.CHMI_RAIN_NAME] ?: "",
                 chmiTempWsi = p[Keys.CHMI_TEMP_WSI] ?: "", chmiTempName = p[Keys.CHMI_TEMP_NAME] ?: "",
             phiReminders = p[Keys.PHI_REMINDERS] ?: d.phiReminders,
+            autoRisk = p[Keys.AUTO_RISK] ?: d.autoRisk, autoPlan = p[Keys.AUTO_PLAN] ?: d.autoPlan,
+            autoFermentation = p[Keys.AUTO_FERM] ?: d.autoFermentation, autoSampling = p[Keys.AUTO_SAMPLING] ?: d.autoSampling,
             )
             val next = transform(current)
             p[Keys.GDD_BASE] = next.gddBase
@@ -136,6 +149,8 @@ class SettingsStore(private val context: Context) {
             p[Keys.CHMI_RAIN_WSI] = next.chmiRainWsi; p[Keys.CHMI_RAIN_NAME] = next.chmiRainName
             p[Keys.CHMI_TEMP_WSI] = next.chmiTempWsi; p[Keys.CHMI_TEMP_NAME] = next.chmiTempName
             p[Keys.PHI_REMINDERS] = next.phiReminders
+            p[Keys.AUTO_RISK] = next.autoRisk; p[Keys.AUTO_PLAN] = next.autoPlan
+            p[Keys.AUTO_FERM] = next.autoFermentation; p[Keys.AUTO_SAMPLING] = next.autoSampling
         }
     }
 }
