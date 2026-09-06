@@ -40,11 +40,13 @@ def label(name, lang):
 
 guide, phenology, varieties = load('guide.json'), load('phenology.json'), load('varieties.json')
 spray, cellar, enums, steberla = load('spray_program.json'), load('cellar_templates.json'), load('enums.json'), load('steberla.json')
+sources = load('sources.json')
+sources_by_key = {s['key']: s for s in sources}
 with open(os.path.join(ROOT, 'app', 'src', 'main', 'assets', 'guide', 'credits.json'), encoding='utf-8') as f:
     credits = {c['key']: c for c in json.load(f)}
 
 UI = {
- 'en': dict(home='Home', menu='Menu', guide='Field guide', phenology='Growth stages', varieties='Varieties', spray='Spray programme', cellar='Cellar protocols', docs='Docs', viewer='Backup viewer', download='Download', switch='Česky',
+ 'en': dict(home='Home', menu='Menu', sources='Sources', sources_for='Sources for this page', sources_intro='Where the content of this site and the app comes from. Typical values (harvest windows, sugar targets, doses in the templates) are defaults to adjust for your site; the product label and the lab result always win.', book='book', guide='Field guide', phenology='Growth stages', varieties='Varieties', spray='Spray programme', cellar='Cellar protocols', docs='Docs', viewer='Backup viewer', download='Download', switch='Česky',
     footer='Vineyard Log – an offline vineyard and cellar notebook for small growers. Code MIT; guide photos keep their Creative Commons licences.', built='built',
     tagline='A notebook for a small vineyard and cellar', intro='Vineyard Log is a free, offline Android app for hobby growers: sprays with doses per 10 l and PHI, phenology by photos, ripeness readings, harvest, cellar batches with protocols, weather from Open-Meteo and ČHMÚ, disease-risk models (3-10 rule, Kast/OiDiag index, Šteberla curves), reminders and daily alerts. Everything stays on your phone; backups are plain JSON you control.',
     get_app='Get the app', shots_note='Screenshots show the Czech interface; the app switches to English in Settings.', open_viewer='Open a backup in the browser', what='What it does', how_it_works='How it works', how_text='Add your blocks, log what you do from the block page, check the Overview tab. The field guide, spray programme, variety catalogue and cellar protocols on this site are generated from the same data the app ships with.',
@@ -70,7 +72,7 @@ UI = {
     spray_intro='Skeleton of the season by growth stage: what to aim at and how the BS 2025 hobby plan handles it (products per litre of water). Adjust to the risk card and the weather.', bs_plan='BS spray plan 2025 (per litre of water):', spray_sources='Plan rows and general rules from the 2025 leaflet of',
     cellar_intro='Protocol templates the app turns into dated reminders with instructions. Doses are hobby-sized (g/hl and per 10 l); the label and the lab win.', day='Day', step='Step', notes='Notes',
     kinds={'DISEASE': 'Diseases', 'PEST': 'Pests', 'DEFICIENCY': 'Deficiencies', 'DISORDER': 'Disorders and damage'}, levels={'LOW': 'L', 'MEDIUM': 'M', 'HIGH': 'H'}),
- 'cs': dict(home='Úvod', menu='Menu', guide='Atlas', phenology='Fenofáze', varieties='Odrůdy', spray='Postřikový program', cellar='Sklepní protokoly', docs='Dokumentace', viewer='Prohlížeč zálohy', download='Stažení', switch='English',
+ 'cs': dict(home='Úvod', menu='Menu', sources='Zdroje', sources_for='Zdroje k této stránce', sources_intro='Odkud pochází obsah tohoto webu a aplikace. Typické hodnoty (okna sklizně, cílová cukernatost, dávky v šablonách) jsou výchozí hodnoty k úpravě podle stanoviště; etiketa přípravku a laboratorní výsledek mají vždy přednost.', book='kniha', guide='Atlas', phenology='Fenofáze', varieties='Odrůdy', spray='Postřikový program', cellar='Sklepní protokoly', docs='Dokumentace', viewer='Prohlížeč zálohy', download='Stažení', switch='English',
     footer='Vineyard Log – offline zápisník vinice a sklepa pro malé vinaře. Kód MIT; fotky atlasu mají své licence Creative Commons.', built='sestaveno',
     tagline='Zápisník pro malou vinici a sklep', intro='Vineyard Log je bezplatná offline aplikace pro Android pro hobby vinaře: postřiky s dávkami na 10 l a ochrannou lhůtou, fenofáze podle fotek, měření zralosti, sklizeň, šarže ve sklepě s protokoly, počasí z Open-Meteo a ČHMÚ, modely rizika chorob (pravidlo 3-10, index podle Kasta, Šteberlovy křivky), připomínky a denní upozornění. Všechno zůstává v telefonu; záloha je obyčejný JSON pod tvou kontrolou.',
     get_app='Stáhnout aplikaci', shots_note='', open_viewer='Otevřít zálohu v prohlížeči', what='Co umí', how_it_works='Jak to funguje', how_text='Založ tratě, zapisuj z detailu tratě, koukej na Přehled. Atlas, postřikový program, katalog odrůd i sklepní protokoly na tomto webu se generují ze stejných dat, která nese aplikace.',
@@ -168,17 +170,18 @@ for lang in ('en', 'cs'):
     render('index.html', 'index.html', 1, page='index', title=t['tagline'])
     render('download.html', 'download.html', 1, page='download', title=t['download'])
     groups = [(t['kinds'][k], [e for e in guide if e['kind'] == k]) for k in ('DISEASE', 'PEST', 'DEFICIENCY', 'DISORDER')]
-    render('guide_index.html', 'guide/index.html', 2, page='guide', title=t['guide'], groups=groups)
+    render('guide_index.html', 'guide/index.html', 2, page='guide', title=t['guide'], groups=groups, topic=sources_by_key['guide'])
     for e in guide:
         render('guide_entry.html', f'guide/{e["key"]}.html', 2, page='guide', title=e['name'][lang], e=e, credits=credits)
     stages = [dict(s, labelText=label(s['label'], lang)) for s in phenology]
-    render('phenology.html', 'phenology.html', 1, page='phenology', title=t['phenology'], stages=stages, credits=credits)
+    render('phenology.html', 'phenology.html', 1, page='phenology', title=t['phenology'], stages=stages, credits=credits, topic=sources_by_key['phenology'])
     styles = {e['key']: label(e['label'], lang) for e in enums['wineStyles']}
-    render('varieties.html', 'varieties.html', 1, page='varieties', title=t['varieties'], varieties=varieties, styles=styles, lv=t['levels'])
+    render('varieties.html', 'varieties.html', 1, page='varieties', title=t['varieties'], varieties=varieties, styles=styles, lv=t['levels'], topic=sources_by_key['varieties'])
     targets = {x['key']: x['label'] for x in spray['targets']}
-    render('spray.html', 'spray.html', 1, page='spray', title=t['spray'], windows=spray['windows'], targets=targets)
+    render('spray.html', 'spray.html', 1, page='spray', title=t['spray'], windows=spray['windows'], targets=targets, topic=sources_by_key['spray'])
     tpls = [dict(tp, steps=[dict(s, typeText=label(s['typeLabel'], lang)) for s in tp['steps']]) for tp in cellar]
-    render('cellar.html', 'cellar.html', 1, page='cellar', title=t['cellar'], templates=tpls, styles=styles)
+    render('cellar.html', 'cellar.html', 1, page='cellar', title=t['cellar'], templates=tpls, styles=styles, topic=sources_by_key['cellar'])
+    render('sources.html', 'sources.html', 1, page='sources', title=t['sources'], sources=sources)
     docs = [dict(slug=slug, title=title[lang]) for slug, title in DOCS if os.path.exists(os.path.join(ROOT, 'docs', slug + '.md'))]
     render('docs_index.html', 'docs/index.html', 2, page='docs', title=t['docs'], docs=docs)
     for d in docs:

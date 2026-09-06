@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ t.sources }}</h1>
+<p>{{ t.sources_intro }}</p>
+{% for topic in sources %}<h2>{{ topic.title[lang] }}</h2>
+<p class="muted">{{ topic.intro[lang] }}</p>
+<ul class="sources">{% for s in topic["items"] %}<li>{% if s.url %}<a href="{{ s.url }}">{{ s.title }}</a>{% else %}{{ s.title }} <span class="pill">{{ t.book }}</span>{% endif %}<div class="muted">{{ s.note[lang] }}</div></li>{% endfor %}</ul>
+{% endfor %}
+{% endblock %}

@@ -219,6 +219,7 @@ fun SettingsScreen(
     onPickedConsumed: () -> Unit = {},
     onPickOnMap: (Double?, Double?) -> Unit = { _, _ -> },
     onOpenQuickStart: () -> Unit = {},
+    onOpenSources: () -> Unit = {},
 ) {
     val vm = appViewModel { SettingsViewModel(it) }
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -486,6 +487,7 @@ fun SettingsScreen(
 
             SectionTitle(stringResource(R.string.about))
             Text(stringResource(R.string.about_text), style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = onOpenSources) { Text(stringResource(R.string.sources_title)) }
             Spacer(Modifier.height(24.dp))
         }
     }

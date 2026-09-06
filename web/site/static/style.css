@@ -52,3 +52,5 @@ th { background: var(--light); color: var(--green); }
 pre { background: #eee; padding: 0.7rem; border-radius: 8px; overflow-x: auto; }
 .md table { margin: 1rem 0; } .md img { max-width: 100%; }
 @media (max-width: 600px) { .shots img { height: 300px; } }
+
+ul.sources { padding-left: 1.2rem; } ul.sources li { margin: 0.4rem 0; } ul.sources a { color: var(--green); }

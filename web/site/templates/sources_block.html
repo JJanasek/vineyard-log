@@ -1,0 +1,4 @@
+{% if topic %}<h2>{{ t.sources_for }}</h2>
+<p class="muted">{{ topic.intro[lang] }}</p>
+<ul class="sources">{% for s in topic["items"] %}<li>{% if s.url %}<a href="{{ s.url }}">{{ s.title }}</a>{% else %}{{ s.title }} <span class="pill">{{ t.book }}</span>{% endif %}<div class="muted">{{ s.note[lang] }}</div></li>{% endfor %}</ul>
+<p class="muted small"><a href="{{ root }}{{ lang }}/sources.html">{{ t.sources }} →</a></p>{% endif %}

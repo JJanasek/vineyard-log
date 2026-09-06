@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import cz.janek.vineyardlog.ui.onboarding.QuickStartScreen
+import cz.janek.vineyardlog.ui.settings.SourcesScreen
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.ui.guide.PhenologyScreen
 import cz.janek.vineyardlog.ui.batches.BatchDetailScreen
@@ -145,6 +146,9 @@ fun AppRoot(
                         onOpenPlan = { navController.navigate(Routes.PLAN) },
                     )
                 }
+                composable("sources?topic={topic}", arguments = listOf(navArgument("topic") { type = NavType.StringType; nullable = true; defaultValue = null })) { back ->
+                    SourcesScreen(onBack = { navController.popBackStack() }, initialTopic = back.arguments?.getString("topic"))
+                }
                 composable(Routes.QUICK_START) {
                     QuickStartScreen(
                         onClose = { navController.popBackStack() },
@@ -197,6 +201,7 @@ fun AppRoot(
                         onPickedConsumed = { entry.savedStateHandle["pickedLocation"] = null },
                         onPickOnMap = { lat, lon -> navController.navigate(Routes.mapPicker(lat, lon)) },
                     onOpenQuickStart = { navController.navigate(Routes.QUICK_START) },
+                    onOpenSources = { navController.navigate(Routes.SOURCES) },
                     )
                 }
                 composable(
@@ -260,7 +265,7 @@ fun AppRoot(
                     arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
                 ) { entry ->
                     val id = (entry.arguments?.getLong("id") ?: -1L).orNull()
-                    BlockEditScreen(blockId = id, onDone = { navController.popBackStack() })
+                    BlockEditScreen(blockId = id, onDone = { navController.popBackStack() }, onOpenSources = { navController.navigate(Routes.sources("varieties")) })
                 }
 
                 composable(Routes.BATCH, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->

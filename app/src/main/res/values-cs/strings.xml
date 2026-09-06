@@ -584,6 +584,10 @@
     <string name="fill_from_weather">Doplnit z počasí</string>
     <string name="search_product">Hledat přípravek…</string>
     <string name="no_products_match">Nic neodpovídá.</string>
+    <string name="sources_title">Zdroje dat</string>
+    <string name="sources_intro">Odkud pocházejí vestavěné katalogy. Typické hodnoty jsou k úpravě podle stanoviště; etiketa přípravku a laboratorní výsledek mají vždy přednost.</string>
+    <string name="sources_varieties">Zdroje k odrůdám</string>
+    <string name="book">kniha</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

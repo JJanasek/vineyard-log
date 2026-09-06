@@ -584,6 +584,10 @@
     <string name="fill_from_weather">Fill from weather</string>
     <string name="search_product">Search product…</string>
     <string name="no_products_match">Nothing matches.</string>
+    <string name="sources_title">Data sources</string>
+    <string name="sources_intro">Where the built-in catalogues come from. Typical values are meant to be adjusted for your site; the product label and the lab result always win.</string>
+    <string name="sources_varieties">Sources for varieties</string>
+    <string name="book">book</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

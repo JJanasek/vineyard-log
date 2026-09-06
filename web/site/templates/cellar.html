@@ -8,4 +8,5 @@
 {% for s in tpl.steps %}<tr><td>{{ s.day }}{% if s.untilDay %}–{{ s.untilDay }}{% endif %}</td><td><b>{{ s.title[lang] }}</b><div class="muted">{{ s.typeText }}</div></td><td>{{ s.notes[lang] }}</td></tr>{% endfor %}
 </table>
 {% endfor %}
+{% include "sources_block.html" %}
 {% endblock %}

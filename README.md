@@ -106,6 +106,8 @@ Material you may keep for yourself but not redistribute (for example the photo s
 
 Custom domain: put the domain on one line in `web/site/CNAME` (the build copies it to the site root), point DNS at GitHub Pages (apex `A` records 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153 plus the matching `AAAA` records, and `www` as a `CNAME` to `jjanasek.github.io`), then enter the domain under *Settings → Pages → Custom domain* and tick *Enforce HTTPS* once the certificate is issued. All site links are relative, so the pages work both at `/vineyard-log/` and at a domain root.
 
+Data sources: `data/guide/Sources.kt` lists the references behind the variety catalogue (ÚKZÚS, VIVC, wineofczechrepublic.cz, Pavloušek, Kraus), the BBCH growth stages (Lorenz et al. 1995, JKI monograph), the field guide (Rostlinolékařský portál, BS articles, Ekovín), the risk models (Šteberla 1982, Kast OiDiag, Baldacci), the spray programme (BS 2025 leaflet, ÚKZÚS product register), the cellar templates (Steidl, BS, producer sheets) and the weather services. They show in the app under *Settings → Data sources* and next to the variety picker, and on the site as a *Sources* page plus a section at the bottom of each content page.
+
 Build locally: `./gradlew testDebugUnitTest --tests '*ContentExportTest'` (writes `app/build/site-content`), then `python3 web/build_site.py` (needs `jinja2`) and open `web/dist/index.html`. Tagging `v*` runs `.github/workflows/release.yml`, which attaches the APK to a GitHub release; the site links to the latest release. F-Droid: planned once release signing is reproducible.
 
 ## Project layout

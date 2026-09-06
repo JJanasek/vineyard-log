@@ -22,6 +22,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -100,7 +101,7 @@ class BlockEditViewModel(private val c: AppContainer, private val id: Long?) : V
 }
 
 @Composable
-fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
+fun BlockEditScreen(blockId: Long?, onDone: () -> Unit, onOpenSources: () -> Unit = {}) {
     val vm = appViewModel(key = "blockEdit${blockId ?: "new"}") { BlockEditViewModel(it, blockId) }
     val settings by vm.settings.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -130,6 +131,7 @@ fun BlockEditScreen(blockId: Long?, onDone: () -> Unit) {
                     stringResource(R.string.variety_info, if (czech) v.ripening.cs else v.ripening.en, v.harvestFrom.md(), v.harvestTo.md(), v.targetNm.fmt(1)) + "\n" + v.note.get(czech),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                TextButton(onClick = onOpenSources) { Text(stringResource(R.string.sources_varieties)) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(vm.areaHa, { vm.areaHa = it }, stringResource(R.string.area), Modifier.weight(1f), suffix = settings.areaLabel)
