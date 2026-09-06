@@ -19,8 +19,8 @@ object Sources {
             Source("ÚKZÚS – Státní odrůdová kniha", "https://eagri.cz/public/portal/ukzuz/odrudy/statni-odrudova-kniha", Bi("Varieties registered in the Czech Republic, official names and maintainers.", "Odrůdy registrované v ČR, úřední názvy a udržovatelé.")),
             Source("VIVC – Vitis International Variety Catalogue (JKI Geilweilerhof)", "https://www.vivc.de/", Bi("Synonyms, parentage and ampelographic data for every variety.", "Synonyma, původ a ampelografické údaje ke každé odrůdě.")),
             Source("Vína z Moravy a z Čech – Odrůdy", "https://www.wineofczechrepublic.cz/nase-vina/odrudy", Bi("Profiles of the varieties grown in Moravia and Bohemia.", "Profily odrůd pěstovaných na Moravě a v Čechách.")),
-            Source("Pavloušek, P.: Encyklopedie révy vinné. Computer Press, Brno 2007", "", Bi("Book: ripening, site demands and susceptibility of the varieties.", "Kniha: ranost, nároky na stanoviště a náchylnost odrůd.")),
-            Source("Kraus, V., Hubáček, V., Ackermann, P.: Rukověť vinaře. Brázda, Praha 2004", "", Bi("Book: variety notes and vineyard practice.", "Kniha: poznámky k odrůdám a vinohradnická praxe.")),
+            Source("Pavloušek, P.: Encyklopedie révy vinné. Computer Press, Brno 2007", "", Bi("ripening, site demands and susceptibility of the varieties.", "ranost, nároky na stanoviště a náchylnost odrůd.")),
+            Source("Kraus, V., Hubáček, V., Ackermann, P.: Rukověť vinaře. Brázda, Praha 2004", "", Bi("variety notes and vineyard practice.", "poznámky k odrůdám a vinohradnická praxe.")),
         ),
     )
     val PHENOLOGY = SourceTopic(
@@ -66,10 +66,10 @@ object Sources {
         "cellar", Bi("Cellar protocols and calculators", "Sklepní protokoly a kalkulačky"),
         Bi("Hobby-sized protocols and formulas; the producer sheet of the yeast, nutrient or enzyme and the lab result win over the template.", "Malovinařské protokoly a vzorce; datasheet výrobce kvasinek, výživy či enzymu a laboratorní výsledek mají přednost před šablonou."),
         listOf(
-            Source("Steidl, R.: Sklepní hospodářství. Národní vinařské centrum, Valtice 2010", "", Bi("Book: must treatment, fermentation, racking, stabilisation.", "Kniha: ošetření moštu, kvašení, stáčení, stabilizace.")),
+            Source("Steidl, R.: Sklepní hospodářství. Národní vinařské centrum, Valtice 2010", "", Bi("must treatment, fermentation, racking, stabilisation.", "ošetření moštu, kvašení, stáčení, stabilizace.")),
             Source("BS vinařské potřeby – články o moštu a víně", "https://www.vinarskepotreby.cz/clanky", Bi("The BS protocol template and the pre-harvest article.", "Šablona protokolu BS a článek před sklizní.")),
             Source("Vinařský dům – datasheets of yeasts, nutrients and enzymes", "https://www.vinarskydum.cz/", Bi("Dose ranges of the products the templates mention.", "Dávkování přípravků, které šablony zmiňují.")),
-            Source("Kraus, V., Hubáček, V., Ackermann, P.: Rukověť vinaře. Brázda, Praha 2004", "", Bi("Book: chaptalisation and sulphite rules of thumb.", "Kniha: pravidla doslazení a síření.")),
+            Source("Kraus, V., Hubáček, V., Ackermann, P.: Rukověť vinaře. Brázda, Praha 2004", "", Bi("chaptalisation and sulphite rules of thumb.", "pravidla doslazení a síření.")),
         ),
     )
     val WEATHER = SourceTopic(
