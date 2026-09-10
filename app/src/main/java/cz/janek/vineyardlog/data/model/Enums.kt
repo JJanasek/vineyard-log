@@ -110,6 +110,7 @@ enum class MeasurementKind(@StringRes val labelRes: Int, val unit: String, val d
     SOIL_P(R.string.mk_soil_p, "mg/kg", Domain.VINEYARD),
     SOIL_K(R.string.mk_soil_k, "mg/kg", Domain.VINEYARD),
     SOIL_MG(R.string.mk_soil_mg, "mg/kg", Domain.VINEYARD),
+    SOIL_CA(R.string.mk_soil_ca, "mg/kg", Domain.VINEYARD),
     SOIL_ORGANIC_MATTER(R.string.mk_soil_organic_matter, "%", Domain.VINEYARD),
     LEAF_N(R.string.mk_leaf_n, "%", Domain.VINEYARD);
 

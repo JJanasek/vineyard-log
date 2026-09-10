@@ -69,7 +69,12 @@ import cz.janek.vineyardlog.util.DiseaseRisk
 import cz.janek.vineyardlog.util.Gdd
 import cz.janek.vineyardlog.util.Steberla
 import cz.janek.vineyardlog.util.RiskLevel
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import cz.janek.vineyardlog.util.WineMath
+import cz.janek.vineyardlog.util.toLocalDate
+import androidx.compose.ui.platform.LocalConfiguration
+import cz.janek.vineyardlog.util.SoilAdvice
 import cz.janek.vineyardlog.util.dayOfYear
 import cz.janek.vineyardlog.util.formatDate
 import cz.janek.vineyardlog.util.formatDateShort
@@ -440,21 +445,55 @@ private fun CellarTable(batches: List<Batch>, cellar: List<Reading>) {
     }
 }
 
-/** Latest soil analysis values per block (all years), from measurements of the SOIL_* kinds. */
+/** Latest soil analysis per block with the K/Mg ratio and what the numbers mean for fertilising. */
 @Composable
 private fun SoilTable(entries: List<EntryWithDetails>, blocks: List<Block>) {
-    val kinds = listOf(MeasurementKind.SOIL_PH, MeasurementKind.SOIL_N, MeasurementKind.SOIL_P, MeasurementKind.SOIL_K, MeasurementKind.SOIL_MG, MeasurementKind.SOIL_ORGANIC_MATTER)
+    val kinds = listOf(
+        MeasurementKind.SOIL_PH, MeasurementKind.SOIL_ORGANIC_MATTER, MeasurementKind.SOIL_N,
+        MeasurementKind.SOIL_P, MeasurementKind.SOIL_K, MeasurementKind.SOIL_MG, MeasurementKind.SOIL_CA,
+    )
     val soil = remember(entries) { readings(entries, Domain.VINEYARD).filter { it.kind in kinds } }
     if (soil.isEmpty()) return
-    val rows = soil.groupBy { it.blockId }.entries.map { (bid, rs) ->
-        val latestDate = rs.maxOf { it.date }
-        val name = blocks.firstOrNull { it.id == bid }?.name ?: stringResource(R.string.whole_vineyard)
-        listOf("$name · ${formatDate(latestDate)}") + kinds.map { k -> rs.filter { it.kind == k }.maxByOrNull { it.date }?.value?.fmt(1) ?: "–" }
-    }
-    val w = listOf(2.2f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f)
+    val czech = LocalConfiguration.current.locales[0]?.language == "cs"
     ChartCard(stringResource(R.string.soil_title)) {
-        TableRow(listOf(stringResource(R.string.block), "pH", "N", "P", "K", "Mg", stringResource(R.string.om_short)), w, header = true)
-        rows.forEach { TableRow(it, w) }
+        soil.groupBy { it.blockId }.forEach { (bid, rs) ->
+            val latestDate = rs.maxOf { it.date }
+            val name = blocks.firstOrNull { it.id == bid }?.name ?: stringResource(R.string.whole_vineyard)
+            fun latest(k: MeasurementKind) = rs.filter { it.kind == k }.maxByOrNull { it.date }?.value
+            val ph = latest(MeasurementKind.SOIL_PH)
+            val humus = latest(MeasurementKind.SOIL_ORGANIC_MATTER)
+            val k = latest(MeasurementKind.SOIL_K)
+            val mg = latest(MeasurementKind.SOIL_MG)
+            val ca = latest(MeasurementKind.SOIL_CA)
+            val ratio = SoilAdvice.kMgRatio(k, mg)
+            val values = buildList {
+                ph?.let { add("pH ${it.fmt(1)}") }
+                humus?.let { add(stringResource(R.string.om_short) + " ${it.fmt(2)} %") }
+                latest(MeasurementKind.SOIL_N)?.let { add("N ${it.fmt(0)}") }
+                latest(MeasurementKind.SOIL_P)?.let { add("P ${it.fmt(0)}") }
+                k?.let { add("K ${it.fmt(0)}") }
+                mg?.let { add("Mg ${it.fmt(0)}") }
+                ratio?.let { add("K/Mg ${it.fmt(2)}") }
+                ca?.let { add("Ca ${it.fmt(0)}") }
+            }
+            Text("$name · ${formatDate(latestDate)}", style = MaterialTheme.typography.titleSmall)
+            Text(values.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+            val notes = remember(ph, humus, k, mg, ca) {
+                SoilAdvice.evaluate(SoilAdvice.Soil(ph = ph, humusPct = humus, kMgPerKg = k, mgMgPerKg = mg, caMgPerKg = ca))
+            }
+            notes.filter { it.level != SoilAdvice.Level.OK }.forEach { n ->
+                Text(
+                    n.text.get(czech), style = MaterialTheme.typography.bodySmall,
+                    color = if (n.level == SoilAdvice.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            val due = latestDate.toLocalDate().plusYears(SoilAdvice.REPEAT_YEARS.toLong())
+            Text(
+                stringResource(R.string.soil_repeat_due, formatDate(due.toEpochDay())),
+                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+        }
         Text(stringResource(R.string.soil_units_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

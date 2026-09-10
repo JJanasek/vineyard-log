@@ -594,6 +594,8 @@
     <string name="block_target_is">picked at %1$s °NM (%2$s)</string>
     <string name="typical_nm_range">typically %1$s–%2$s °NM</string>
     <string name="nm_source_note">Range from the Czech Wikipedia article of the variety; it is orientation and drives nothing.</string>
+    <string name="mk_soil_ca">Soil calcium (Ca)</string>
+    <string name="soil_repeat_due">Repeat the analysis around %1$s (every 4 years).</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

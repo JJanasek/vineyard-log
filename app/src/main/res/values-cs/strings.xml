@@ -594,6 +594,8 @@
     <string name="block_target_is">sklizeň při %1$s °NM (%2$s)</string>
     <string name="typical_nm_range">typicky %1$s–%2$s °NM</string>
     <string name="nm_source_note">Rozsah z hesla odrůdy na české Wikipedii; je orientační a nic neřídí.</string>
+    <string name="mk_soil_ca">Vápník v půdě (Ca)</string>
+    <string name="soil_repeat_due">Rozbor zopakovat kolem %1$s (jednou za 4 roky).</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>
