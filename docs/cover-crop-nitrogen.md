@@ -52,3 +52,21 @@ sown that way is worth around 8 kg N/ha, not 45.
 Log it as a **Green cover** entry with the legume percentage and the covered percentage; the block
 page then shows the credit as its own line, separate from what went on through the soil and through
 the leaf. It is an estimate for planning – the soil analysis every four years is what settles it.
+
+## The yardstick the balance is measured against
+
+The credit only means something against a target. The app compares the base supply – soil
+fertiliser plus this credit, without foliar feed – to a nitrogen target you set in Settings,
+default 40 kg N/ha:
+
+| Source | Figure |
+| --- | --- |
+| [AWRI viti-note, nitrogen fertilisation](https://www.awri.com.au/wp-content/uploads/1_nutrition_nitrogen_fertilisation.pdf) | mature vineyards: 50–60 kg N/ha in warm regions, about 20 kg N/ha in cooler ones, where rainfall and cover-crop turnover are often enough on their own |
+| Czech practice (Ekovín, vineyard press) | annual uptake 50–70 kg N/ha, spring top-up 30–50 kg N, prunings left in the rows return about a fifth of the nutrient uptake |
+| Meta-analyses of vineyard nitrogen | around 50 kg N/ha/yr for 12 t/ha in a cool climate; excess nitrogen costs quality through vigour, a shaded fruit zone and late ripening |
+
+The band is deliberately asymmetric: below 60 % of the target the block reads as short, above
+110 % as over-fertilised, because too much nitrogen in a vineyard does more damage than too little.
+
+Foliar feed is kept out of this sum on purpose. A few tenths of a kilogram per hectare through the
+leaf is a targeted correction, and folding it in would make a hungry block look fed.

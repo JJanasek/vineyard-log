@@ -236,6 +236,7 @@ fun SettingsScreen(
     var water by remember(settings.defaultWaterLha) { mutableStateOf(settings.defaultWaterLha.input()) }
     var currency by remember(settings.currency) { mutableStateOf(settings.currency) }
     var targetNm by remember(settings.targetSugarNm) { mutableStateOf(settings.targetSugarNm.input()) }
+    var nTarget by remember(settings.nitrogenTargetKgHa) { mutableStateOf(settings.nitrogenTargetKgHa.input()) }
     var areaUnit by remember(settings.areaUnit) { mutableStateOf(settings.areaUnit) }
     var sprayerL by remember(settings.sprayerVolumeL) { mutableStateOf(settings.sprayerVolumeL.input()) }
     var phiRem by remember(settings.phiReminders) { mutableStateOf(settings.phiReminders) }
@@ -398,6 +399,7 @@ fun SettingsScreen(
             NumberField(water, { water = it }, stringResource(R.string.spray_water_volume), suffix = "l/ha")
             AppTextField(currency, { currency = it }, stringResource(R.string.currency))
             NumberField(targetNm, { targetNm = it }, stringResource(R.string.forecast_target), suffix = "°NM")
+            NumberField(nTarget, { nTarget = it }, stringResource(R.string.n_target), suffix = "kg N/ha", supportingText = stringResource(R.string.n_target_hint))
             val errSeasonDates = stringResource(R.string.err_season_dates)
             val savedMessage = stringResource(R.string.msg_settings_saved)
             Button(
@@ -416,6 +418,7 @@ fun SettingsScreen(
                             latitude = lat.toDoubleLenient(),
                             longitude = lon.toDoubleLenient(),
                             targetSugarNm = targetNm.toDoubleLenient() ?: it.targetSugarNm,
+                            nitrogenTargetKgHa = nTarget.toDoubleLenient() ?: it.nitrogenTargetKgHa,
                             areaUnit = areaUnit,
                             sprayerVolumeL = sprayerL.toDoubleLenient() ?: it.sprayerVolumeL,
                             phiReminders = phiRem,

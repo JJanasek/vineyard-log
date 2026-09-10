@@ -65,7 +65,7 @@ class NutrientsSeasonTest {
         )
         val s = Nutrients.season(listOf(entry(EntryType.GREEN_COVER, 3, null, null, "", ms = ms)), year, block)
         assertEquals(45.0 * 0.5 * 0.35, s.coverCropN, 1e-9)
-        assertEquals(s.coverCropN, s.totalN, 1e-9)
+        assertEquals(s.coverCropN, s.baseN, 1e-9)   // no soil fertiliser, so the base supply is the credit alone
         // no shares logged: the whole block under a pure legume cover
         val plain = Nutrients.season(listOf(entry(EntryType.GREEN_COVER, 3, null, null, "")), year, block)
         assertEquals(45.0, plain.coverCropN, 1e-9)

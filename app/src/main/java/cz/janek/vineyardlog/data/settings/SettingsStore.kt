@@ -30,6 +30,15 @@ data class Settings(
     val longitude: Double? = null,
     /** Harvest target used for the ripeness forecast, in °NM. */
     val targetSugarNm: Double = 21.0,
+    /**
+     * Nitrogen the block should receive in a season, kg/ha, as the yardstick for the balance.
+     * 40 is the middle of the usual range: about 20 kg N/ha is enough in cooler regions where
+     * rainfall and cover-crop turnover cover much of the need, 50–60 in warm ones (AWRI viti-note),
+     * while Czech sources put the annual uptake at 50–70 kg/ha with roughly a fifth returned in the
+     * prunings. Over-fertilising nitrogen costs more than under-fertilising it: vigour, shading,
+     * late ripening.
+     */
+    val nitrogenTargetKgHa: Double = 40.0,
     /** SAF tree URI of the synced backup folder, empty if none. */
     val backupFolder: String = "",
     val lastFolderBackupAt: Long = 0L,
@@ -70,6 +79,7 @@ class SettingsStore(private val context: Context) {
         val LAT = doublePreferencesKey("latitude")
         val LON = doublePreferencesKey("longitude")
         val TARGET_NM = doublePreferencesKey("target_sugar_nm")
+        val N_TARGET = doublePreferencesKey("nitrogen_target_kg_ha")
         val BACKUP_FOLDER = stringPreferencesKey("backup_folder")
         val LAST_FOLDER_BACKUP = longPreferencesKey("last_folder_backup")
         val AREA_UNIT = stringPreferencesKey("area_unit")
@@ -100,6 +110,7 @@ class SettingsStore(private val context: Context) {
             latitude = p[Keys.LAT],
             longitude = p[Keys.LON],
             targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
+            nitrogenTargetKgHa = p[Keys.N_TARGET] ?: d.nitrogenTargetKgHa,
             backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
             lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
             areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
@@ -128,6 +139,7 @@ class SettingsStore(private val context: Context) {
                 latitude = p[Keys.LAT],
                 longitude = p[Keys.LON],
                 targetSugarNm = p[Keys.TARGET_NM] ?: d.targetSugarNm,
+                nitrogenTargetKgHa = p[Keys.N_TARGET] ?: d.nitrogenTargetKgHa,
                 backupFolder = p[Keys.BACKUP_FOLDER] ?: "",
                 lastFolderBackupAt = p[Keys.LAST_FOLDER_BACKUP] ?: 0L,
                 areaUnit = p[Keys.AREA_UNIT] ?: d.areaUnit,
@@ -151,6 +163,7 @@ class SettingsStore(private val context: Context) {
             next.latitude?.let { p[Keys.LAT] = it } ?: p.remove(Keys.LAT)
             next.longitude?.let { p[Keys.LON] = it } ?: p.remove(Keys.LON)
             p[Keys.TARGET_NM] = next.targetSugarNm
+            p[Keys.N_TARGET] = next.nitrogenTargetKgHa
             p[Keys.BACKUP_FOLDER] = next.backupFolder
             p[Keys.LAST_FOLDER_BACKUP] = next.lastFolderBackupAt
             p[Keys.AREA_UNIT] = next.areaUnit

@@ -62,6 +62,7 @@ import cz.janek.vineyardlog.util.Gdd
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.util.Phi
 import cz.janek.vineyardlog.util.Copper
+import cz.janek.vineyardlog.util.NitrogenBalance
 import cz.janek.vineyardlog.util.Nutrients
 import cz.janek.vineyardlog.data.varieties.Varieties
 import cz.janek.vineyardlog.data.varieties.nmRange
@@ -263,12 +264,29 @@ private fun SeasonCard(
             }
             val season = Nutrients.season(yearEntries, year, block, settings.defaultWaterLha)
             if (season.any) {
+                // the balance runs on what reaches the roots; foliar feed is reported beside it, not inside it
+                val status = NitrogenBalance.status(season.baseN, settings.nitrogenTargetKgHa)
+                val colour = when (status.level) {
+                    NitrogenBalance.Level.HIGH -> MaterialTheme.colorScheme.error
+                    NitrogenBalance.Level.LOW -> MaterialTheme.colorScheme.onSurfaceVariant
+                    NitrogenBalance.Level.OK -> MaterialTheme.colorScheme.primary
+                }
+                val label = stringResource(
+                    when (status.level) {
+                        NitrogenBalance.Level.HIGH -> R.string.n_level_high
+                        NitrogenBalance.Level.LOW -> R.string.n_level_low
+                        NitrogenBalance.Level.OK -> R.string.n_level_ok
+                    }
+                )
+                Text(
+                    stringResource(R.string.n_base_balance, status.appliedKgHa.fmt(0), status.targetKgHa.fmt(0), status.percent.fmt(0), label),
+                    style = MaterialTheme.typography.bodyMedium, color = colour,
+                )
                 val npk = season.soil
                 if (npk.any) Text(stringResource(R.string.npk_season, npk.n.fmt(0), npk.p.fmt(0), npk.k.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                val f = season.foliar
-                if (f.any) Text(stringResource(R.string.npk_foliar, f.n.fmt(1), f.p.fmt(1), f.k.fmt(1)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (season.coverCropN > 0) Text(stringResource(R.string.npk_cover, season.coverCropN.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (season.totalN > 0) Text(stringResource(R.string.npk_total_n, season.totalN.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                val f = season.foliar
+                if (f.any) Text(stringResource(R.string.n_foliar_support, f.n.fmt(1), f.p.fmt(1), f.k.fmt(1)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             val cu = Copper.seasonKgPerHa(yearEntries, year, block)
             if (cu > 0) {

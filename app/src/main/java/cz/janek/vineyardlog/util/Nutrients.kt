@@ -26,8 +26,11 @@ object Nutrients {
 
     /** What went on the block in a season: through the soil, through the leaf, and from the cover. */
     data class Season(val soil: Npk, val foliar: Npk, val coverCropN: Double) {
-        /** Nitrogen the vine can draw on: soil fertiliser, foliar feed and the cover-crop credit. */
-        val totalN get() = soil.n + foliar.n + coverCropN
+        /**
+         * The base supply the vine lives on: soil fertiliser plus the cover-crop credit. Foliar feed
+         * is not in here - see [NitrogenBalance] for why it is reported on its own.
+         */
+        val baseN get() = soil.n + coverCropN
         val any get() = soil.any || foliar.any || coverCropN > 0
     }
 
