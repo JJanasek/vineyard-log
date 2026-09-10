@@ -110,7 +110,44 @@ Room schemas: bumping the database version writes a new `app/schemas/<db>/<versi
 
 Data sources: `data/guide/Sources.kt` lists the references behind the variety catalogue (ÚKZÚS, VIVC, wineofczechrepublic.cz, Pavloušek, Kraus), the BBCH growth stages (Lorenz et al. 1995, JKI monograph), the field guide (Rostlinolékařský portál, BS articles, Ekovín), the risk models (Šteberla 1982, Kast OiDiag, Baldacci), the spray programme (BS 2025 leaflet, ÚKZÚS product register), the cellar templates (Steidl, BS, producer sheets) and the weather services, plus zákon č. 321/2004 Sb. §§ 17–19 for the °NM categories (`util/SugarGrades.kt`: 14 zemské, 15 jakostní, 19 kabinetní, 21 pozdní sběr, 24 výběr z hroznů, 27 výběr z bobulí/ledové/slámové, 32 výběr z cibéb). The variety entry carries a typical must-sugar range taken from the variety's Czech Wikipedia article (blank for the seven varieties whose article states none) - there is no official per-variety dataset, grapevine is exempt from the ÚKZÚS utility-value trials. It is orientation and drives nothing: the sugar a block is picked at is set on the block (`Block.targetNm`) or in Settings. They show in the app under *Settings → Data sources* and next to the variety picker, and on the site as a *Sources* page plus a section at the bottom of each content page.
 
-Build locally: `./gradlew testDebugUnitTest --tests '*ContentExportTest'` (writes `app/build/site-content`), then `python3 web/build_site.py` (needs `jinja2`) and open `web/dist/index.html`. Tagging `v*` runs `.github/workflows/release.yml`, which attaches the APK to a GitHub release; the site links to the latest release. F-Droid: planned once release signing is reproducible.
+Build locally: `./gradlew testDebugUnitTest --tests '*ContentExportTest'` (writes `app/build/site-content`), then `python3 web/build_site.py` (needs `jinja2`) and open `web/dist/index.html`. Tagging `v*` runs `.github/workflows/release.yml`, which builds a signed release APK and attaches it to a GitHub release; the site links to the latest release.
+
+## Release signing
+
+Android refuses to update an app when the new package is signed with a different key, and a debug
+build is signed with whatever debug keystore the machine happens to have - a CI runner generates a
+fresh one on every run. Releases therefore need one keystore that stays put. Create it once:
+
+```
+keytool -genkeypair -v -keystore vineyard-release.jks -storetype PKCS12 \
+  -keyalg RSA -keysize 4096 -validity 10000 -alias vineyard
+base64 -w0 vineyard-release.jks    # paste the output into the secret below
+```
+
+Keep `vineyard-release.jks` and its passwords somewhere safe and out of the repository. Losing it
+means no future build can update an installed app. Then add four repository secrets under
+*Settings → Secrets and variables → Actions*:
+
+| Secret | Value |
+| --- | --- |
+| `RELEASE_KEYSTORE_BASE64` | the base64 of the keystore file |
+| `RELEASE_KEYSTORE_PASSWORD` | the store password |
+| `RELEASE_KEY_ALIAS` | `vineyard` |
+| `RELEASE_KEY_PASSWORD` | the key password |
+
+The release workflow fails with a clear message if the keystore secret is missing, and prints the
+certificate fingerprint in the run summary - it has to read the same on every release.
+
+To build a signed APK locally, pass the same values as gradle properties (`-Pvineyard.keystore=...`,
+`vineyard.keystorePassword`, `vineyard.keyAlias`, `vineyard.keyPassword`) or the matching
+`VINEYARD_*` environment variables. Without them `assembleRelease` produces an unsigned APK.
+
+Release builds are minified and resource-shrunk, so the APK is about 10 MB against 30 MB for a debug
+build. F-Droid is possible once this key is in place and the build is reproducible.
+
+**Upgrading past the debug-signed releases:** v0.1.0 and v0.2.0 were signed with throwaway debug
+keys, so the first properly signed release cannot install over them. Export a backup from Settings,
+uninstall the app, install the new APK and import the backup. Updates after that install normally.
 
 ## Project layout
 

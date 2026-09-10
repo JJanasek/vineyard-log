@@ -21,11 +21,31 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    /**
+     * Release signing. Every debug build is signed with whatever debug keystore the machine happens
+     * to have, and a CI runner makes a fresh one each time, so debug-signed releases can never
+     * update each other. Point these at a keystore you keep (gradle properties or environment) and
+     * every release from then on installs over the previous one.
+     */
+    val keystorePath = (findProperty("vineyard.keystore") as String?) ?: System.getenv("VINEYARD_KEYSTORE")
+    val keystore = keystorePath?.let { rootProject.file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (keystore != null) {
+            create("release") {
+                storeFile = keystore
+                storePassword = (findProperty("vineyard.keystorePassword") as String?) ?: System.getenv("VINEYARD_KEYSTORE_PASSWORD")
+                keyAlias = (findProperty("vineyard.keyAlias") as String?) ?: System.getenv("VINEYARD_KEY_ALIAS") ?: "vineyard"
+                keyPassword = (findProperty("vineyard.keyPassword") as String?) ?: System.getenv("VINEYARD_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
