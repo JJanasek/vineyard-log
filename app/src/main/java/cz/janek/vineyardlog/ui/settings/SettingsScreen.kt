@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui.settings
 
+import cz.janek.vineyardlog.BuildConfig
 import cz.janek.vineyardlog.R
 import androidx.compose.material3.TextButton
 import cz.janek.vineyardlog.data.reminders.AutoChecks
@@ -489,7 +490,7 @@ fun SettingsScreen(
             ) { Icon(Icons.Default.Upload, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.import_products)) }
 
             SectionTitle(stringResource(R.string.about))
-            Text(stringResource(R.string.about_text), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.about_text, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodySmall)
             TextButton(onClick = onOpenSources) { Text(stringResource(R.string.sources_title)) }
             Spacer(Modifier.height(24.dp))
         }

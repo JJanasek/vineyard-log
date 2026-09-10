@@ -217,7 +217,7 @@
     <string name="product_catalog_text">Merge a products JSON into the catalog (new names are added, existing ones left untouched). The tools/lipera_catalog_to_json.py script in the repo makes one from the official Lipera catalog PDF.</string>
     <string name="import_products">Import products (merge)</string>
     <string name="about">About</string>
-    <string name="about_text">Vineyard Log 0.1.0 – offline log for vineyard and cellar work.</string>
+    <string name="about_text">Vineyard Log %1$s – offline log for vineyard and cellar work.</string>
     <string name="replace_all_q">Replace all data?</string>
     <string name="replace">Replace</string>
     <string name="replace_all_text">The backup contains %1$d rows (%2$d entries, %3$d products, %4$d blocks, %5$d batches, %6$d weather days). Everything currently in the app will be deleted first.</string>

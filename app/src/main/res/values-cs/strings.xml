@@ -217,7 +217,7 @@
     <string name="product_catalog_text">Sloučí JSON s přípravky do katalogu (nové názvy se přidají, stávající zůstanou). Skript tools/lipera_catalog_to_json.py z repozitáře ho vytvoří z oficiálního katalogu Lipera (PDF).</string>
     <string name="import_products">Importovat přípravky (sloučit)</string>
     <string name="about">O aplikaci</string>
-    <string name="about_text">Vineyard Log 0.1.0 – offline deník pro práci ve vinici a ve sklepě.</string>
+    <string name="about_text">Vineyard Log %1$s – offline deník pro práci ve vinici a ve sklepě.</string>
     <string name="replace_all_q">Nahradit všechna data?</string>
     <string name="replace">Nahradit</string>
     <string name="replace_all_text">Záloha obsahuje %1$d řádků (%2$d záznamů, %3$d přípravků, %4$d tratí, %5$d šarží, %6$d dnů počasí). Vše, co je nyní v aplikaci, bude nejprve smazáno.</string>
