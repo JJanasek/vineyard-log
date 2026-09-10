@@ -596,6 +596,11 @@
     <string name="nm_source_note">Rozsah z hesla odrůdy na české Wikipedii; je orientační a nic neřídí.</string>
     <string name="mk_soil_ca">Vápník v půdě (Ca)</string>
     <string name="soil_repeat_due">Rozbor zopakovat kolem %1$s (jednou za 4 roky).</string>
+    <string name="mk_berry_count">Počet bobulí ve vzorku</string>
+    <string name="mk_berry_sample_g">Váha vzorku</string>
+    <string name="berry_model">Vzorek bobulí</string>
+    <string name="berry_values">Průměrná bobule %1$s g · cukr v bobuli %2$s mg</string>
+    <string name="berry_need_two">Pro vyhodnocení zapiš druhý odběr; z jednoho nepoznáš zrání od deště.</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

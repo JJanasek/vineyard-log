@@ -10,6 +10,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.toLocalDate
 import cz.janek.vineyardlog.util.TankMix
+import cz.janek.vineyardlog.util.Ripening
 import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -173,6 +174,10 @@ class EntryEditViewModel(
     var dayWeather by mutableStateOf<WeatherDay?>(null)
         private set
     fun loadDayWeather() { viewModelScope.launch { dayWeather = c.weatherDao.get(date) } }
+    /** Rain over the seven days up to the entry date, for the berry-sample model. */
+    var rainLast7 by mutableStateOf<Double?>(null)
+        private set
+    fun loadRainLast7() { viewModelScope.launch { rainLast7 = c.weatherDao.listRange(date - 6, date).mapNotNull { it.rainMm }.takeIf { it.isNotEmpty() }?.sum() } }
 
     private val started = SharingStarted.WhileSubscribed(5_000)
     val blocks = c.blockDao.observeAll().stateIn(viewModelScope, started, emptyList())
@@ -701,6 +706,7 @@ fun EntryEditScreen(
             }
 
             // ---- measurements ----
+            val allEntriesForRipening by vm.entries.collectAsStateWithLifecycle()
             SectionTitle(stringResource(R.string.measurements))
             val kinds = MeasurementKind.forDomain(vm.domain)
             vm.measurements.forEachIndexed { i, row ->
@@ -719,6 +725,33 @@ fun EntryEditScreen(
             }
             OutlinedButton(onClick = { vm.addMeasurement() }) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_measurement))
+            }
+
+            if (vm.type == EntryType.RIPENESS) {
+                LaunchedEffect(vm.date) { vm.loadRainLast7() }
+                // sugar per berry tells rain-dilution apart from real ripening; see util/Ripening.kt
+                val count = vm.measurements.firstOrNull { it.kind == MeasurementKind.BERRY_COUNT }?.value?.toDoubleLenient()?.toInt()
+                val sampleG = vm.measurements.firstOrNull { it.kind == MeasurementKind.BERRY_SAMPLE_G }?.value?.toDoubleLenient()
+                val nmNow = vm.measurements.firstNotNullOfOrNull { m -> m.value.toDoubleLenient()?.let { WineMath.toNm(it, m.kind) } }
+                val mean = if (count != null && sampleG != null) Ripening.meanBerryG(sampleG, count) else null
+                if (mean != null && nmNow != null) {
+                    val here = Ripening.Sample(vm.date, mean, nmNow, rainMm = vm.rainLast7)
+                    val past = remember(allEntriesForRipening, vm.blockId, entryId) {
+                        Ripening.samplesFrom(allEntriesForRipening, vm.blockId, excludeEntryId = entryId)
+                    }
+                    val verdict = remember(past, here) { Ripening.evaluate(past + here) }
+                    val czechR = LocalConfiguration.current.locales[0]?.language == "cs"
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(stringResource(R.string.berry_model), style = MaterialTheme.typography.titleSmall)
+                            Text(stringResource(R.string.berry_values, mean.fmt(2), here.sugarPerBerryMg.fmt(0)), style = MaterialTheme.typography.bodySmall)
+                            if (verdict != null) Text(
+                                verdict.text.get(czechR), style = MaterialTheme.typography.bodySmall,
+                                color = if (verdict.state == Ripening.State.SHRIVELLING) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            ) else Text(stringResource(R.string.berry_need_two), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
             }
 
             // ---- effort / cost ----

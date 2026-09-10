@@ -103,6 +103,8 @@ enum class MeasurementKind(@StringRes val labelRes: Int, val unit: String, val d
     VOLUME(R.string.mk_volume, "L", Domain.CELLAR),
     YIELD(R.string.mk_yield, "kg", Domain.VINEYARD),
     BERRY_WEIGHT(R.string.mk_berry_weight, "g", Domain.VINEYARD),
+    BERRY_COUNT(R.string.mk_berry_count, "", Domain.VINEYARD),
+    BERRY_SAMPLE_G(R.string.mk_berry_sample_g, "g", Domain.VINEYARD),
     CLUSTERS_PER_VINE(R.string.mk_clusters_per_vine, "", Domain.VINEYARD),
     DISEASE_INCIDENCE(R.string.mk_disease_incidence, "%", Domain.VINEYARD),
     SOIL_PH(R.string.mk_soil_ph, "", Domain.VINEYARD),

@@ -65,6 +65,7 @@ import cz.janek.vineyardlog.util.Copper
 import cz.janek.vineyardlog.util.Nutrients
 import cz.janek.vineyardlog.data.varieties.Varieties
 import cz.janek.vineyardlog.data.varieties.nmRange
+import cz.janek.vineyardlog.util.Ripening
 import cz.janek.vineyardlog.util.SugarGrades
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.dayOfYear
@@ -309,6 +310,19 @@ private fun SeasonCard(
                         )
                     }
                 }
+            }
+            // berry samples separate rain dilution from real ripening
+            val berry = remember(yearEntries, block?.id) { Ripening.evaluate(Ripening.samplesFrom(yearEntries, block?.id)) }
+            if (berry != null) {
+                val czechB = LocalConfiguration.current.locales[0]?.language == "cs"
+                Text(
+                    stringResource(R.string.berry_values, berry.current.meanBerryG.fmt(2), berry.current.sugarPerBerryMg.fmt(0)),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    berry.text.get(czechB), style = MaterialTheme.typography.bodySmall,
+                    color = if (berry.state == Ripening.State.SHRIVELLING) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

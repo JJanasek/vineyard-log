@@ -596,6 +596,11 @@
     <string name="nm_source_note">Range from the Czech Wikipedia article of the variety; it is orientation and drives nothing.</string>
     <string name="mk_soil_ca">Soil calcium (Ca)</string>
     <string name="soil_repeat_due">Repeat the analysis around %1$s (every 4 years).</string>
+    <string name="mk_berry_count">Berries in the sample</string>
+    <string name="mk_berry_sample_g">Sample weight</string>
+    <string name="berry_model">Berry sample</string>
+    <string name="berry_values">Mean berry %1$s g · sugar in one berry %2$s mg</string>
+    <string name="berry_need_two">Log a second sample to see whether it is ripening or only rain.</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>
