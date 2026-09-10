@@ -74,6 +74,17 @@ object Sources {
             Source("Kraus, V., Hubáček, V., Ackermann, P.: Rukověť vinaře. Brázda, Praha 2004", "", Bi("chaptalisation and sulphite rules of thumb.", "pravidla doslazení a síření.")),
         ),
     )
+    val NUTRITION = SourceTopic(
+        "nutrition", Bi("Nutrition and the nitrogen credit", "Výživa a dusíkatý kredit"),
+        Bi("What the vineyard receives is counted by three routes: soil fertiliser, foliar feed converted from its concentration and the water volume of the spray, and the nitrogen credit of a green cover. The credit is an estimate for planning; the soil analysis settles it.",
+            "Co vinice dostane, se počítá třemi cestami: hnojivo do půdy, listová výživa přepočtená z koncentrace a objemu jíchy, a dusíkatý kredit z ozelenění. Kredit je odhad pro plánování; rozhodne rozbor půdy."),
+        listOf(
+            Source("Reid, K.: Nitrogen Credits from Legume Cover Crops. Perennia fact sheet, 2023", "https://ofcaf.perennia.ca/wp-content/uploads/sites/19/2023/07/NItrogen-Credits-from-Legume-Cover-Crops-FINAL-July18.pdf", Bi("The flat credit of 45 kg N/ha after a legume cover (OMAFRA 2017), the 40–50 % of cover-crop nitrogen the next crop takes up, and the 2.2 t/ha of dry matter below which there is no meaningful credit.", "Paušální kredit 45 kg N/ha po bobovitém porostu (OMAFRA 2017), 40–50 % dusíku z biomasy, které následná plodina přijme, a hranice 2,2 t sušiny na hektar, pod kterou kredit nemá smysl.")),
+            Source("Biomass and nutrient release dynamics of decomposing rolling down legume cover crops in a steep-sloped Mediterranean vineyard. Frontiers in Agronomy, 2025", "https://doi.org/10.3389/fagro.2025.1604142", Bi("Legume mixes in a Douro vineyard held 124–177 kg N/ha in 5.9–7.8 t/ha of biomass and released most of it within 45 days of rolling.", "Bobovité směsi v porto vinici držely 124–177 kg N/ha v 5,9–7,8 t/ha biomasy a většinu uvolnily do 45 dnů po válcování.")),
+            Source("Zákon č. 156/1998 Sb., o hnojivech, a vyhláška č. 377/2013 Sb.", "https://www.zakonyprolidi.cz/cs/1998-156", Bi("What a fertiliser label has to state, including the nutrient percentages the app parses.", "Co musí uvádět etiketa hnojiva, včetně procent živin, která aplikace čte.")),
+            Source("BS vinařské potřeby – ozelenění a zelené hnojení", "https://www.vinarskepotreby.cz/clanky", Bi("Czech practice: seed rates, species and the figure of roughly 53 kg N, 22 kg P₂O₅ and 76 kg K₂O per hectare from a winter green manure.", "Česká praxe: výsevky, druhy a údaj zhruba 53 kg N, 22 kg P₂O₅ a 76 kg K₂O na hektar ze zimního zeleného hnojení.")),
+        ),
+    )
     val WEATHER = SourceTopic(
         "weather", Bi("Weather data", "Data o počasí"),
         Bi("Both services publish under CC BY 4.0; the app keeps the attribution.", "Obě služby publikují pod CC BY 4.0; aplikace uvádí zdroj."),
@@ -83,5 +94,5 @@ object Sources {
         ),
     )
 
-    val all = listOf(VARIETIES, PHENOLOGY, GUIDE, MODELS, SPRAY, CELLAR, WEATHER)
+    val all = listOf(VARIETIES, PHENOLOGY, GUIDE, MODELS, SPRAY, CELLAR, NUTRITION, WEATHER)
 }

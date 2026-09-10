@@ -41,6 +41,8 @@ enum class EntryType(@StringRes val labelRes: Int, val domain: Domain) {
     FERTILIZATION(R.string.et_fertilization, Domain.VINEYARD),
     CANOPY(R.string.et_canopy, Domain.VINEYARD),
     SOIL_WORK(R.string.et_soil_work, Domain.VINEYARD),
+    GREEN_COVER(R.string.et_green_cover, Domain.VINEYARD),
+    SOIL_ANALYSIS(R.string.et_soil_analysis, Domain.VINEYARD),
     RENEWAL(R.string.et_renewal, Domain.VINEYARD),
     PHENOLOGY(R.string.et_phenology, Domain.VINEYARD),
     SCOUTING(R.string.et_scouting, Domain.VINEYARD),
@@ -113,6 +115,9 @@ enum class MeasurementKind(@StringRes val labelRes: Int, val unit: String, val d
     SOIL_K(R.string.mk_soil_k, "mg/kg", Domain.VINEYARD),
     SOIL_MG(R.string.mk_soil_mg, "mg/kg", Domain.VINEYARD),
     SOIL_CA(R.string.mk_soil_ca, "mg/kg", Domain.VINEYARD),
+    COVER_LEGUME_PCT(R.string.mk_cover_legume, "%", Domain.VINEYARD),
+    COVER_AREA_PCT(R.string.mk_cover_area, "%", Domain.VINEYARD),
+    COVER_BIOMASS(R.string.mk_cover_biomass, "t/ha", Domain.VINEYARD),
     SOIL_ORGANIC_MATTER(R.string.mk_soil_organic_matter, "%", Domain.VINEYARD),
     LEAF_N(R.string.mk_leaf_n, "%", Domain.VINEYARD);
 

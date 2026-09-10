@@ -615,6 +615,16 @@
     <string name="compost_humus">≈ %1$s kg of dry matter, about %2$s kg stays as humus</string>
     <string name="compost_humus_pct">(+%1$s percentage points in the topsoil)</string>
     <string name="humus_value">organic matter %1$s %%</string>
+    <string name="et_green_cover">Green cover</string>
+    <string name="et_soil_analysis">Soil analysis</string>
+    <string name="mk_cover_legume">Legumes in the mix</string>
+    <string name="mk_cover_area">Share of the block covered</string>
+    <string name="mk_cover_biomass">Cover biomass (dry matter)</string>
+    <string name="npk_foliar">Through the leaf: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="npk_cover">Cover-crop credit: about %1$s kg N/ha (estimate)</string>
+    <string name="npk_total_n">Nitrogen this season, all routes: about %1$s kg/ha</string>
+    <string name="soil_analysis_hint">Fill the rows the laboratory reports and attach the PDF below; the Overview then reads the analysis and says what it means.</string>
+    <string name="green_cover_hint">The nitrogen credit is estimated from the legume share and the share of the block sown: about 45 kg N/ha for a pure legume cover on the whole block, less in proportion. Weigh the dry biomass if you want a closer figure.</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

@@ -615,6 +615,16 @@
     <string name="compost_humus">≈ %1$s kg sušiny, jako humus zůstane asi %2$s kg</string>
     <string name="compost_humus_pct">(+%1$s procentního bodu v ornici)</string>
     <string name="humus_value">humus %1$s %%</string>
+    <string name="et_green_cover">Ozelenění meziřadí</string>
+    <string name="et_soil_analysis">Rozbor půdy</string>
+    <string name="mk_cover_legume">Podíl bobovitých ve směsi</string>
+    <string name="mk_cover_area">Podíl plochy pod ozeleněním</string>
+    <string name="mk_cover_biomass">Biomasa ozelenění (sušina)</string>
+    <string name="npk_foliar">Na list: N %1$s · P₂O₅ %2$s · K₂O %3$s kg/ha</string>
+    <string name="npk_cover">Kredit z ozelenění: asi %1$s kg N/ha (odhad)</string>
+    <string name="npk_total_n">Dusík za sezónu ze všech zdrojů: asi %1$s kg/ha</string>
+    <string name="soil_analysis_hint">Vyplň řádky, které laboratoř uvádí, a dole připoj PDF; Přehled pak rozbor přečte a řekne, co z něj plyne.</string>
+    <string name="green_cover_hint">Kredit dusíku se odhaduje z podílu bobovitých a z podílu oseté plochy: asi 45 kg N/ha pro čistě bobovitý porost na celé ploše, jinak poměrně méně. Pro přesnější číslo zvaž sušinu biomasy.</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

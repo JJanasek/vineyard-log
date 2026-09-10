@@ -260,10 +260,24 @@ class EntryEditViewModel(
         if (entryId == null) applyTypeDefaults(t)
     }
 
+    /** Rows every analysis should carry, so the numbers land in the same place every time. */
+    private val soilAnalysisKinds = listOf(
+        MeasurementKind.SOIL_PH, MeasurementKind.SOIL_ORGANIC_MATTER, MeasurementKind.SOIL_N,
+        MeasurementKind.SOIL_P, MeasurementKind.SOIL_K, MeasurementKind.SOIL_MG, MeasurementKind.SOIL_CA,
+    )
+    private val coverKinds = listOf(MeasurementKind.COVER_LEGUME_PCT, MeasurementKind.COVER_AREA_PCT)
+
+    private fun prefillMeasurements(kinds: List<MeasurementKind>) {
+        val present = measurements.map { it.kind }.toSet()
+        kinds.filter { it !in present }.forEach { measurements.add(MeasRow(it)) }
+    }
+
     private fun applyTypeDefaults(t: EntryType) {
         if (t == EntryType.SPRAY || t == EntryType.FERTILIZATION) {
             if (timeMinutes == null && date == todayEpochDay()) java.time.LocalTime.now().let { timeMinutes = it.hour * 60 + (it.minute / 5) * 5 }
         }
+        if (t == EntryType.SOIL_ANALYSIS) prefillMeasurements(soilAnalysisKinds)
+        if (t == EntryType.GREEN_COVER) { prefillMeasurements(coverKinds); if (quantityUnit.isBlank()) quantityUnit = "kg" }
         if (t == EntryType.HARVEST && quantityUnit.isBlank()) quantityUnit = "kg"
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
         if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
@@ -569,6 +583,12 @@ fun EntryEditScreen(
                 }
             }
 
+            if (vm.type == EntryType.SOIL_ANALYSIS) {
+                Text(stringResource(R.string.soil_analysis_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (vm.type == EntryType.GREEN_COVER) {
+                Text(stringResource(R.string.green_cover_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             if (vm.type == EntryType.RENEWAL) {
                 Text(stringResource(R.string.method), style = MaterialTheme.typography.labelMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -261,9 +261,14 @@ private fun SeasonCard(
                 Stat(stringResource(R.string.gdd), gddNow?.fmt(0) ?: "–")
                 Stat(stringResource(R.string.harvest), if (harvestKg > 0) "${harvestKg.fmt()} kg" else "–")
             }
-            val npk = Nutrients.seasonKgPerHa(yearEntries, year, block)
-            if (npk.any) {
-                Text(stringResource(R.string.npk_season, npk.n.fmt(0), npk.p.fmt(0), npk.k.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val season = Nutrients.season(yearEntries, year, block, settings.defaultWaterLha)
+            if (season.any) {
+                val npk = season.soil
+                if (npk.any) Text(stringResource(R.string.npk_season, npk.n.fmt(0), npk.p.fmt(0), npk.k.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val f = season.foliar
+                if (f.any) Text(stringResource(R.string.npk_foliar, f.n.fmt(1), f.p.fmt(1), f.k.fmt(1)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (season.coverCropN > 0) Text(stringResource(R.string.npk_cover, season.coverCropN.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (season.totalN > 0) Text(stringResource(R.string.npk_total_n, season.totalN.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
             val cu = Copper.seasonKgPerHa(yearEntries, year, block)
             if (cu > 0) {
