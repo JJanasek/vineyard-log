@@ -612,6 +612,8 @@
     <string name="saved_mixes">Uložené směsi</string>
     <string name="mix_name">Název směsi</string>
     <string name="mix_name_hint">např. před květem</string>
+    <string name="compost_humus">≈ %1$s kg sušiny, jako humus zůstane asi %2$s kg</string>
+    <string name="compost_humus_pct">(+%1$s procentního bodu v ornici)</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

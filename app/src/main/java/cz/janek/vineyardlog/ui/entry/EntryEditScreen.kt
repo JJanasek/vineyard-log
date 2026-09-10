@@ -9,6 +9,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Checkbox
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.toLocalDate
+import cz.janek.vineyardlog.util.Dose
+import cz.janek.vineyardlog.util.Compost
 import cz.janek.vineyardlog.util.SprayShare
 import cz.janek.vineyardlog.util.TankMix
 import cz.janek.vineyardlog.util.Ripening
@@ -683,13 +685,18 @@ fun EntryEditScreen(
                             if (mix != null && mix > 0) base + " · " + stringResource(R.string.total_for_mix, "${WineMath.totalForMix(h.per10lValue, mix).fmt(1)} ${h.per10lUnit}", mix.fmt())
                             else base
                         }
-                    } else if (vm.type == EntryType.FERTILIZATION && block?.areaHa != null) {
+                    } else if (vm.type == EntryType.FERTILIZATION) {
                         row.dose.toDoubleLenient()?.let { d ->
-                            val u = row.doseUnit.trim().lowercase().replace(" ", "")
-                            val totalKg = when (u) { "kg/ha" -> d * block.areaHa; "g/ha" -> d * block.areaHa / 1000.0; "l/ha" -> d * block.areaHa; else -> null }
-                            totalKg?.let { t ->
-                                val perVine = block.vineCount?.takeIf { it > 0 }?.let { "${(t * 1000.0 / it).fmt(0)} g" } ?: "–"
-                                stringResource(R.string.per_vine_hint, perVine, "${t.fmt(2)} ${if (u == "l/ha") "l" else "kg"}")
+                            Dose.fertiliser(d, row.doseUnit, block?.areaHa, block?.vineCount)?.let { sp ->
+                                val unit = if (sp.litres) "l" else "kg"
+                                val perVine = sp.perVine?.let { "${it.fmt(0)} ${if (sp.litres) "ml" else "g"}" } ?: "–"
+                                val base = stringResource(R.string.per_vine_hint, perVine, "${sp.totalKg.fmt(2)} $unit")
+                                // compost is dosed in litres: say what it does for humus
+                                if (sp.litres) {
+                                    val c = Compost.fromLitres(sp.totalKg, block?.areaHa)
+                                    base + "\n" + stringResource(R.string.compost_humus, c.dryMatterKg.fmt(0), c.humusKg.fmt(0)) +
+                                        (c.humusPctPoints?.let { " " + stringResource(R.string.compost_humus_pct, it.fmt(3)) } ?: "")
+                                } else base
                             }
                         }
                     } else null,
