@@ -160,6 +160,7 @@ open(os.path.join(out, '.nojekyll'), 'w').close()
 
 DOCS = [('quick-start', {'en': 'Quick start', 'cs': 'Rychlý start'}), ('disease-models', {'en': 'Disease models (Šteberla, Kast)', 'cs': 'Modely chorob (Šteberla, Kast)'}),
         ('bs-articles', {'en': 'BS vinařské potřeby reading list', 'cs': 'Články BS vinařské potřeby'}), ('weather-stations-and-probes', {'en': 'Weather stations and probes', 'cs': 'Meteostanice a sondy'}),
+        ('cover-crop-nitrogen', {'en': 'Nitrogen from a green cover', 'cs': 'Dusík z ozelenění meziřadí'}),
         ('navrh-hobby-vinar', {'en': 'Design proposal for hobby growers (Czech)', 'cs': 'Návrh pro hobby vinaře'})]
 built = time.strftime('%Y-%m-%d')
 for lang in ('en', 'cs'):
