@@ -606,6 +606,7 @@
     <string name="taken_count">Ujatých keřů</string>
     <string name="taken_count_hint">Spočítej na jaře po výsadbě; rozdíl je to, co podsadit.</string>
     <string name="taken_summary">Ujato %1$d z %2$d (%3$s %%) · %4$d k podsazení</string>
+    <string name="spread_to_blocks">Zapsat ke všem %1$d tratím a rozpočítat jíchu</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

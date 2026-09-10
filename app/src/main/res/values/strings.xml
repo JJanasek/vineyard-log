@@ -606,6 +606,7 @@
     <string name="taken_count">Vines that took</string>
     <string name="taken_count_hint">Count in the spring after planting; the difference is what to replant.</string>
     <string name="taken_summary">%1$d of %2$d took (%3$s %%) · %4$d to replant</string>
+    <string name="spread_to_blocks">Write to all %1$d blocks and split the mix between them</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

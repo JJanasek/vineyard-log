@@ -9,6 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Checkbox
 import androidx.compose.ui.platform.LocalConfiguration
 import cz.janek.vineyardlog.util.toLocalDate
+import cz.janek.vineyardlog.util.SprayShare
 import cz.janek.vineyardlog.util.TankMix
 import cz.janek.vineyardlog.util.Ripening
 import androidx.compose.ui.res.stringResource
@@ -146,6 +147,8 @@ class EntryEditViewModel(
     var timeMinutes by mutableStateOf<Int?>(null)
     var takenCount by mutableStateOf("")
     var plantingStock by mutableStateOf("")
+    /** Spray on the whole vineyard: write one entry per block with the mix split between them. */
+    var spreadToBlocks by mutableStateOf(false)
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
@@ -334,23 +337,44 @@ class EntryEditViewModel(
         val measRows = filledMeasurements.map {
             Measurement(date = date, kind = it.kind, value = it.value.toDoubleLenient()!!, note = it.note.trim())
         }
+        val fanOut = spreadToBlocks && entryId == null && type == EntryType.SPRAY && domain == Domain.VINEYARD && blockId == null
         viewModelScope.launch {
-            val id = c.entryDao.save(entry, usageRows, measRows)
-            if ((type == EntryType.SPRAY || type == EntryType.FERTILIZATION) && settings.value.phiReminders) {
-                val used = usageRows.mapNotNull { u -> products.value.firstOrNull { it.id == u.productId } }
-                val phi = used.mapNotNull { it.phiDays }.maxOrNull()
-                if (phi != null && date + phi >= todayEpochDay()) {
-                    val names = used.filter { it.phiDays == phi }.joinToString(", ") { it.name }
-                    runCatching { c.reminders.addPhiReminder(date + phi, date, names, entry.blockId) }
+            if (fanOut) {
+                val active = blocks.value.filter { !it.archived }
+                if (active.isNotEmpty()) {
+                    val volumes = SprayShare.splitVolume(entry.sprayVolumeL, active)
+                    active.forEach { b ->
+                        val perBlock = entry.copy(id = 0, blockId = b.id, sprayVolumeL = volumes[b.id]?.let { v -> Math.round(v * 10.0) / 10.0 })
+                        val newId = c.entryDao.save(perBlock, usageRows.map { it.copy(id = 0) }, measRows)
+                        if (settings.value.phiReminders) addPhiReminderFor(perBlock, usageRows, b.id)
+                        if (b.id == active.first().id) attachFiles(newId)
+                    }
+                    saved = true; onDone(); return@launch
                 }
             }
-            c.photoDao.insertAll(photos.filter { it.isNew }.map { Photo(entryId = id, fileName = it.fileName) })
-            removedPhotos.forEach { r -> r.id?.let { c.photoDao.delete(it) }; c.photos.delete(r.fileName) }
-            c.attachmentDao.insertAll(attachments.filter { it.isNew }.map { Attachment(entryId = id, fileName = it.fileName, displayName = it.displayName, mime = it.mime) })
-            removedAttachments.forEach { r -> r.id?.let { c.attachmentDao.delete(it) }; c.files.delete(r.fileName) }
+            val id = c.entryDao.save(entry, usageRows, measRows)
+            if (type == EntryType.SPRAY || type == EntryType.FERTILIZATION) {
+                if (settings.value.phiReminders) addPhiReminderFor(entry, usageRows, entry.blockId)
+            }
+            attachFiles(id)
             saved = true
             onDone()
         }
+    }
+
+    private suspend fun addPhiReminderFor(entry: LogEntry, usageRows: List<ProductUsage>, blockId: Long?) {
+        val used = usageRows.mapNotNull { u -> products.value.firstOrNull { it.id == u.productId } }
+        val phi = used.mapNotNull { it.phiDays }.maxOrNull() ?: return
+        if (entry.date + phi < todayEpochDay()) return
+        val names = used.filter { it.phiDays == phi }.joinToString(", ") { it.name }
+        runCatching { c.reminders.addPhiReminder(entry.date + phi, entry.date, names, blockId) }
+    }
+
+    private suspend fun attachFiles(id: Long) {
+        c.photoDao.insertAll(photos.filter { it.isNew }.map { Photo(entryId = id, fileName = it.fileName) })
+        removedPhotos.forEach { r -> r.id?.let { c.photoDao.delete(it) }; c.photos.delete(r.fileName) }
+        c.attachmentDao.insertAll(attachments.filter { it.isNew }.map { Attachment(entryId = id, fileName = it.fileName, displayName = it.displayName, mime = it.mime) })
+        removedAttachments.forEach { r -> r.id?.let { c.attachmentDao.delete(it) }; c.files.delete(r.fileName) }
     }
 }
 
@@ -436,6 +460,18 @@ fun EntryEditScreen(
                     noneLabel = stringResource(R.string.whole_vineyard),
                     onSelectNone = { vm.blockId = null },
                 )
+                if (vm.type == EntryType.SPRAY && vm.blockId == null && entryId == null && active.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Checkbox(checked = vm.spreadToBlocks, onCheckedChange = { vm.spreadToBlocks = it })
+                        Text(stringResource(R.string.spread_to_blocks, active.size), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    if (vm.spreadToBlocks) {
+                        val total = vm.sprayVolume.toDoubleLenient()
+                        val split = remember(total, active) { SprayShare.splitVolume(total, active) }
+                        val text = active.joinToString(" · ") { b -> b.name + (split[b.id]?.let { " ${it.fmt(1)} l" } ?: "") }
+                        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             } else {
                 val active = batches.filter { !it.archived || it.id == vm.batchId }
                 DropdownField<Batch>(
