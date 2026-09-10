@@ -101,6 +101,7 @@ import cz.janek.vineyardlog.ui.components.SectionTitle
 import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.suggestedKinds
 import cz.janek.vineyardlog.ui.toDoubleLenient
+import cz.janek.vineyardlog.ui.toIntLenient
 import cz.janek.vineyardlog.util.formatDate
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.data.model.fmt
@@ -143,6 +144,8 @@ class EntryEditViewModel(
     var type by mutableStateOf(initialType ?: EntryType.forDomain(initialDomain).first())
     var date by mutableStateOf(todayEpochDay())
     var timeMinutes by mutableStateOf<Int?>(null)
+    var takenCount by mutableStateOf("")
+    var plantingStock by mutableStateOf("")
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
@@ -193,6 +196,7 @@ class EntryEditViewModel(
                 c.entryDao.get(entryId)?.let { d ->
                     val e = d.entry
                     domain = e.domain; type = e.type; date = e.date; timeMinutes = e.timeMinutes
+                    takenCount = e.takenCount.input(); plantingStock = e.plantingStock
                     blockId = e.blockId; batchId = e.batchId
                     title = e.title; notes = e.notes; stage = e.phenologyStage
                     waterLha = e.waterLPerHa.input(); sprayVolume = e.sprayVolumeL.input(); quantity = e.quantity.input(); quantityUnit = e.quantityUnit
@@ -295,6 +299,8 @@ class EntryEditViewModel(
             id = entryId ?: 0,
             date = date,
             timeMinutes = timeMinutes,
+            takenCount = takenCount.toIntLenient(),
+            plantingStock = plantingStock.trim(),
             domain = domain,
             type = type,
             blockId = if (domain == Domain.VINEYARD) blockId else null,
@@ -511,6 +517,16 @@ fun EntryEditScreen(
                     }
                 }
                 Text(stringResource(R.string.renewal_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AppTextField(vm.plantingStock, { vm.plantingStock = it }, stringResource(R.string.planting_stock), placeholder = stringResource(R.string.planting_stock_hint))
+                NumberField(vm.takenCount, { vm.takenCount = it }, stringResource(R.string.taken_count), integer = true, supportingText = stringResource(R.string.taken_count_hint))
+                val planted = vm.quantity.toDoubleLenient()?.toInt()
+                val taken = vm.takenCount.toIntLenient()
+                if (planted != null && taken != null && planted > 0) {
+                    Text(
+                        stringResource(R.string.taken_summary, taken, planted, (taken * 100.0 / planted).fmt(0), (planted - taken).coerceAtLeast(0)),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
             if (vm.type in setOf(EntryType.HARVEST, EntryType.RACKING, EntryType.BOTTLING, EntryType.MUST_PREP, EntryType.VINEYARD_OTHER, EntryType.CELLAR_OTHER, EntryType.RENEWAL)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

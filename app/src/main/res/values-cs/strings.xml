@@ -601,6 +601,11 @@
     <string name="berry_model">Vzorek bobulí</string>
     <string name="berry_values">Průměrná bobule %1$s g · cukr v bobuli %2$s mg</string>
     <string name="berry_need_two">Pro vyhodnocení zapiš druhý odběr; z jednoho nepoznáš zrání od deště.</string>
+    <string name="planting_stock">Odrůda a podnož</string>
+    <string name="planting_stock_hint">např. Ryzlink rýnský / Kober 5BB</string>
+    <string name="taken_count">Ujatých keřů</string>
+    <string name="taken_count_hint">Spočítej na jaře po výsadbě; rozdíl je to, co podsadit.</string>
+    <string name="taken_summary">Ujato %1$d z %2$d (%3$s %%) · %4$d k podsazení</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

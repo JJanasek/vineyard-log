@@ -140,6 +140,10 @@ data class LogEntry(
     val quantityUnit: String = "",
     /** Time of day in minutes from midnight (sprays: picks the hourly temperature from the weather table). */
     val timeMinutes: Int? = null,
+    /** Renewal/planting: how many of the planted vines took. Failures = quantity - takenCount. */
+    val takenCount: Int? = null,
+    /** Renewal/planting: variety and rootstock of this wave, e.g. "Ryzlink rýnský / Kober 5BB". */
+    @ColumnInfo(defaultValue = "") val plantingStock: String = "",
     /** Conditions at the time of the operation (matters for sprays). */
     val tempC: Double? = null,
     val windKmh: Double? = null,

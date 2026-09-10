@@ -350,6 +350,23 @@ private fun RenewalCard(entries: List<EntryWithDetails>, block: cz.janek.vineyar
             Text(stringResource(R.string.renewal_title), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.renewal_total, total.fmt(0), share), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.renewal_young, young.fmt(0)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // planting waves that recorded how many took
+            val waves = renewal.filter { it.entry.takenCount != null && (it.entry.quantity ?: 0.0) > 0 }
+            if (waves.isNotEmpty()) {
+                val planted = waves.sumOf { it.entry.quantity ?: 0.0 }.toInt()
+                val taken = waves.sumOf { it.entry.takenCount ?: 0 }
+                Text(
+                    stringResource(R.string.taken_summary, taken, planted, (taken * 100.0 / planted).fmt(0), (planted - taken).coerceAtLeast(0)),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
+                )
+                waves.sortedByDescending { it.entry.date }.take(3).forEach { w ->
+                    val stock = w.entry.plantingStock.ifBlank { w.entry.title }
+                    Text(
+                        "${formatDate(w.entry.date)} · ${(w.entry.quantity ?: 0.0).fmt(0)}/${w.entry.takenCount}" + if (stock.isNotBlank()) " · $stock" else "",
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             renewal.groupBy { yearOf(it.entry.date) }.toSortedMap(compareByDescending { it }).forEach { (y, list) ->
                 val parts = list.groupBy { it.entry.title.ifBlank { it.entry.type.label } }
                     .map { (t, l) -> "$t ${l.sumOf { it.entry.quantity ?: 0.0 }.fmt(0)}" }
