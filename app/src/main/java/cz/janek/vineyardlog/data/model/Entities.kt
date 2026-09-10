@@ -223,6 +223,35 @@ data class WeatherDay(
     @ColumnInfo(defaultValue = "") val tHourly: String = "",
 )
 
+/** A saved tank mix: the products and doses of a spray you repeat, e.g. "před květem". */
+@Serializable
+@Entity(tableName = "spray_mixes")
+data class SprayMix(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val notes: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+@Serializable
+@Entity(
+    tableName = "spray_mix_items",
+    foreignKeys = [ForeignKey(entity = SprayMix::class, parentColumns = ["id"], childColumns = ["mixId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index("mixId")],
+)
+data class SprayMixItem(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val mixId: Long = 0,
+    val productId: Long,
+    val dose: Double? = null,
+    val doseUnit: String = "",
+)
+
+data class MixWithItems(
+    @Embedded val mix: SprayMix,
+    @Relation(parentColumn = "id", entityColumn = "mixId") val items: List<SprayMixItem>,
+)
+
 /** A photo attached to an entry; the JPEG lives in the app's private files/photos directory. */
 @Serializable
 @Entity(

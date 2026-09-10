@@ -44,6 +44,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,6 +86,9 @@ import cz.janek.vineyardlog.data.model.MeasurementKind
 import cz.janek.vineyardlog.data.model.Photo
 import cz.janek.vineyardlog.data.model.PhenologyStage
 import cz.janek.vineyardlog.data.model.Product
+import cz.janek.vineyardlog.data.model.MixWithItems
+import cz.janek.vineyardlog.data.model.SprayMix
+import cz.janek.vineyardlog.data.model.SprayMixItem
 import cz.janek.vineyardlog.data.model.ProductUsage
 import cz.janek.vineyardlog.data.model.WeatherDay
 import cz.janek.vineyardlog.data.settings.Settings
@@ -192,6 +197,24 @@ class EntryEditViewModel(
     val settings = c.settings.settings.stateIn(viewModelScope, started, Settings())
     /** All entries, for the previous-spray rotation check. */
     val entries = c.entryDao.observeAll().stateIn(viewModelScope, started, emptyList())
+    val mixes = c.sprayMixDao.observeAll().stateIn(viewModelScope, started, emptyList())
+
+    /** Replaces the product rows with the saved mix. */
+    fun applyMix(mix: MixWithItems) {
+        usages.clear()
+        usages.addAll(mix.items.map { UsageRow(it.productId, it.dose.input(), it.doseUnit) })
+        if (title.isBlank()) title = mix.mix.name
+    }
+
+    fun saveMix(name: String) {
+        val items = usages.filter { it.productId != null }.map {
+            SprayMixItem(productId = it.productId!!, dose = it.dose.toDoubleLenient(), doseUnit = it.doseUnit.trim())
+        }
+        if (items.isEmpty()) return
+        viewModelScope.launch { c.sprayMixDao.save(SprayMix(name = name.trim()), items) }
+    }
+
+    fun deleteMix(id: Long) { viewModelScope.launch { c.sprayMixDao.delete(id) } }
 
     init {
         if (entryId != null) {
@@ -672,6 +695,22 @@ fun EntryEditScreen(
                     } else null,
                 )
             }
+            if (vm.type == EntryType.SPRAY) {
+                val mixes by vm.mixes.collectAsStateWithLifecycle()
+                var pickMix by remember { mutableStateOf(false) }
+                var nameMix by remember { mutableStateOf(false) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (mixes.isNotEmpty()) TextButton(onClick = { pickMix = true }) { Text(stringResource(R.string.load_mix)) }
+                    if (vm.usages.any { it.productId != null }) TextButton(onClick = { nameMix = true }) { Text(stringResource(R.string.save_as_mix)) }
+                }
+                if (pickMix) MixPickerDialog(
+                    mixes = mixes, products = products,
+                    onPick = { vm.applyMix(it); pickMix = false },
+                    onDelete = { vm.deleteMix(it) },
+                    onDismiss = { pickMix = false },
+                )
+                if (nameMix) NameMixDialog(onSave = { vm.saveMix(it); nameMix = false }, onDismiss = { nameMix = false })
+            }
             OutlinedButton(onClick = { vm.addUsage() }) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_product))
             }
@@ -876,4 +915,56 @@ private fun UsageRowEditor(
             AppTextField(row.note, { onChange(row.copy(note = it)) }, stringResource(R.string.note))
         }
     }
+}
+
+/** Picks one of the saved tank mixes; the pre-harvest interval comes from the products, not the mix. */
+@Composable
+private fun MixPickerDialog(
+    mixes: List<MixWithItems>,
+    products: List<Product>,
+    onPick: (MixWithItems) -> Unit,
+    onDelete: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        title = { Text(stringResource(R.string.saved_mixes)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                mixes.forEach { m ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f).clickable { onPick(m) }.padding(vertical = 8.dp)) {
+                            Text(m.mix.name, style = MaterialTheme.typography.bodyLarge)
+                            val names = m.items.mapNotNull { i ->
+                                products.firstOrNull { it.id == i.productId }?.let { p ->
+                                    p.name + (i.dose?.let { d -> " ${d.fmt(2)} ${i.doseUnit}" } ?: "")
+                                }
+                            }
+                            val phi = m.items.mapNotNull { i -> products.firstOrNull { it.id == i.productId }?.phiDays }.maxOrNull()
+                            Text(
+                                names.joinToString(" · ") + (phi?.let { " · " + stringResource(R.string.phi_days_short, it) } ?: ""),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        IconButton(onClick = { onDelete(m.mix.id) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove)) }
+                    }
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun NameMixDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(enabled = name.isNotBlank(), onClick = { onSave(name) }) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        title = { Text(stringResource(R.string.save_as_mix)) },
+        text = {
+            AppTextField(name, { name = it }, stringResource(R.string.mix_name), placeholder = stringResource(R.string.mix_name_hint))
+        },
+    )
 }

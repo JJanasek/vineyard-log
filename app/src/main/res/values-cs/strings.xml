@@ -607,6 +607,11 @@
     <string name="taken_count_hint">Spočítej na jaře po výsadbě; rozdíl je to, co podsadit.</string>
     <string name="taken_summary">Ujato %1$d z %2$d (%3$s %%) · %4$d k podsazení</string>
     <string name="spread_to_blocks">Zapsat ke všem %1$d tratím a rozpočítat jíchu</string>
+    <string name="load_mix">Načíst směs</string>
+    <string name="save_as_mix">Uložit jako směs</string>
+    <string name="saved_mixes">Uložené směsi</string>
+    <string name="mix_name">Název směsi</string>
+    <string name="mix_name_hint">např. před květem</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>
