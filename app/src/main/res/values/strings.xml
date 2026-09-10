@@ -614,6 +614,7 @@
     <string name="mix_name_hint">e.g. before flowering</string>
     <string name="compost_humus">≈ %1$s kg of dry matter, about %2$s kg stays as humus</string>
     <string name="compost_humus_pct">(+%1$s percentage points in the topsoil)</string>
+    <string name="humus_value">organic matter %1$s %%</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

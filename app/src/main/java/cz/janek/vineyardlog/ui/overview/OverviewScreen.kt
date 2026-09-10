@@ -342,6 +342,8 @@ fun OverviewScreen(
             }
             item { HarvestTable(entries, blocks) }
 
+            // ---- soil ----
+            item { SoilTable(entries, blocks) }
             // ---- cellar ----
             item { SectionTitle(stringResource(R.string.tab_cellar), Modifier.padding(horizontal = 16.dp)) }
             item {
@@ -374,8 +376,6 @@ fun OverviewScreen(
                 CellarTable(vintageBatches, cellarAll)
             }
 
-            // ---- soil ----
-            item { SoilTable(entries, blocks) }
         }
     }
 }
@@ -468,7 +468,7 @@ private fun SoilTable(entries: List<EntryWithDetails>, blocks: List<Block>) {
             val ratio = SoilAdvice.kMgRatio(k, mg)
             val values = buildList {
                 ph?.let { add("pH ${it.fmt(1)}") }
-                humus?.let { add(stringResource(R.string.om_short) + " ${it.fmt(2)} %") }
+                humus?.let { add(stringResource(R.string.humus_value, it.fmt(2))) }
                 latest(MeasurementKind.SOIL_N)?.let { add("N ${it.fmt(0)}") }
                 latest(MeasurementKind.SOIL_P)?.let { add("P ${it.fmt(0)}") }
                 k?.let { add("K ${it.fmt(0)}") }
