@@ -23,4 +23,4 @@ val BatchStatus.label: String @Composable get() = stringResource(labelRes)
 val cz.janek.vineyardlog.data.model.Repeat.label: String @Composable get() = stringResource(labelRes)
 
 val MeasurementKind.labelWithUnit: String
-    @Composable get() = if (unit.isBlank()) label else "$label [$unit]"
+    @Composable get() = label.let { l -> if (unit.isBlank() || l.contains(unit)) l else "$l [$unit]" }

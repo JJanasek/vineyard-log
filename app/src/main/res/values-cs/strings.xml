@@ -381,6 +381,7 @@
     <string name="sprayer_volume">Můj postřikovač</string>
     <string name="sprayer_hint">Slouží k přepočtu, kolik přípravku patří do jedné náplně.</string>
     <string name="spray_volume">Spotřeba jíchy</string>
+    <string name="spray_volume_hint_all">Litry jíchy na celou vinici, rozpočítají se na tratě</string>
     <string name="spray_volume_hint">Litry jíchy skutečně vystříkané na této trati</string>
     <string name="per_10l">≈ %1$s g/10 l · náplň %2$s l: %3$s g</string>
     <string name="per_10l_ml">≈ %1$s ml/10 l · náplň %2$s l: %3$s ml</string>
@@ -640,6 +641,16 @@
     <string name="ta_short">kys.</string>
     <string name="other_vineyard_entry">Jiný záznam z vinice…</string>
     <string name="total_and_note">Celkem použito a poznámka</string>
+    <string name="risk_short_per">Plíseň</string>
+    <string name="risk_short_oid">Padlí</string>
+    <string name="risk_short_bot">Botrytida</string>
+    <string name="risk_head_high_one">%1$s je vysoko</string>
+    <string name="risk_head_high_many">%1$s jsou vysoko</string>
+    <string name="risk_head_rest_calm">, ostatní klid</string>
+    <string name="risk_head_moderate">Pozor na: %1$s</string>
+    <string name="risk_head_calm">Choroby teď v klidu</string>
+    <string name="list_and">" a "</string>
+    <string name="log_action">Zapsat</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

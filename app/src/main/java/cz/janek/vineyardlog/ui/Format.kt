@@ -79,3 +79,13 @@ fun MeasurementKind.shortLabel(): String = when (this) {
     MeasurementKind.ALCOHOL -> "% obj."
     else -> label
 }
+
+/** "23,5 °NM", "pH 3,31", "kys. 6,1 g/l": the unit already says what the number is. */
+@androidx.compose.runtime.Composable
+fun compactMeasurementText(m: Measurement): String = when (m.kind) {
+    MeasurementKind.NM, MeasurementKind.BRIX, MeasurementKind.OECHSLE, MeasurementKind.TEMPERATURE,
+    MeasurementKind.ALCOHOL, MeasurementKind.VOLUME, MeasurementKind.YIELD -> "${m.value.fmt()} ${m.kind.unit}"
+    MeasurementKind.PH -> "pH ${m.value.fmt()}"
+    MeasurementKind.TA -> "${m.kind.shortLabel()} ${m.value.fmt()} g/l"
+    else -> measurementText(m)
+}

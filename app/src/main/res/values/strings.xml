@@ -381,6 +381,7 @@
     <string name="sprayer_volume">My sprayer tank</string>
     <string name="sprayer_hint">Used to show how much product goes into one tank fill.</string>
     <string name="spray_volume">Spray mix used</string>
+    <string name="spray_volume_hint_all">Litres of mix for the whole vineyard, split across blocks</string>
     <string name="spray_volume_hint">Litres of mix actually applied on this block</string>
     <string name="per_10l">≈ %1$s g/10 l · one %2$s l tank: %3$s g</string>
     <string name="per_10l_ml">≈ %1$s ml/10 l · one %2$s l tank: %3$s ml</string>
@@ -640,6 +641,16 @@
     <string name="ta_short">acids</string>
     <string name="other_vineyard_entry">Other vineyard entry…</string>
     <string name="total_and_note">Total used and note</string>
+    <string name="risk_short_per">Downy</string>
+    <string name="risk_short_oid">Powdery</string>
+    <string name="risk_short_bot">Botrytis</string>
+    <string name="risk_head_high_one">%1$s is high</string>
+    <string name="risk_head_high_many">%1$s are high</string>
+    <string name="risk_head_rest_calm">, the rest is calm</string>
+    <string name="risk_head_moderate">Watch %1$s</string>
+    <string name="risk_head_calm">Disease pressure is low</string>
+    <string name="list_and">" and "</string>
+    <string name="log_action">Log</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

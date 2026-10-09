@@ -22,6 +22,8 @@ import androidx.compose.material3.HorizontalDivider
 import cz.janek.vineyardlog.data.model.EntryType
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -101,7 +103,12 @@ fun TimelineScreen(
         },
         floatingActionButton = {
             Box {
-                FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_entry)) }
+                ExtendedFloatingActionButton(
+                    onClick = { fabMenu = true },
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.log_action)) },
+                    shape = MaterialTheme.shapes.large,
+                )
                 DropdownMenu(expanded = fabMenu, onDismissRequest = { fabMenu = false }) {
                     // the entries logged most often go straight to their form, one tap instead of two
                     listOf(EntryType.SPRAY, EntryType.RIPENESS, EntryType.PHENOLOGY, EntryType.HARVEST).forEach { t ->

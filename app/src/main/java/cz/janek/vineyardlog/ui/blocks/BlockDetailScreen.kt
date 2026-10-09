@@ -187,15 +187,22 @@ fun BlockDetailScreen(
                 item {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         SectionTitle(stringResource(R.string.ripening_curve_n, year))
-                        val palette = listOf(Color(0xFF3E5A2B), Color(0xFF6A3E8C), Color(0xFFB26A00), Color(0xFF1565C0), Color(0xFF8E24AA), Color(0xFF00897B))
-                        val series = yearMeasurements.groupBy { it.kind }.entries.mapIndexed { i, (kind, list) ->
-                            ChartSeries(
-                                name = kind.labelWithUnit,
-                                color = palette[i % palette.size],
-                                points = list.map { dayOfYear(it.date).toFloat() to it.value.toFloat() },
+                        // one small chart per reading, each on its own axis: sugar, acids and pH
+                        // live on scales a factor of five apart and cannot share one
+                        val c = MaterialTheme.colorScheme
+                        val palette = listOf(c.primary, c.tertiary, c.secondary, c.error)
+                        val byKind = yearMeasurements
+                            .filter { !it.kind.name.startsWith("SOIL") && !it.kind.name.startsWith("COVER") }
+                            .groupBy { it.kind }
+                            .filterValues { it.size >= 2 }
+                        byKind.entries.forEachIndexed { i, (kind, list) ->
+                            Text(kind.labelWithUnit, style = MaterialTheme.typography.labelLarge, color = palette[i % palette.size], modifier = Modifier.padding(top = 6.dp))
+                            LineChart(
+                                series = listOf(ChartSeries(name = kind.labelWithUnit, color = palette[i % palette.size], points = list.map { dayOfYear(it.date).toFloat() to it.value.toFloat() })),
+                                height = 130,
+                                xLabel = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) },
                             )
                         }
-                        LineChart(series = series, xLabel = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) })
                         SectionTitle(stringResource(R.string.readings))
                         yearMeasurements.sortedByDescending { it.date }.forEach { m ->
                             KeyValueRow("${formatDate(m.date)}  ${m.kind.label}", "${m.value.fmt()} ${m.kind.unit}".trim())

@@ -22,6 +22,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -59,6 +60,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -164,6 +168,7 @@ class EntryEditViewModel(
     var plantingStock by mutableStateOf("")
     /** Spray on the whole vineyard: write one entry per block with the mix split between them. */
     var spreadToBlocks by mutableStateOf(true)
+    val fansOut: Boolean get() = spreadToBlocks && entryId == null && type == EntryType.SPRAY && domain == Domain.VINEYARD && blockId == null
     /** Sugar scale used for new rows: the one of the latest reading. */
     var preferredSugar by mutableStateOf<MeasurementKind?>(null)
         private set
@@ -426,7 +431,7 @@ class EntryEditViewModel(
         val measRows = filledMeasurements.map {
             Measurement(date = date, kind = it.kind, value = it.value.toDoubleLenient()!!, note = it.note.trim())
         }
-        val fanOut = spreadToBlocks && entryId == null && type == EntryType.SPRAY && domain == Domain.VINEYARD && blockId == null
+        val fanOut = fansOut
         val gridBlocks = blocks.value.filter { !it.archived }
         val gridFilled = usesBlockGrid && gridBlocks.isNotEmpty() && blockReadings.values.any { it.isNotBlank() }
         if (gridFilled && blockReadings.values.any { it.isNotBlank() && it.toDoubleLenient() == null }) {
@@ -568,15 +573,31 @@ fun EntryEditScreen(
                     onSelectNone = { vm.blockId = null },
                 )
                 if (vm.type == EntryType.SPRAY && vm.blockId == null && entryId == null && active.isNotEmpty()) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Checkbox(checked = vm.spreadToBlocks, onCheckedChange = { vm.spreadToBlocks = it })
-                        Text(stringResource(R.string.spread_to_blocks, active.size), style = MaterialTheme.typography.bodyMedium)
+                    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHighest, onClick = { vm.spreadToBlocks = !vm.spreadToBlocks }) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.spread_to_blocks, active.size), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            Switch(checked = vm.spreadToBlocks, onCheckedChange = { vm.spreadToBlocks = it })
+                        }
                     }
                     if (vm.spreadToBlocks) {
+                        // the mix split in proportion, one segment per block
                         val total = vm.sprayVolume.toDoubleLenient()
+                        val shares = remember(active) { SprayShare.shares(active) }
                         val split = remember(total, active) { SprayShare.splitVolume(total, active) }
-                        val text = active.joinToString(" · ") { b -> b.name + (split[b.id]?.let { " ${it.fmt(1)} l" } ?: "") }
-                        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(Modifier.fillMaxWidth().height(34.dp).clip(MaterialTheme.shapes.small), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                            active.forEachIndexed { i, b ->
+                                val bg = if (i % 2 == 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
+                                Box(Modifier.weight((shares[b.id] ?: 0.0).toFloat().coerceAtLeast(0.05f)).fillMaxHeight().background(bg), contentAlignment = Alignment.Center) {
+                                    // "MP 6.5 l" once the mix is known, "MP 26 %" before
+                                    val abbr = b.name.split(' ', '-').filter { it.isNotBlank() }.take(3).joinToString("") { it.take(1).uppercase() }
+                                    Text(
+                                        abbr + " " + (split[b.id]?.let { "${it.fmt(1)} l" } ?: "${((shares[b.id] ?: 0.0) * 100).fmt(0)} %"),
+                                        style = MaterialTheme.typography.labelMedium, maxLines = 1,
+                                    )
+                                }
+                            }
+                        }
+                        Text(active.joinToString(" · ") { it.name }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else {
@@ -603,7 +624,7 @@ fun EntryEditScreen(
                 val needsWater = vm.waterLha.isNotBlank() || vm.usages.any { it.doseUnit.trim().lowercase().replace(" ", "") in perHa }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     NumberField(vm.sprayVolume, { vm.sprayVolume = it }, stringResource(R.string.spray_volume), Modifier.weight(1f), suffix = "L",
-                        supportingText = stringResource(R.string.spray_volume_hint))
+                        supportingText = stringResource(if (vm.fansOut) R.string.spray_volume_hint_all else R.string.spray_volume_hint))
                     if (needsWater) NumberField(vm.waterLha, { vm.waterLha = it }, stringResource(R.string.water_volume), Modifier.weight(1f), suffix = "l/ha",
                         supportingText = stringResource(R.string.default_water_hint, settings.defaultWaterLha.input()))
                 }
@@ -960,17 +981,18 @@ fun EntryEditScreen(
                     IconButton(onClick = { vm.removeAttachment(a) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_attachment)) }
                 }
             }
+            val attachPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = {
                     val target = vm.newCaptureTarget()
                     captureTarget = target
                     runCatching { takePhoto.launch(target.second) }.onFailure { captureTarget = null; target.first.delete() }
-                }, modifier = Modifier.weight(1f)) { Icon(Icons.Default.PhotoCamera, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.take_photo_short)) }
+                }, modifier = Modifier.weight(1f), contentPadding = attachPadding) { Icon(Icons.Default.PhotoCamera, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.take_photo_short), maxLines = 1, softWrap = false) }
                 OutlinedButton(onClick = {
                     pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                }, modifier = Modifier.weight(1f)) { Icon(Icons.Default.PhotoLibrary, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.add_photo_short)) }
-                OutlinedButton(onClick = { pickFile.launch(arrayOf("application/pdf", "image/*", "text/*", "application/*")) }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.AttachFile, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.add_attachment_short))
+                }, modifier = Modifier.weight(1f), contentPadding = attachPadding) { Icon(Icons.Default.PhotoLibrary, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.add_photo_short), maxLines = 1, softWrap = false) }
+                OutlinedButton(onClick = { pickFile.launch(arrayOf("application/pdf", "image/*", "text/*", "application/*")) }, modifier = Modifier.weight(1f), contentPadding = attachPadding) {
+                    Icon(Icons.Default.AttachFile, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.add_attachment_short), maxLines = 1, softWrap = false)
                 }
             }
 
