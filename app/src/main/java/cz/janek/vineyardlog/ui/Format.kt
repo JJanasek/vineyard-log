@@ -52,3 +52,30 @@ fun suggestedKinds(type: EntryType): List<MeasurementKind> = when (type) {
     EntryType.BOTTLING -> listOf(MeasurementKind.FREE_SO2, MeasurementKind.VOLUME)
     else -> emptyList()
 }
+
+/** Entry types that normally carry products; the form shows the product section only for these. */
+fun EntryType.usesProducts(): Boolean = this in setOf(
+    EntryType.SPRAY, EntryType.FERTILIZATION, EntryType.SOIL_WORK, EntryType.GREEN_COVER, EntryType.VINEYARD_OTHER,
+    EntryType.MUST_PREP, EntryType.YEAST_PITCH, EntryType.NUTRIENT, EntryType.ADDITION, EntryType.SULFITING,
+    EntryType.FINING, EntryType.MLF, EntryType.BOTTLING, EntryType.CELLAR_OTHER,
+)
+
+/** Entry types that normally carry readings; others offer "add a reading" under the extra details. */
+fun EntryType.usesMeasurements(): Boolean = this in setOf(
+    EntryType.RIPENESS, EntryType.HARVEST, EntryType.SOIL_ANALYSIS, EntryType.GREEN_COVER, EntryType.SCOUTING,
+    EntryType.MUST_PREP, EntryType.FERMENTATION_CHECK, EntryType.ANALYSIS, EntryType.SULFITING, EntryType.BOTTLING,
+    EntryType.MLF, EntryType.RACKING, EntryType.YEAST_PITCH, EntryType.VINEYARD_OTHER, EntryType.CELLAR_OTHER,
+)
+
+/** Compact label for narrow columns and dropdowns: the unit says what it is for the common readings. */
+@androidx.compose.runtime.Composable
+fun MeasurementKind.shortLabel(): String = when (this) {
+    MeasurementKind.NM -> "°NM"
+    MeasurementKind.BRIX -> "°Bx"
+    MeasurementKind.OECHSLE -> "°Oe"
+    MeasurementKind.PH -> "pH"
+    MeasurementKind.TA -> androidx.compose.ui.res.stringResource(cz.janek.vineyardlog.R.string.ta_short)
+    MeasurementKind.TEMPERATURE -> "°C"
+    MeasurementKind.ALCOHOL -> "% obj."
+    else -> label
+}

@@ -630,6 +630,16 @@
     <string name="n_level_high">above the target</string>
     <string name="n_target">Nitrogen the block should get in a season</string>
     <string name="n_target_hint">The yardstick for the balance. About 20 kg N/ha is enough in cooler regions where rain and cover-crop turnover cover much of it, 50-60 in warm ones; Czech sources put the annual uptake at 50-70 with roughly a fifth returned in the prunings.</string>
+    <string name="take_photo_short">Photo</string>
+    <string name="add_photo_short">Gallery</string>
+    <string name="add_attachment_short">File</string>
+    <string name="more_details">Title, labour and cost</string>
+    <string name="repeat_last_spray">Same as last time (%1$s)</string>
+    <string name="readings_per_block">Readings per block</string>
+    <string name="readings_per_block_hint">Fill the blocks you sampled; each one is saved as its own entry, the empty ones are skipped.</string>
+    <string name="ta_short">acids</string>
+    <string name="other_vineyard_entry">Other vineyard entry…</string>
+    <string name="total_and_note">Total used and note</string>
     <string name="cond_check">Spraying conditions</string>
     <string name="cond_from_weather">No temperature typed – using the day\'s maximum from the weather table: %1$s °C.</string>
     <string name="mix_check">Tank mix check</string>

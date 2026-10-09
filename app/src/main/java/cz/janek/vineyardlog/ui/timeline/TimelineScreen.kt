@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import cz.janek.vineyardlog.data.model.EntryType
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -76,7 +78,7 @@ class TimelineViewModel(c: AppContainer) : ViewModel() {
 @Composable
 fun TimelineScreen(
     onOpenEntry: (Long) -> Unit,
-    onNewEntry: (Domain) -> Unit,
+    onNewEntry: (Domain, EntryType?) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val vm = appViewModel { TimelineViewModel(it) }
@@ -101,15 +103,24 @@ fun TimelineScreen(
             Box {
                 FloatingActionButton(onClick = { fabMenu = true }) { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.new_entry)) }
                 DropdownMenu(expanded = fabMenu, onDismissRequest = { fabMenu = false }) {
+                    // the entries logged most often go straight to their form, one tap instead of two
+                    listOf(EntryType.SPRAY, EntryType.RIPENESS, EntryType.PHENOLOGY, EntryType.HARVEST).forEach { t ->
+                        DropdownMenuItem(
+                            text = { Text(t.label) },
+                            leadingIcon = { Icon(Icons.Default.Grass, null) },
+                            onClick = { fabMenu = false; onNewEntry(Domain.VINEYARD, t) },
+                        )
+                    }
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.vineyard_entry)) },
+                        text = { Text(stringResource(R.string.other_vineyard_entry)) },
                         leadingIcon = { Icon(Icons.Default.Grass, null) },
-                        onClick = { fabMenu = false; onNewEntry(Domain.VINEYARD) },
+                        onClick = { fabMenu = false; onNewEntry(Domain.VINEYARD, null) },
                     )
+                    HorizontalDivider()
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.cellar_entry)) },
                         leadingIcon = { Icon(Icons.Default.WineBar, null) },
-                        onClick = { fabMenu = false; onNewEntry(Domain.CELLAR) },
+                        onClick = { fabMenu = false; onNewEntry(Domain.CELLAR, null) },
                     )
                 }
             }

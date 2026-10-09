@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -48,6 +49,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,6 +58,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -82,6 +86,7 @@ import cz.janek.vineyardlog.data.model.Batch
 import cz.janek.vineyardlog.data.model.Block
 import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.model.EntryType
+import cz.janek.vineyardlog.data.model.EntryWithDetails
 import cz.janek.vineyardlog.data.model.LogEntry
 import cz.janek.vineyardlog.data.model.Measurement
 import cz.janek.vineyardlog.data.model.MeasurementKind
@@ -110,6 +115,9 @@ import cz.janek.vineyardlog.ui.input
 import cz.janek.vineyardlog.ui.suggestedKinds
 import cz.janek.vineyardlog.ui.toDoubleLenient
 import cz.janek.vineyardlog.ui.toIntLenient
+import cz.janek.vineyardlog.ui.usesProducts
+import cz.janek.vineyardlog.ui.shortLabel
+import cz.janek.vineyardlog.ui.usesMeasurements
 import cz.janek.vineyardlog.util.formatDate
 import cz.janek.vineyardlog.util.WineMath
 import cz.janek.vineyardlog.data.model.fmt
@@ -155,7 +163,10 @@ class EntryEditViewModel(
     var takenCount by mutableStateOf("")
     var plantingStock by mutableStateOf("")
     /** Spray on the whole vineyard: write one entry per block with the mix split between them. */
-    var spreadToBlocks by mutableStateOf(false)
+    var spreadToBlocks by mutableStateOf(true)
+    /** Sugar scale used for new rows: the one of the latest reading. */
+    var preferredSugar by mutableStateOf<MeasurementKind?>(null)
+        private set
     var blockId by mutableStateOf(initialBlockId)
     var batchId by mutableStateOf(initialBatchId)
     var title by mutableStateOf(initialTitle.orEmpty())
@@ -246,7 +257,46 @@ class EntryEditViewModel(
             }
         } else {
             applyTypeDefaults(type)
+            refreshSugarScale(type)
         }
+    }
+
+    /** Looks up the sugar scale used for [t] and swaps the default sugar rows that are still empty. */
+    private fun refreshSugarScale(t: EntryType) {
+        viewModelScope.launch {
+            val kind = runCatching { c.measurementDao.latestSugarKind(t.name) }.getOrNull()
+                ?.let { k -> MeasurementKind.entries.firstOrNull { it.name == k } }
+                ?: if (java.util.Locale.getDefault().language == "cs") MeasurementKind.NM else MeasurementKind.BRIX
+            if (type != t) return@launch
+            val sugar = setOf(MeasurementKind.NM, MeasurementKind.BRIX, MeasurementKind.OECHSLE)
+            preferredSugar = kind
+            measurements.forEachIndexed { i, row ->
+                if (row.kind in sugar && row.value.isBlank() && row.kind != kind) measurements[i] = row.copy(kind = kind)
+            }
+        }
+    }
+
+    /**
+     * Ripeness for the whole vineyard is measured block by block on the same morning. Instead of
+     * one entry per block, the form shows one row of readings per block and saves them as separate
+     * entries, which is what every per-block chart and forecast reads.
+     */
+    val blockReadings = androidx.compose.runtime.mutableStateMapOf<String, String>()
+    val usesBlockGrid: Boolean get() = type == EntryType.RIPENESS && blockId == null && entryId == null && domain == Domain.VINEYARD
+    fun gridKinds(): List<MeasurementKind> = listOf(preferredSugar ?: MeasurementKind.NM, MeasurementKind.TA, MeasurementKind.PH)
+    fun gridKey(blockId: Long, kind: MeasurementKind) = "$blockId:${kind.name}"
+
+
+    /** The latest spray, so a repeated treatment can be filled in one tap. */
+    fun lastSpray(): EntryWithDetails? = entries.value
+        .filter { it.entry.type == EntryType.SPRAY && it.entry.id != (entryId ?: -1L) && it.usages.isNotEmpty() }
+        .maxByOrNull { it.entry.date }
+
+    fun copyFrom(prev: EntryWithDetails) {
+        usages.clear()
+        usages.addAll(prev.usages.map { UsageRow(it.usage.productId, it.usage.dose.input(), it.usage.doseUnit) })
+        if (sprayVolume.isBlank()) sprayVolume = prev.entry.sprayVolumeL.input()
+        if (waterLha.isBlank()) waterLha = prev.entry.waterLPerHa.input()
     }
 
     fun setDomainKeepingData(d: Domain) {
@@ -257,7 +307,7 @@ class EntryEditViewModel(
 
     fun changeType(t: EntryType) {
         type = t
-        if (entryId == null) applyTypeDefaults(t)
+        if (entryId == null) { applyTypeDefaults(t); refreshSugarScale(t) }
     }
 
     /** Rows every analysis should carry, so the numbers land in the same place every time. */
@@ -282,7 +332,7 @@ class EntryEditViewModel(
         if (t == EntryType.RACKING && quantityUnit.isBlank()) quantityUnit = "L"
         if (t == EntryType.BOTTLING && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_bottles)
         if (t == EntryType.RENEWAL && quantityUnit.isBlank()) quantityUnit = c.appContext.getString(R.string.unit_vines)
-        if (measurements.isEmpty()) measurements.addAll(suggestedKinds(t).map { MeasRow(it) })
+        if (measurements.isEmpty()) measurements.addAll(suggestedKinds(t).map { k -> MeasRow(if (k == MeasurementKind.BRIX) preferredSugar ?: k else k) })
     }
 
     fun photoFile(item: PhotoItem) = c.photos.file(item.fileName)
@@ -377,7 +427,24 @@ class EntryEditViewModel(
             Measurement(date = date, kind = it.kind, value = it.value.toDoubleLenient()!!, note = it.note.trim())
         }
         val fanOut = spreadToBlocks && entryId == null && type == EntryType.SPRAY && domain == Domain.VINEYARD && blockId == null
+        val gridBlocks = blocks.value.filter { !it.archived }
+        val gridFilled = usesBlockGrid && gridBlocks.isNotEmpty() && blockReadings.values.any { it.isNotBlank() }
+        if (gridFilled && blockReadings.values.any { it.isNotBlank() && it.toDoubleLenient() == null }) {
+            error = c.appContext.getString(R.string.err_measurement_numbers); return
+        }
         viewModelScope.launch {
+            if (gridFilled) {
+                var first = true
+                gridBlocks.forEach { b ->
+                    val rows = gridKinds().mapNotNull { k ->
+                        blockReadings[gridKey(b.id, k)]?.toDoubleLenient()?.let { v -> Measurement(date = date, kind = k, value = v) }
+                    }
+                    if (rows.isEmpty()) return@forEach
+                    val newId = c.entryDao.save(entry.copy(id = 0, blockId = b.id), emptyList(), rows + measRows)
+                    if (first) { attachFiles(newId); first = false }
+                }
+                saved = true; onDone(); return@launch
+            }
             if (fanOut) {
                 val active = blocks.value.filter { !it.archived }
                 if (active.isNotEmpty()) {
@@ -465,7 +532,8 @@ fun EntryEditScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            // a new entry already knows its domain from the button that opened it; only an edit may move it
+            if (entryId != null) SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 Domain.entries.forEachIndexed { i, d ->
                     SegmentedButton(
                         selected = vm.domain == d,
@@ -616,70 +684,7 @@ fun EntryEditScreen(
                 }
             }
 
-            AppTextField(vm.title, { vm.title = it }, stringResource(R.string.title_optional), placeholder = stringResource(R.string.title_hint))
-            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 3)
-
-            // ---- photos ----
-            SectionTitle(stringResource(R.string.photos))
-            val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                uri?.let { vm.addPhoto(it) }
-            }
-            var captureTarget by remember { mutableStateOf<Pair<java.io.File, android.net.Uri>?>(null) }
-            val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-                val target = captureTarget
-                if (ok && target != null) vm.addPhoto(target.second) { target.first.delete() } else target?.first?.delete()
-                captureTarget = null
-            }
-            if (vm.photos.isNotEmpty()) {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(vm.photos, key = { it.fileName }) { item ->
-                        Box {
-                            PhotoImage(
-                                file = vm.photoFile(item),
-                                contentDescription = stringResource(R.string.photo),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(110.dp).clip(RoundedCornerShape(10.dp)),
-                            )
-                            IconButton(
-                                onClick = { vm.removePhoto(item) },
-                                modifier = Modifier.align(Alignment.TopEnd).size(32.dp),
-                            ) {
-                                Icon(
-                                    Icons.Default.Cancel, contentDescription = stringResource(R.string.remove_photo),
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f), CircleShape),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = {
-                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                }) { Icon(Icons.Default.PhotoLibrary, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_photo)) }
-                OutlinedButton(onClick = {
-                    val target = vm.newCaptureTarget()
-                    captureTarget = target
-                    runCatching { takePhoto.launch(target.second) }.onFailure { captureTarget = null; target.first.delete() }
-                }) { Icon(Icons.Default.PhotoCamera, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.take_photo)) }
-            }
-
-            // ---- attachments ----
-            SectionTitle(stringResource(R.string.attachments))
-            val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let { vm.addAttachment(it) } }
-            vm.attachments.forEach { a ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.AttachFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(a.displayName.ifBlank { a.fileName }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                    IconButton(onClick = { vm.removeAttachment(a) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_attachment)) }
-                }
-            }
-            OutlinedButton(onClick = { pickFile.launch(arrayOf("application/pdf", "image/*", "text/*", "application/*")) }) {
-                Icon(Icons.Default.AttachFile, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_attachment))
-            }
-            Text(stringResource(R.string.attachment_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-
+            if (vm.type.usesProducts() || vm.usages.isNotEmpty()) {
             // ---- products ----
             SectionTitle(stringResource(R.string.tab_products))
             val domainProducts = remember(products, vm.domain) {
@@ -721,6 +726,19 @@ fun EntryEditScreen(
                         }
                     } else null,
                 )
+            }
+            if (vm.type == EntryType.SPRAY && vm.usages.none { it.productId != null }) {
+                val entriesNow by vm.entries.collectAsStateWithLifecycle()
+                val last = remember(entriesNow) { vm.lastSpray() }
+                if (last != null) {
+                    val names = last.usages.mapNotNull { it.product?.name }.joinToString(", ")
+                    OutlinedCard(onClick = { vm.copyFrom(last) }, modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(stringResource(R.string.repeat_last_spray, formatDate(last.entry.date)), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(names, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
             }
             if (vm.type == EntryType.SPRAY) {
                 val mixes by vm.mixes.collectAsStateWithLifecycle()
@@ -801,28 +819,30 @@ fun EntryEditScreen(
             }
             }
 
-            if (vm.type == EntryType.RIPENESS) {
-                val items = listOf(R.string.sp_item1, R.string.sp_item2, R.string.sp_item3, R.string.sp_item4)
-                val checked = remember { mutableStateListOf(false, false, false, false) }
-                val prefix = stringResource(R.string.sp_note_prefix)
-                val labels = items.map { stringResource(it) }
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(12.dp)) {
-                        Text(stringResource(R.string.sampling_protocol), style = MaterialTheme.typography.titleSmall)
-                        labels.forEachIndexed { i, label ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = checked[i], onCheckedChange = { checked[i] = it })
-                                Text(label, style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                        TextButton(onClick = {
-                            val done = labels.filterIndexed { i, _ -> checked[i] }
-                            if (done.isNotEmpty()) vm.notes = (vm.notes.trim() + "\n" + prefix + done.joinToString("; ")).trim()
-                        }) { Text(stringResource(R.string.sp_insert)) }
-                    }
-                }
             }
 
+            val gridBlocks = blocks.filter { !it.archived }
+            val gridActive = vm.usesBlockGrid && gridBlocks.isNotEmpty()
+            if (gridActive) {
+                SectionTitle(stringResource(R.string.readings_per_block))
+                val kinds = vm.gridKinds()
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.block), Modifier.weight(1.4f), style = MaterialTheme.typography.labelMedium)
+                    kinds.forEach { k -> Text(k.shortLabel(), Modifier.weight(1f), style = MaterialTheme.typography.labelMedium) }
+                }
+                gridBlocks.forEach { b ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(b.name, Modifier.weight(1.4f), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                        kinds.forEach { k ->
+                            val key = vm.gridKey(b.id, k)
+                            NumberField(vm.blockReadings[key] ?: "", { vm.blockReadings[key] = it }, "", Modifier.weight(1f))
+                        }
+                    }
+                }
+                Text(stringResource(R.string.readings_per_block_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            val showMeasurements = !gridActive && (vm.type.usesMeasurements() || vm.measurements.isNotEmpty())
+            if (showMeasurements) {
             // ---- measurements ----
             val allEntriesForRipening by vm.entries.collectAsStateWithLifecycle()
             SectionTitle(stringResource(R.string.measurements))
@@ -833,7 +853,7 @@ fun EntryEditScreen(
                         label = stringResource(R.string.reading),
                         options = kinds,
                         selected = row.kind,
-                        labelOf = { it.label },
+                        labelOf = { it.shortLabel() },
                         onSelect = { vm.updateMeasurement(i, row.copy(kind = it)) },
                         modifier = Modifier.weight(1.5f),
                     )
@@ -872,11 +892,110 @@ fun EntryEditScreen(
                 }
             }
 
+            }
+
+            if (vm.type == EntryType.RIPENESS) {
+                val items = listOf(R.string.sp_item1, R.string.sp_item2, R.string.sp_item3, R.string.sp_item4)
+                val checked = remember { mutableStateListOf(false, false, false, false) }
+                val prefix = stringResource(R.string.sp_note_prefix)
+                val labels = items.map { stringResource(it) }
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text(stringResource(R.string.sampling_protocol), style = MaterialTheme.typography.titleSmall)
+                        labels.forEachIndexed { i, label ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = checked[i], onCheckedChange = { checked[i] = it })
+                                Text(label, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                        TextButton(onClick = {
+                            val done = labels.filterIndexed { i, _ -> checked[i] }
+                            if (done.isNotEmpty()) vm.notes = (vm.notes.trim() + "\n" + prefix + done.joinToString("; ")).trim()
+                        }) { Text(stringResource(R.string.sp_insert)) }
+                    }
+                }
+            }
+
+            // ---- notes and media: always at hand, below the data ----
+            AppTextField(vm.notes, { vm.notes = it }, stringResource(R.string.notes), singleLine = false, minLines = 2)
+
+            val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                uri?.let { vm.addPhoto(it) }
+            }
+            var captureTarget by remember { mutableStateOf<Pair<java.io.File, android.net.Uri>?>(null) }
+            val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+                val target = captureTarget
+                if (ok && target != null) vm.addPhoto(target.second) { target.first.delete() } else target?.first?.delete()
+                captureTarget = null
+            }
+            if (vm.photos.isNotEmpty()) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(vm.photos, key = { it.fileName }) { item ->
+                        Box {
+                            PhotoImage(
+                                file = vm.photoFile(item),
+                                contentDescription = stringResource(R.string.photo),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.size(110.dp).clip(RoundedCornerShape(10.dp)),
+                            )
+                            IconButton(
+                                onClick = { vm.removePhoto(item) },
+                                modifier = Modifier.align(Alignment.TopEnd).size(32.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.Cancel, contentDescription = stringResource(R.string.remove_photo),
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f), CircleShape),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let { vm.addAttachment(it) } }
+            vm.attachments.forEach { a ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.AttachFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(a.displayName.ifBlank { a.fileName }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                    IconButton(onClick = { vm.removeAttachment(a) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_attachment)) }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = {
+                    val target = vm.newCaptureTarget()
+                    captureTarget = target
+                    runCatching { takePhoto.launch(target.second) }.onFailure { captureTarget = null; target.first.delete() }
+                }, modifier = Modifier.weight(1f)) { Icon(Icons.Default.PhotoCamera, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.take_photo_short)) }
+                OutlinedButton(onClick = {
+                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }, modifier = Modifier.weight(1f)) { Icon(Icons.Default.PhotoLibrary, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.add_photo_short)) }
+                OutlinedButton(onClick = { pickFile.launch(arrayOf("application/pdf", "image/*", "text/*", "application/*")) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.AttachFile, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.add_attachment_short))
+                }
+            }
+
+            // ---- rarely needed: tucked away unless already filled ----
+            val hasExtras = vm.title.isNotBlank() || vm.laborHours.isNotBlank() || vm.cost.isNotBlank()
+            var showExtras by remember { mutableStateOf(false) }
+            if (!showExtras && !hasExtras) {
+                TextButton(onClick = { showExtras = true }) {
+                    Icon(Icons.Default.ExpandMore, null); Spacer(Modifier.padding(2.dp)); Text(stringResource(R.string.more_details))
+                }
+            } else {
+            AppTextField(vm.title, { vm.title = it }, stringResource(R.string.title_optional), placeholder = stringResource(R.string.title_hint))
             // ---- effort / cost ----
             SectionTitle(stringResource(R.string.effort))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(vm.laborHours, { vm.laborHours = it }, stringResource(R.string.labour), Modifier.weight(1f), suffix = "h")
                 NumberField(vm.cost, { vm.cost = it }, stringResource(R.string.cost), Modifier.weight(1f), suffix = settings.currency)
+            }
+
+                if (!showMeasurements) {
+                    OutlinedButton(onClick = { vm.addMeasurement() }) {
+                        Icon(Icons.Default.Add, null); Spacer(Modifier.padding(4.dp)); Text(stringResource(R.string.add_measurement))
+                    }
+                }
+                Text(stringResource(R.string.attachment_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Spacer(Modifier.height(8.dp))
@@ -916,16 +1035,19 @@ private fun UsageRowEditor(
                 IconButton(onClick = onRemove) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove_product)) }
             }
             if (product != null) {
-                val hint = buildString {
-                    if (product.doseRangeText.isNotBlank()) append(stringResource(R.string.label_dose, product.doseRangeText))
-                    product.phiDays?.let {
-                        if (isNotEmpty()) append("   ")
-                        append(stringResource(R.string.phi_harvest_from, it, formatDate(entryDate + it)))
-                    }
-                    if (product.purpose.isNotBlank()) { if (isNotEmpty()) append("\n"); append(product.purpose) }
+                // label dose and PHI are what matter while mixing; the catalogue blurb stays one tap away
+                val facts = buildList {
+                    if (product.doseRangeText.isNotBlank()) add(stringResource(R.string.label_dose, product.doseRangeText))
+                    product.phiDays?.let { add(stringResource(R.string.phi_harvest_from, it, formatDate(entryDate + it))) }
                 }
-                if (hint.isNotBlank()) {
-                    Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (product.purpose.isNotBlank()) {
+                    var open by remember(product.id) { mutableStateOf(false) }
+                    Text(
+                        product.purpose, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = if (open) Int.MAX_VALUE else 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.clickable { open = !open },
+                    )
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -935,11 +1057,19 @@ private fun UsageRowEditor(
             if (sprayHint != null) {
                 Text(sprayHint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField(row.totalAmount, { onChange(row.copy(totalAmount = it)) }, stringResource(R.string.total_used), Modifier.weight(1f))
-                AppTextField(row.totalUnit, { onChange(row.copy(totalUnit = it)) }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = stringResource(R.string.total_unit_hint))
+            // the total follows from dose × mix (shown above); only an override or a note needs the fields
+            var more by remember { mutableStateOf(false) }
+            if (more || row.totalAmount.isNotBlank() || row.note.isNotBlank()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NumberField(row.totalAmount, { onChange(row.copy(totalAmount = it)) }, stringResource(R.string.total_used), Modifier.weight(1f))
+                    AppTextField(row.totalUnit, { onChange(row.copy(totalUnit = it)) }, stringResource(R.string.unit), Modifier.weight(1f), placeholder = stringResource(R.string.total_unit_hint))
+                }
+                AppTextField(row.note, { onChange(row.copy(note = it)) }, stringResource(R.string.note))
+            } else {
+                TextButton(onClick = { more = true }, contentPadding = PaddingValues(horizontal = 4.dp)) {
+                    Text(stringResource(R.string.total_and_note), style = MaterialTheme.typography.labelMedium)
+                }
             }
-            AppTextField(row.note, { onChange(row.copy(note = it)) }, stringResource(R.string.note))
         }
     }
 }

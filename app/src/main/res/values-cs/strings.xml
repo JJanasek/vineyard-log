@@ -630,6 +630,16 @@
     <string name="n_level_high">nad cílem</string>
     <string name="n_target">Cílový dusík na sezónu</string>
     <string name="n_target_hint">Měřítko pro bilanci. V chladnějších oblastech stačí asi 20 kg N/ha, protože hodně pokryjí srážky a rozklad ozelenění, v teplých 50–60; české zdroje uvádějí roční odběr 50–70 s asi pětinou vrácenou v réví.</string>
+    <string name="take_photo_short">Vyfotit</string>
+    <string name="add_photo_short">Galerie</string>
+    <string name="add_attachment_short">Soubor</string>
+    <string name="more_details">Název, práce a náklady</string>
+    <string name="repeat_last_spray">Jako minule (%1$s)</string>
+    <string name="readings_per_block">Měření po tratích</string>
+    <string name="readings_per_block_hint">Vyplň tratě, které jsi měřil; každá se uloží jako samostatný záznam, prázdné se přeskočí.</string>
+    <string name="ta_short">kys.</string>
+    <string name="other_vineyard_entry">Jiný záznam z vinice…</string>
+    <string name="total_and_note">Celkem použito a poznámka</string>
     <string name="cond_check">Podmínky postřiku</string>
     <string name="cond_from_weather">Teplota nevyplněna – beru denní maximum z tabulky počasí: %1$s °C.</string>
     <string name="mix_check">Kontrola tank mixu</string>

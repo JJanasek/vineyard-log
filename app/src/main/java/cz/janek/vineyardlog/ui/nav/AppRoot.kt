@@ -119,7 +119,7 @@ fun AppRoot(
                 composable(Tab.LOG.route) {
                     TimelineScreen(
                         onOpenEntry = { navController.navigate(Routes.entry(it)) },
-                        onNewEntry = { domain -> navController.navigate(Routes.entryEdit(domain = domain)) },
+                        onNewEntry = { domain, type -> navController.navigate(Routes.entryEdit(domain = domain, type = type)) },
                         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     )
                 }
