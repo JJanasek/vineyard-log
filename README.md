@@ -112,6 +112,23 @@ Data sources: `data/guide/Sources.kt` lists the references behind the variety ca
 
 Build locally: `./gradlew testDebugUnitTest --tests '*ContentExportTest'` (writes `app/build/site-content`), then `python3 web/build_site.py` (needs `jinja2`) and open `web/dist/index.html`. Tagging `v*` runs `.github/workflows/release.yml`, which builds a signed release APK and attaches it to a GitHub release; the site links to the latest release.
 
+## Tests on real data
+
+Most unit tests feed each formula numbers chosen to exercise it. `RealSeasonTest` does the
+opposite: it runs the whole chain over two real seasons of the Vlčnov vineyard - three blocks, 56
+entries, 619 measured ČHMÚ weather days - and pins the answers, so a refactor that quietly changes
+a result fails instead of passing. The fixture at `app/src/test/resources/season-real.json` is a
+reduction of a real backup with the free text removed, regenerated with:
+
+```
+python3 tools/make_test_fixture.py ~/vineyard-log-2026-sloucene.json
+```
+
+`BackupIntegrityTest` checks a real backup sitting in the project root (the newest
+`vineyard-log-*.json`) for what merging two exports can quietly produce: a weather day or an entry
+stored twice, or a row pointing at a product, block or batch that did not come across. Those files
+are personal data and are git-ignored, so the test skips when none is there and never runs in CI.
+
 ## Release signing
 
 Android refuses to update an app when the new package is signed with a different key, and a debug
