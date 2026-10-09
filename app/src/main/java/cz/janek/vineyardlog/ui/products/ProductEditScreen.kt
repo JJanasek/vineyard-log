@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.products
 
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
 import androidx.compose.material3.MaterialTheme
@@ -113,7 +115,7 @@ class ProductEditViewModel(private val c: AppContainer, private val id: Long?, i
                     f.dose?.let { d -> doseMin = d.min.input(); doseMax = (d.max ?: d.min).input(); doseUnit = d.unit }
                     f.phiDays?.let { phiDays = it.toString() }
                     if (activeIngredient.isBlank()) activeIngredient = f.activeIngredient
-                    if (purpose.isBlank()) purpose = f.description.take(400)
+                    if (purpose.isBlank()) purpose = cz.janek.vineyardlog.data.web.ProductText.clean(f.description).take(400)
                     val sheets = c.appContext.getString(R.string.technical_sheets)
                     if (f.documents.isNotEmpty() && sheets !in notes) {
                         notes = (notes.trim() + "\n\n" + sheets + "\n" + f.documents.joinToString("\n")).trim()
@@ -224,6 +226,12 @@ fun ProductEditScreen(productId: Long?, onDone: () -> Unit, initialUrl: String? 
                     IconButton(onClick = { vm.fetchFromUrl() }, enabled = vm.url.isNotBlank()) {
                         Icon(Icons.Default.CloudDownload, contentDescription = stringResource(R.string.fill_from_page))
                     }
+                }
+            }
+            if (vm.url.isNotBlank()) {
+                val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+                TextButton(onClick = { runCatching { uriHandler.openUri(vm.url.trim()) } }) {
+                    Icon(Icons.AutoMirrored.Filled.OpenInNew, null, Modifier.size(18.dp)); Text("  " + stringResource(R.string.open_supplier_page))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

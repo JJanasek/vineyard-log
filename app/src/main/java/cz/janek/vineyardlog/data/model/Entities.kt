@@ -340,7 +340,13 @@ data class BatchWithSources(
 )
 
 /** Compact number formatting for labels: 2.5 -> "2.5", 3.0 -> "3". */
-fun Double.fmt(maxDecimals: Int = 2): String {
+/** Decimal separator for displayed numbers; set from the app language at start (Czech uses a comma). */
+object NumberStyle { @Volatile var decimalComma = false }
+
+/** Number for display: decimal comma in Czech. Use [fmtPlain] for anything a parser or a text field reads back. */
+fun Double.fmt(maxDecimals: Int = 2): String = fmtPlain(maxDecimals).let { if (NumberStyle.decimalComma) it.replace('.', ',') else it }
+
+fun Double.fmtPlain(maxDecimals: Int = 2): String {
     if (this == Math.rint(this) && kotlin.math.abs(this) < 1e12) return this.toLong().toString()
     val s = String.format(java.util.Locale.US, "%.${maxDecimals}f", this)
     // only strip decimal zeros: "20" (from 20.3 with 0 decimals) must stay "20", not become "2"

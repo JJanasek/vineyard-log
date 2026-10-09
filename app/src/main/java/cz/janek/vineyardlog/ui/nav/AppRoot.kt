@@ -1,6 +1,7 @@
 package cz.janek.vineyardlog.ui.nav
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -114,7 +115,8 @@ fun AppRoot(
             NavHost(
                 navController = navController,
                 startDestination = Tab.LOG.route,
-                modifier = Modifier.padding(padding),
+                // the inner screens have their own Scaffold; without consuming, the status bar inset is added twice
+                modifier = Modifier.padding(padding).consumeWindowInsets(padding),
             ) {
                 composable(Tab.LOG.route) {
                     TimelineScreen(

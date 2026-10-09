@@ -1,5 +1,18 @@
 package cz.janek.vineyardlog.ui.timeline
 
+import cz.janek.vineyardlog.ui.components.icon
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
@@ -53,7 +66,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class TimelineViewModel(c: AppContainer) : ViewModel() {
+class TimelineViewModel(private val c: AppContainer) : ViewModel() {
+    val query = MutableStateFlow("")
+
+    /** Reminders that fire today, shown above the log so the day's jobs are where entries are written. */
+    val today = c.reminderDao.observeAll().map { rs ->
+        val now = System.currentTimeMillis()
+        val todayDate = java.time.LocalDate.now()
+        rs.mapNotNull { r -> c.reminders.nextFire(r, now)?.let { at -> at to r } }
+            .filter { (at, _) -> java.time.Instant.ofEpochMilli(at).atZone(java.time.ZoneId.systemDefault()).toLocalDate() == todayDate }
+            .sortedBy { it.first }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val yearFilter = MutableStateFlow<Int?>(null)
     val domainFilter = MutableStateFlow<Domain?>(null)
 
@@ -91,12 +115,30 @@ fun TimelineScreen(
     val blockNames by vm.blockNames.collectAsStateWithLifecycle()
     val batchNames by vm.batchNames.collectAsStateWithLifecycle()
     var fabMenu by remember { mutableStateOf(false) }
+    val query by vm.query.collectAsStateWithLifecycle()
+    val todayReminders by vm.today.collectAsStateWithLifecycle()
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var yearMenu by remember { mutableStateOf(false) }
+    val typeLabels = EntryType.entries.associateWith { it.label }
+    // search reads what the card shows: title, type, block or batch, products, notes
+    val shown = remember(entries, query, typeLabels, blockNames, batchNames) {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) entries else entries.filter { e ->
+            listOf(
+                e.entry.title, e.entry.notes, typeLabels[e.entry.type].orEmpty(),
+                e.entry.blockId?.let { blockNames[it] }.orEmpty(), e.entry.batchId?.let { batchNames[it] }.orEmpty(),
+            ).plus(e.usages.mapNotNull { it.product?.name }).any { it.lowercase().contains(q) }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = { searching = !searching; if (!searching) vm.query.value = "" }) {
+                        Icon(if (searching) Icons.Default.Close else Icons.Default.Search, contentDescription = stringResource(R.string.search_log))
+                    }
                     IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
                 },
             )
@@ -114,7 +156,7 @@ fun TimelineScreen(
                     listOf(EntryType.SPRAY, EntryType.RIPENESS, EntryType.PHENOLOGY, EntryType.HARVEST).forEach { t ->
                         DropdownMenuItem(
                             text = { Text(t.label) },
-                            leadingIcon = { Icon(Icons.Default.Grass, null) },
+                            leadingIcon = { Icon(t.icon(), null) },
                             onClick = { fabMenu = false; onNewEntry(Domain.VINEYARD, t) },
                         )
                     }
@@ -134,33 +176,62 @@ fun TimelineScreen(
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            if (searching) {
+                OutlinedTextField(
+                    value = query, onValueChange = { vm.query.value = it },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    placeholder = { Text(stringResource(R.string.search_log_hint)) },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    singleLine = true, shape = MaterialTheme.shapes.extraLarge,
+                )
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                item {
-                    FilterChip(selected = domain == null, onClick = { vm.domainFilter.value = null }, label = { Text(stringResource(R.string.all)) })
+                // where (all / vineyard / cellar) and when (a year) are two different questions: two controls
+                SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
+                    val options = listOf<Domain?>(null) + Domain.entries
+                    options.forEachIndexed { i, d ->
+                        SegmentedButton(
+                            selected = domain == d, onClick = { vm.domainFilter.value = d },
+                            shape = SegmentedButtonDefaults.itemShape(i, options.size), icon = {},
+                        ) { Text(d?.label ?: stringResource(R.string.all), maxLines = 1) }
+                    }
                 }
-                items(Domain.entries) { d ->
+                Box {
                     FilterChip(
-                        selected = domain == d,
-                        onClick = { vm.domainFilter.value = if (domain == d) null else d },
-                        label = { Text(d.label) },
+                        selected = year != null, onClick = { yearMenu = true },
+                        label = { Text(year?.toString() ?: stringResource(R.string.all_years)) },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     )
-                }
-                items(years) { y ->
-                    FilterChip(
-                        selected = year == y,
-                        onClick = { vm.yearFilter.value = if (year == y) null else y },
-                        label = { Text(y.toString()) },
-                    )
+                    DropdownMenu(expanded = yearMenu, onDismissRequest = { yearMenu = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.all_years)) }, onClick = { yearMenu = false; vm.yearFilter.value = null })
+                        years.forEach { y -> DropdownMenuItem(text = { Text(y.toString()) }, onClick = { yearMenu = false; vm.yearFilter.value = y }) }
+                    }
                 }
             }
-            if (entries.isEmpty()) {
-                EmptyState(stringResource(R.string.timeline_empty))
+            if (shown.isEmpty()) {
+                EmptyState(stringResource(if (query.isBlank()) R.string.timeline_empty else R.string.search_nothing))
             } else {
                 LazyColumn(contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp)) {
-                    items(entries, key = { it.entry.id }) { item ->
+                    if (todayReminders.isNotEmpty() && query.isBlank()) {
+                        item {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.large,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                            ) {
+                                Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                                    Text(stringResource(R.string.today_jobs), style = MaterialTheme.typography.labelLarge)
+                                    todayReminders.forEach { (at, r) ->
+                                        Text("${formatTime(at)}  ${r.title}", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    items(shown, key = { it.entry.id }) { item ->
                         val target = item.entry.blockId?.let { blockNames[it] } ?: item.entry.batchId?.let { batchNames[it] }
                         EntryCard(item = item, targetName = target, onClick = { onOpenEntry(item.entry.id) })
                     }
@@ -169,3 +240,7 @@ fun TimelineScreen(
         }
     }
 }
+
+private fun formatTime(millis: Long): String =
+    java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalTime()
+        .format(java.time.format.DateTimeFormatter.ofPattern("H:mm"))

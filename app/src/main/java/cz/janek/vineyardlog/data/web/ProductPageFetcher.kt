@@ -192,6 +192,8 @@ object DoseParser {
 /** Maps Czech/English category words to our categories. */
 object CategoryGuess {
     private val rules: List<Pair<Regex, ProductCategory>> = listOf(
+        // wetting agents first: shops file them under the disease they help against ("Silwet Star" under fungicides)
+        "smáčedl|smacedl|adjuv|wetter|silwet|break-thru|wetcit|trend 90" to ProductCategory.ADJUVANT,
         "rehydrat|výživ|vyziv|živin|zivin|nutrient|go-ferm|fermaid|opti-" to ProductCategory.YEAST_NUTRIENT,
         "kvasink|yeast|lalvin|fermol|saccharomyces" to ProductCategory.YEAST,
         "enzym" to ProductCategory.ENZYME,
@@ -207,11 +209,23 @@ object CategoryGuess {
         "listov|foliar" to ProductCategory.FOLIAR_FERTILIZER,
         "hnojiv|fertil|npk" to ProductCategory.SOIL_FERTILIZER,
         "stimul|biostim|aminokys" to ProductCategory.BIOSTIMULANT,
-        "smáč|smac|adjuv|wetter" to ProductCategory.ADJUVANT,
     ).map { (pattern, cat) -> Regex(pattern, RegexOption.IGNORE_CASE) to cat }
 
     fun guess(text: String): ProductCategory? {
         val t = text.lowercase()
         return rules.firstOrNull { (re, _) -> re.containsMatchIn(t) }?.second
+    }
+}
+
+/** Shop descriptions carry breadcrumbs, packaging notices and star ratings; this keeps the sentence about the product. */
+object ProductText {
+    private val arrow = Regex("\\s*[–-]\\s*>\\s*")
+    private val packaging = Regex("BALENÍ[^-–.]*?(UŽIVATELE|UZIVATELE)\\s*[-–]?\\s*(při koupi nutno[^.]*\\.?)?", RegexOption.IGNORE_CASE)
+    private val rating = Regex("[\\d,.]+\\s*Průměrné hodnocení produktu je [\\d,.]+ z \\d+ hvězdiček\\.?\\s*\\d*", RegexOption.IGNORE_CASE)
+
+    fun clean(text: String): String {
+        // "Plíseň révová - peronospora – > Kontaktní fungicid…": the part before the arrow is the shop's category
+        val afterCrumbs = arrow.split(text).last()
+        return afterCrumbs.replace(packaging, " ").replace(rating, " ").replace(Regex("\\s+"), " ").trim()
     }
 }

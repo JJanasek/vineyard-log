@@ -1,5 +1,16 @@
 package cz.janek.vineyardlog.ui.overview
 
+import cz.janek.vineyardlog.ui.batches.cellarReadings
+import cz.janek.vineyardlog.util.WholeVineyard
+import cz.janek.vineyardlog.util.BlockStatus
+import cz.janek.vineyardlog.data.model.BatchStatus
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -177,36 +188,56 @@ fun OverviewScreen(
     val yearEntries = remember(entries, year) { entries.filter { yearOf(it.entry.date) == year } }
     val yearWeather = remember(weather, year) { weather.filter { yearOf(it.date) == year } }
     val vineyardYear = remember(yearEntries) { readings(yearEntries, Domain.VINEYARD) }
-    val cellarAll = remember(entries) { readings(entries, Domain.CELLAR) }
     val blockName: (Long?) -> String = { id -> blocks.firstOrNull { it.id == id }?.name ?: "?" }
     val xDay: (Float) -> String = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) }
 
+    val today = todayEpochDay()
+    val activeBlocks = blocks.filter { !it.archived }
+    val blockStatus = remember(entries, blocks) { activeBlocks.associateWith { b -> BlockStatus.of(WholeVineyard.forBlock(entries, blocks, b.id), today) } }
+    // the disease outlook matters from budburst until the grapes are in; after that it only alarms
+    val allHarvested = activeBlocks.isNotEmpty() && blockStatus.values.all { it.harvestDate != null }
+    val inSeason = LocalDate.now().monthValue in 4..10 && !allHarvested
+    val lastWeather = weather.maxOfOrNull { it.date }
+    val weatherStale = lastWeather == null || lastWeather < today - 3
+    val cellar = remember(entries) { cellarReadings(entries) }
+    val working = batches.filter { !it.archived && it.status in setOf(BatchStatus.MUST, BatchStatus.FERMENTING, BatchStatus.MLF) }
+    var page by rememberSaveable { mutableIntStateOf(0) }
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.tab_overview)) },
-                actions = {
-                    IconButton(onClick = onOpenReminders) { Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.reminders)) }
-                    IconButton(onClick = onOpenWeather) { Icon(Icons.Default.WbSunny, contentDescription = stringResource(R.string.tab_weather)) }
-                },
-            )
-        },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_overview)) }) },
     ) { padding ->
         LazyColumn(Modifier.padding(padding).fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
-                LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(years) { y -> FilterChip(selected = year == y, onClick = { vm.year.value = y }, label = { Text(y.toString()) }) }
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    listOf(R.string.page_today, R.string.page_season).forEachIndexed { i, label ->
+                        SegmentedButton(selected = page == i, onClick = { page = i }, shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(label)) }
+                    }
                 }
             }
-            // ---- today ----
-            if (year == thisYear) {
-                item {
-                    RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
-                    if (sensitive.isNotEmpty()) {
-                        Text(
-                            stringResource(R.string.susceptible_varieties, sensitive.joinToString(", ")), Modifier.padding(horizontal = 20.dp),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
-                        )
+            if (page == 0) {
+                // ---- today: what needs doing and what is going on ----
+                if (inSeason) {
+                    item {
+                        if (risk != null && !weatherStale) {
+                            RiskCard(risk, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                            if (sensitive.isNotEmpty()) {
+                                Text(
+                                    stringResource(R.string.susceptible_varieties, sensitive.joinToString(", ")), Modifier.padding(horizontal = 20.dp),
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        } else {
+                            Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(stringResource(R.string.risk_title), style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        if (lastWeather == null) stringResource(R.string.risk_no_weather) else stringResource(R.string.risk_stale, formatDate(lastWeather)),
+                                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    TextButton(onClick = onOpenWeather) { Text(stringResource(R.string.update_weather)) }
+                                }
+                            }
+                        }
                     }
                 }
                 item {
@@ -233,10 +264,65 @@ fun OverviewScreen(
                         }
                     }
                 }
+                val ripening = blockStatus.filter { (_, st) -> st.harvestDate == null && st.latestNm != null }
+                if (ripening.isNotEmpty()) {
+                    item {
+                        Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(stringResource(R.string.now_ripening), style = MaterialTheme.typography.titleMedium)
+                                ripening.forEach { (b, st) ->
+                                    val (d, nm) = st.latestNm!!
+                                    val target = b.targetNm ?: settings.targetSugarNm
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text(b.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                        Text(
+                                            stringResource(R.string.nm_of_target, nm.fmt(1), target.fmt(0), formatDateShort(d)),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = if (nm >= target) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (working.isNotEmpty()) {
+                    item {
+                        Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(stringResource(R.string.now_fermenting), style = MaterialTheme.typography.titleMedium)
+                                working.forEach { b ->
+                                    val rs = cellar[b.id].orEmpty()
+                                    val sugar = rs.lastOrNull { it.kind in sugarKinds }
+                                    val start = b.startDate ?: rs.firstOrNull()?.date
+                                    val right = listOfNotNull(
+                                        sugar?.let { "${it.value.fmt(1)} ${it.kind.unit}".trim() },
+                                        start?.let { stringResource(R.string.day_n, (today - it).toInt() + 1) },
+                                    ).joinToString(" · ")
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text(b.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                        Text(right.ifBlank { b.status.label }, style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                item {
+                    Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AssistChip(onClick = onOpenReminders, label = { Text(stringResource(R.string.reminders)) },
+                            leadingIcon = { Icon(Icons.Default.Notifications, null, Modifier.size(18.dp)) })
+                        AssistChip(onClick = onOpenWeather, label = { Text(stringResource(R.string.tab_weather)) },
+                            leadingIcon = { Icon(Icons.Default.WbSunny, null, Modifier.size(18.dp)) })
+                    }
+                }
+            } else {
+            // ---- season: how the year went ----
+            item {
+                LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(years) { y -> FilterChip(selected = year == y, onClick = { vm.year.value = y }, label = { Text(y.toString()) }) }
+                }
             }
-
-            // ---- vineyard ----
-            item { SectionTitle(stringResource(R.string.tab_vineyard), Modifier.padding(horizontal = 16.dp)) }
             item {
                 val at = if (year == thisYear) todayEpochDay() else LocalDate.of(year, 7, 30).toEpochDay()
                 val st = remember(yearWeather, year) { Steberla.evaluate(yearWeather, year, at) }
@@ -328,54 +414,9 @@ fun OverviewScreen(
                         }
                     }
                 }
-                val acids = vineyardYear.filter { it.kind == MeasurementKind.TA || it.kind == MeasurementKind.PH }
-                if (acids.isNotEmpty()) {
-                    ChartCard(stringResource(R.string.vineyard_acids_n, year)) {
-                        LineChart(
-                            series = acids.groupBy { it.blockId to it.kind }.entries.mapIndexed { i, (key, list) ->
-                                ChartSeries("${blockName(key.first)} ${key.second.label}", palette[i % palette.size], list.map { dayOfYear(it.date).toFloat() to it.value.toFloat() })
-                            },
-                            xLabel = xDay,
-                        )
-                    }
-                }
             }
             item { HarvestTable(entries, blocks) }
-
-            // ---- soil ----
-            item { SoilTable(entries, blocks) }
-            // ---- cellar ----
-            item { SectionTitle(stringResource(R.string.tab_cellar), Modifier.padding(horizontal = 16.dp)) }
-            item {
-                val vintageBatches = batches.filter { it.vintage == year }
-                val ferm = vintageBatches.mapNotNull { b ->
-                    val rs = cellarAll.filter { it.batchId == b.id }
-                    val start = b.startDate ?: rs.minOfOrNull { it.date } ?: return@mapNotNull null
-                    val sugar = rs.mapNotNull { r -> r.nm()?.let { (r.date - start).toFloat() to it.toFloat() } }
-                    val temp = rs.filter { it.kind == MeasurementKind.TEMPERATURE }.map { (it.date - start).toFloat() to it.value.toFloat() }
-                    if (sugar.isEmpty() && temp.isEmpty()) null else Triple(b, sugar, temp)
-                }
-                val daysLabel = stringResource(R.string.days_since_start)
-                if (ferm.any { it.second.isNotEmpty() }) {
-                    ChartCard(stringResource(R.string.cellar_sugar_n, year)) {
-                        LineChart(
-                            series = ferm.mapIndexed { i, (b, s, _) -> ChartSeries(b.name, palette[i % palette.size], s) },
-                            sharedScale = true, xLabel = { "${it.toInt()} d" },
-                        )
-                        Text(daysLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                if (ferm.any { it.third.isNotEmpty() }) {
-                    ChartCard(stringResource(R.string.cellar_temp_n, year)) {
-                        LineChart(
-                            series = ferm.mapIndexed { i, (b, _, t) -> ChartSeries(b.name, palette[i % palette.size], t) },
-                            sharedScale = true, height = 160, xLabel = { "${it.toInt()} d" },
-                        )
-                    }
-                }
-                CellarTable(vintageBatches, cellarAll)
             }
-
         }
     }
 }
@@ -428,72 +469,3 @@ private fun HarvestTable(entries: List<EntryWithDetails>, blocks: List<Block>) {
     }
 }
 
-/** Latest cellar analyses per batch of the selected vintage. */
-@Composable
-private fun CellarTable(batches: List<Batch>, cellar: List<Reading>) {
-    if (batches.isEmpty()) return
-    val kinds = listOf(MeasurementKind.ALCOHOL, MeasurementKind.TA, MeasurementKind.PH, MeasurementKind.FREE_SO2, MeasurementKind.RESIDUAL_SUGAR)
-    val rows = batches.map { b ->
-        val rs = cellar.filter { it.batchId == b.id }
-        listOf(b.name) + kinds.map { k -> rs.filter { it.kind == k }.maxByOrNull { it.date }?.value?.fmt(1) ?: "–" }
-    }
-    if (rows.all { r -> r.drop(1).all { it == "–" } }) return
-    val w = listOf(2f, 0.9f, 0.9f, 0.8f, 0.9f, 0.9f)
-    ChartCard(stringResource(R.string.cellar_analyses)) {
-        TableRow(listOf(stringResource(R.string.batch), stringResource(R.string.alc_short), "TA", "pH", stringResource(R.string.fso2_short), stringResource(R.string.rs_short)), w, header = true)
-        rows.forEach { TableRow(it, w) }
-    }
-}
-
-/** Latest soil analysis per block with the K/Mg ratio and what the numbers mean for fertilising. */
-@Composable
-private fun SoilTable(entries: List<EntryWithDetails>, blocks: List<Block>) {
-    val kinds = listOf(
-        MeasurementKind.SOIL_PH, MeasurementKind.SOIL_ORGANIC_MATTER, MeasurementKind.SOIL_N,
-        MeasurementKind.SOIL_P, MeasurementKind.SOIL_K, MeasurementKind.SOIL_MG, MeasurementKind.SOIL_CA,
-    )
-    val soil = remember(entries) { readings(entries, Domain.VINEYARD).filter { it.kind in kinds } }
-    if (soil.isEmpty()) return
-    val czech = LocalConfiguration.current.locales[0]?.language == "cs"
-    ChartCard(stringResource(R.string.soil_title)) {
-        soil.groupBy { it.blockId }.forEach { (bid, rs) ->
-            val latestDate = rs.maxOf { it.date }
-            val name = blocks.firstOrNull { it.id == bid }?.name ?: stringResource(R.string.whole_vineyard)
-            fun latest(k: MeasurementKind) = rs.filter { it.kind == k }.maxByOrNull { it.date }?.value
-            val ph = latest(MeasurementKind.SOIL_PH)
-            val humus = latest(MeasurementKind.SOIL_ORGANIC_MATTER)
-            val k = latest(MeasurementKind.SOIL_K)
-            val mg = latest(MeasurementKind.SOIL_MG)
-            val ca = latest(MeasurementKind.SOIL_CA)
-            val ratio = SoilAdvice.kMgRatio(k, mg)
-            val values = buildList {
-                ph?.let { add("pH ${it.fmt(1)}") }
-                humus?.let { add(stringResource(R.string.humus_value, it.fmt(2))) }
-                latest(MeasurementKind.SOIL_N)?.let { add("N ${it.fmt(0)}") }
-                latest(MeasurementKind.SOIL_P)?.let { add("P ${it.fmt(0)}") }
-                k?.let { add("K ${it.fmt(0)}") }
-                mg?.let { add("Mg ${it.fmt(0)}") }
-                ratio?.let { add("K/Mg ${it.fmt(2)}") }
-                ca?.let { add("Ca ${it.fmt(0)}") }
-            }
-            Text("$name · ${formatDate(latestDate)}", style = MaterialTheme.typography.titleSmall)
-            Text(values.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
-            val notes = remember(ph, humus, k, mg, ca) {
-                SoilAdvice.evaluate(SoilAdvice.Soil(ph = ph, humusPct = humus, kMgPerKg = k, mgMgPerKg = mg, caMgPerKg = ca))
-            }
-            notes.filter { it.level != SoilAdvice.Level.OK }.forEach { n ->
-                Text(
-                    n.text.get(czech), style = MaterialTheme.typography.bodySmall,
-                    color = if (n.level == SoilAdvice.Level.WARN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            val due = latestDate.toLocalDate().plusYears(SoilAdvice.REPEAT_YEARS.toLong())
-            Text(
-                stringResource(R.string.soil_repeat_due, formatDate(due.toEpochDay())),
-                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-        Text(stringResource(R.string.soil_units_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}

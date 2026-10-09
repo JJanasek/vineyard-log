@@ -121,10 +121,10 @@ private fun So2Card() {
     CalcCard(stringResource(R.string.calc_so2), stringResource(R.string.calc_so2_note)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             NumberField(ph, { ph = it }, stringResource(R.string.calc_ph), Modifier.weight(1f))
-            NumberField(free, { free = it }, stringResource(R.string.calc_free_so2), Modifier.weight(1f), suffix = "mg/L")
+            NumberField(free, { free = it }, stringResource(R.string.calc_free_so2), Modifier.weight(1f), suffix = "mg/l")
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField(target, { target = it }, stringResource(R.string.calc_target_molecular), Modifier.weight(1f), suffix = "mg/L")
+            NumberField(target, { target = it }, stringResource(R.string.calc_target_molecular), Modifier.weight(1f), suffix = "mg/l")
             NumberField(volume, { volume = it }, stringResource(R.string.calc_volume), Modifier.weight(1f), suffix = "L")
         }
         val p = ph.toDoubleLenient(); val fr = free.toDoubleLenient(); val tg = target.toDoubleLenient(); val v = volume.toDoubleLenient()
@@ -143,8 +143,8 @@ private fun AcidCard() {
     var volume by rememberSaveable { mutableStateOf("100") }
     CalcCard(stringResource(R.string.calc_acid), stringResource(R.string.calc_acid_note)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField(now, { now = it }, stringResource(R.string.calc_ta_now), Modifier.weight(1f), suffix = "g/L")
-            NumberField(target, { target = it }, stringResource(R.string.calc_ta_target), Modifier.weight(1f), suffix = "g/L")
+            NumberField(now, { now = it }, stringResource(R.string.calc_ta_now), Modifier.weight(1f), suffix = "g/l")
+            NumberField(target, { target = it }, stringResource(R.string.calc_ta_target), Modifier.weight(1f), suffix = "g/l")
         }
         NumberField(volume, { volume = it }, stringResource(R.string.calc_volume), suffix = "L")
         val n = now.toDoubleLenient(); val t = target.toDoubleLenient(); val v = volume.toDoubleLenient()
@@ -162,7 +162,7 @@ private fun YanCard() {
     var alc by rememberSaveable { mutableStateOf("12.6") }
     CalcCard(stringResource(R.string.calc_yan), stringResource(R.string.calc_yan_note)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField(yan, { yan = it }, stringResource(R.string.calc_yan_now), Modifier.weight(1f), suffix = "mg/L")
+            NumberField(yan, { yan = it }, stringResource(R.string.calc_yan_now), Modifier.weight(1f), suffix = "mg/l")
             NumberField(alc, { alc = it }, stringResource(R.string.calc_pot_alc), Modifier.weight(1f), suffix = "% vol")
         }
         val y = yan.toDoubleLenient(); val a = alc.toDoubleLenient()

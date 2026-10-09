@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui
 
+import cz.janek.vineyardlog.data.model.fmtPlain
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import cz.janek.vineyardlog.R
@@ -12,7 +13,7 @@ import cz.janek.vineyardlog.data.model.Domain
 import cz.janek.vineyardlog.data.settings.Settings
 import cz.janek.vineyardlog.util.Units
 
-fun Double?.input(): String = this?.fmt() ?: ""
+fun Double?.input(): String = this?.fmtPlain() ?: ""
 fun Int?.input(): String = this?.toString() ?: ""
 
 fun String.toDoubleLenient(): Double? = trim().replace(',', '.').takeIf { it.isNotBlank() }?.toDoubleOrNull()
@@ -89,3 +90,10 @@ fun compactMeasurementText(m: Measurement): String = when (m.kind) {
     MeasurementKind.TA -> "${m.kind.shortLabel()} ${m.value.fmt()} g/l"
     else -> measurementText(m)
 }
+
+private fun String.plainKey(): String =
+    java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").lowercase().trim()
+
+/** [extra] unless it only repeats [name] ("Modrý Portugal · Modrý Portugal"); null for blank. */
+fun distinctFrom(name: String, extra: String?): String? =
+    extra?.takeIf { it.isNotBlank() && !name.plainKey().startsWith(it.plainKey()) }

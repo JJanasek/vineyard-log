@@ -71,9 +71,11 @@ fun NumberField(
     integer: Boolean = false,
     supportingText: String? = null,
 ) {
-    val invalid = value.isNotBlank() && (if (integer) value.trim().toIntOrNull() == null else value.trim().toDoubleOrNull() == null)
+    val plain = value.replace(',', '.')
+    val invalid = plain.isNotBlank() && (if (integer) plain.trim().toIntOrNull() == null else plain.trim().toDoubleOrNull() == null)
     OutlinedTextField(
-        value = value,
+        // shown with the separator the user expects, stored with a dot
+        value = if (cz.janek.vineyardlog.data.model.NumberStyle.decimalComma) plain.replace('.', ',') else plain,
         onValueChange = { s -> onValueChange(s.replace(',', '.')) },
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),

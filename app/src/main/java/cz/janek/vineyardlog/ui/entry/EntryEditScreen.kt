@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui.entry
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
 import androidx.compose.material.icons.filled.AttachFile
@@ -517,7 +518,8 @@ fun EntryEditScreen(
 
     Scaffold(
         topBar = {
-            BackTopBar(title = if (entryId == null) stringResource(R.string.new_entry) else stringResource(R.string.edit_entry), onBack = onDone) {
+            // a new entry is titled by what it is; the generic "Nový záznam" said nothing the menu had not
+            BackTopBar(title = if (entryId == null) vm.type.label else stringResource(R.string.edit_entry), onBack = onDone) {
                 IconButton(onClick = { vm.save(onDone) }) { Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save)) }
             }
         },
@@ -547,7 +549,9 @@ fun EntryEditScreen(
                     ) { Text(d.label) }
                 }
             }
-            DropdownField(
+            // the type was picked in the Zapsat menu already; changing it stays one tap away
+            var showType by rememberSaveable { mutableStateOf(entryId != null || initialType == null) }
+            if (showType) DropdownField(
                 label = stringResource(R.string.type),
                 options = EntryType.forDomain(vm.domain),
                 selected = vm.type,
@@ -561,9 +565,14 @@ fun EntryEditScreen(
                 }
             } else DateField(epochDay = vm.date, onChange = { vm.date = it })
 
+            if (!showType) TextButton(onClick = { showType = true }, contentPadding = PaddingValues(0.dp)) { Text(stringResource(R.string.change_type)) }
+
             if (vm.domain == Domain.VINEYARD) {
                 val active = blocks.filter { !it.archived || it.id == vm.blockId }
-                DropdownField<Block>(
+                // with the per-block table below, "Trať: Celá vinice" only repeats what the table shows
+                if (vm.usesBlockGrid && active.isNotEmpty()) TextButton(onClick = { vm.blockId = active.first().id }, contentPadding = PaddingValues(0.dp)) {
+                    Text(stringResource(R.string.only_one_block))
+                } else DropdownField<Block>(
                     label = stringResource(R.string.block),
                     options = active,
                     selected = active.firstOrNull { it.id == vm.blockId },
@@ -920,7 +929,10 @@ fun EntryEditScreen(
                 val checked = remember { mutableStateListOf(false, false, false, false) }
                 val prefix = stringResource(R.string.sp_note_prefix)
                 val labels = items.map { stringResource(it) }
-                Card(Modifier.fillMaxWidth()) {
+                var showProtocol by rememberSaveable { mutableStateOf(false) }
+                if (!showProtocol) TextButton(onClick = { showProtocol = true }, contentPadding = PaddingValues(0.dp)) {
+                    Text(stringResource(R.string.sampling_protocol))
+                } else Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp)) {
                         Text(stringResource(R.string.sampling_protocol), style = MaterialTheme.typography.titleSmall)
                         labels.forEachIndexed { i, label ->

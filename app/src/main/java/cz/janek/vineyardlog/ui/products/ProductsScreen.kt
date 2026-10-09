@@ -143,32 +143,32 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
             if (products.isEmpty()) {
                 EmptyState(stringResource(R.string.products_empty))
             } else {
+                // the products you use first; the rest of the catalogue below
+                val (mine, rest) = products.partition { it.favorite }
                 LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
-                    items(products, key = { it.id }) { p ->
-                        ListItem(
-                            headlineContent = { Text(p.name) },
-                            supportingContent = {
-                                val line = listOfNotNull(
-                                    p.supplier.label.takeIf { p.supplier != Supplier.OTHER },
-                                    p.category.label,
-                                    p.doseRangeText.takeIf { it.isNotBlank() },
-                                    p.phiDays?.let { stringResource(R.string.phi_days_short, it) },
-                                    p.activeIngredient.takeIf { it.isNotBlank() },
-                                ).joinToString(" · ")
-                                Column {
-                                    Text(line)
-                                    if (p.purpose.isNotBlank()) {
-                                        Text(p.purpose, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
-                                    }
-                                }
-                            },
-                            trailingContent = {
-                                Row {
-                                    if (p.url.isNotBlank()) {
-                                        IconButton(onClick = { runCatching { uriHandler.openUri(p.url) } }) {
-                                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.open_supplier_page))
-                                        }
-                                    }
+                    listOf(R.string.my_products to mine, R.string.catalogue to rest).forEach { (title, list) ->
+                        if (list.isNotEmpty() && mine.isNotEmpty()) item(key = "h$title") {
+                            Text(
+                                stringResource(title) + " (${list.size})", style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+                            )
+                        }
+                        items(list, key = { it.id }) { p ->
+                            ListItem(
+                                headlineContent = { Text(p.name) },
+                                supportingContent = {
+                                    // the facts that decide a spray: what it is, how much, how long before harvest
+                                    Text(
+                                        listOfNotNull(
+                                            p.supplier.label.takeIf { p.supplier != Supplier.OTHER },
+                                            p.category.label,
+                                            p.doseRangeText.takeIf { it.isNotBlank() },
+                                            p.phiDays?.let { stringResource(R.string.phi_days_short, it) },
+                                        ).joinToString(" · "),
+                                        maxLines = 2,
+                                    )
+                                },
+                                trailingContent = {
                                     IconButton(onClick = { vm.toggleFavorite(p) }) {
                                         Icon(
                                             if (p.favorite) Icons.Default.Star else Icons.Default.StarBorder,
@@ -176,11 +176,11 @@ fun ProductsScreen(onOpenProduct: (Long) -> Unit, onNewProduct: () -> Unit) {
                                             tint = if (p.favorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
-                                }
-                            },
-                            modifier = Modifier.clickable { onOpenProduct(p.id) }.alpha(if (p.archived) 0.5f else 1f),
-                        )
-                        HorizontalDivider()
+                                },
+                                modifier = Modifier.clickable { onOpenProduct(p.id) }.alpha(if (p.archived) 0.5f else 1f),
+                            )
+                            HorizontalDivider()
+                        }
                     }
                 }
             }

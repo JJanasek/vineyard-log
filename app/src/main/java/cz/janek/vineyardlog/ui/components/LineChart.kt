@@ -1,5 +1,6 @@
 package cz.janek.vineyardlog.ui.components
 
+import cz.janek.vineyardlog.data.model.fmt
 import cz.janek.vineyardlog.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Canvas
@@ -57,6 +58,7 @@ fun LineChart(
     bars: ChartSeries? = null,
     markers: List<ChartMarker> = emptyList(),
     dots: Boolean = true,
+    legend: Boolean = true,
 ) {
     val measurer = rememberTextMeasurer()
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -142,7 +144,7 @@ fun LineChart(
                 if (dots || pts.size == 1) pts.forEach { drawCircle(s.color, radius = 3.dp.toPx(), center = it) }
             }
         }
-        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        if (legend) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             visible.forEach { s ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(10.dp).background(s.color, CircleShape))
@@ -183,5 +185,4 @@ private fun niceRange(min: Float, max: Float): Pair<Float, Float> {
     return (floor(min / step) * step) to (ceil(max / step) * step)
 }
 
-private fun fmtAxis(v: Float): String =
-    if (v == floor(v)) v.toInt().toString() else String.format(java.util.Locale.US, "%.2f", v).trimEnd('0').trimEnd('.')
+private fun fmtAxis(v: Float): String = v.toDouble().fmt(2)

@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        cz.janek.vineyardlog.data.model.NumberStyle.decimalComma = resources.configuration.locales[0]?.language == "cs"
         sharedUrl = extractUrl(intent)
         pendingRoute = intent?.getStringExtra(EXTRA_ROUTE)
         lifecycleScope.launch { appContainer.folderBackup.backupIfStale() }

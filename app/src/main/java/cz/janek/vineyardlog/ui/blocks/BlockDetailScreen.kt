@@ -1,5 +1,7 @@
 package cz.janek.vineyardlog.ui.blocks
 
+import cz.janek.vineyardlog.ui.distinctFrom
+import androidx.compose.material3.TextButton
 import cz.janek.vineyardlog.ui.labelWithUnit
 import cz.janek.vineyardlog.ui.label
 import cz.janek.vineyardlog.R
@@ -77,13 +79,17 @@ import cz.janek.vineyardlog.util.yearOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
+import cz.janek.vineyardlog.util.WholeVineyard
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class BlockDetailViewModel(private val c: AppContainer, private val id: Long) : ViewModel() {
     private val started = SharingStarted.WhileSubscribed(5_000)
     val block = c.blockDao.observe(id).stateIn(viewModelScope, started, null)
-    val entries = c.entryDao.observeForBlock(id).stateIn(viewModelScope, started, emptyList())
+    // own entries plus this block's share of whole-vineyard work, so a spray on "celá vinice" counts here too
+    val entries = combine(c.entryDao.observeAll(), c.blockDao.observeAll()) { all, blocks -> WholeVineyard.forBlock(all, blocks, id) }
+        .stateIn(viewModelScope, started, emptyList())
     val measurements = c.measurementDao.observeForBlock(id).stateIn(viewModelScope, started, emptyList())
     val weather = c.weatherDao.observeAll().stateIn(viewModelScope, started, emptyList())
     val settings = c.settings.settings.stateIn(viewModelScope, started, Settings())
@@ -155,7 +161,7 @@ fun BlockDetailScreen(
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     val info = listOfNotNull(
-                        b.variety.takeIf { it.isNotBlank() },
+                        distinctFrom(b.name, b.variety),
                         b.areaHa?.let { "${(it * settings.areaFactor).fmt(if (settings.areaFactor >= 100) 0 else 3)} ${settings.areaLabel}" },
                         b.vineCount?.let { stringResource(R.string.n_vines, it) },
                         b.plantedYear?.let { stringResource(R.string.planted_year, it) },
@@ -199,12 +205,16 @@ fun BlockDetailScreen(
                             Text(kind.labelWithUnit, style = MaterialTheme.typography.labelLarge, color = palette[i % palette.size], modifier = Modifier.padding(top = 6.dp))
                             LineChart(
                                 series = listOf(ChartSeries(name = kind.labelWithUnit, color = palette[i % palette.size], points = list.map { dayOfYear(it.date).toFloat() to it.value.toFloat() })),
-                                height = 130,
+                                height = 130, legend = false,
                                 xLabel = { d -> formatDateShort(LocalDate.ofYearDay(year, d.toInt().coerceIn(1, LocalDate.of(year, 1, 1).lengthOfYear())).toEpochDay()) },
                             )
                         }
-                        SectionTitle(stringResource(R.string.readings))
-                        yearMeasurements.sortedByDescending { it.date }.forEach { m ->
+                        // the same numbers are in the charts and the log below, so the full list stays folded
+                        var showAll by remember { mutableStateOf(false) }
+                        TextButton(onClick = { showAll = !showAll }) {
+                            Text(stringResource(if (showAll) R.string.readings_hide else R.string.readings_show_n, yearMeasurements.size))
+                        }
+                        if (showAll) yearMeasurements.sortedByDescending { it.date }.forEach { m ->
                             KeyValueRow("${formatDate(m.date)}  ${m.kind.label}", "${m.value.fmt()} ${m.kind.unit}".trim())
                         }
                     }
